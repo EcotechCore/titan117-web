@@ -6,6 +6,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "4178", "--directory", "mockup"],
       "port": 4178
+    },
+    {
+      "name": "new-mockups",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "4179", "--directory", "new-mockups"],
+      "port": 4179
     }
   ]
 }

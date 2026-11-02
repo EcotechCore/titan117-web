@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITAN117 · AI teammates on your laptop</title>
+<meta name="description" content="A desktop app for small companies. Titan and specialist agents work on your own laptop, and nothing happens until you approve it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Unbounded:wght@600&display=swap" rel="stylesheet">
+<style>
+/* New home (1 Nov 2026). Self-contained: no shared mockup CSS or JS. Kept from the old mockups: the hero's
+   agent terrain and the buttons' cut corner. New: a dot-matrix LED renderer (scanline rows of dots, five
+   sizes, glitch dissolve between poses) used for "How it works", the industries panel and the closing band. */
+:root{
+  --bg:#f7f7f5;--paper:#ffffff;--ink:#0d0d0d;--black:#0b0b0c;--card-dark:#161618;
+  --mute:#9a9a9a;--sub:#6e6e80;--line:#e5e5ea;--surface:#f4f4f5;
+  --neon:#c4f012;--neon-text:#4d6400;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --brand:"Unbounded",system-ui,sans-serif;
+  --cut:20px;--ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.5;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+canvas{display:block}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono)}
+::selection{background:var(--neon);color:var(--ink)}
+
+/* buttons: square, with the cards' cut corner at the top right */
+.btn{--bcut:8px;position:relative;display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 20px;font-size:14px;font-weight:500;letter-spacing:-.005em;
+  clip-path:polygon(0 0,calc(100% - var(--bcut)) 0,100% var(--bcut),100% 100%,0 100%);transition:background .3s,color .3s,transform .3s var(--ease)}
+.btn--lg{--bcut:10px;height:52px;padding:0 26px;font-size:15px}
+.btn--ink{background:var(--ink);color:#fff}
+.btn--ink:hover{background:#262626;transform:translateY(-1px)}
+.btn--white{background:#fff;color:var(--ink)}
+.btn--white:hover{background:#ececec}
+.btn--neon{background:var(--neon);color:var(--ink)}
+.btn--neon:hover{background:#d3ff2b}
+.btn--ghost{background:transparent;box-shadow:inset 0 0 0 1px rgba(13,13,13,.16)}
+.btn--ghost:hover{background:rgba(13,13,13,.04)}
+.btn--gray{background:#e4e4e1;color:var(--ink)}
+.btn--gray:hover{background:#d8d8d5;transform:translateY(-1px)}
+.btn--ghost::after{content:"";position:absolute;top:0;left:calc(100% - var(--bcut));width:calc(var(--bcut)*1.4142);height:1px;background:rgba(13,13,13,.16);transform-origin:0 0;transform:translate(-.5px,.5px) rotate(45deg)}
+.btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--ink),inset 0 0 0 4px #fff}
+.btn--ink:focus-visible{box-shadow:inset 0 0 0 2px var(--neon),inset 0 0 0 4px var(--ink)}
+.btn svg{width:16px;height:16px;flex:none}
+
+/* the call to action's underglow: the agents' colours, blurred, peeking out below the button */
+.cta{position:relative;display:inline-block}
+.cta::before{content:"";position:absolute;left:8%;right:8%;bottom:-7px;height:18px;border-radius:50%;
+  background:linear-gradient(90deg,#c4f012,#e0a100,#ec4899,#8b5cf6,#2f6fed,#38c6ec,#14a37f);filter:blur(10px);opacity:.8;transition:all .3s;pointer-events:none}
+.cta:hover::before{opacity:1;filter:blur(13px);bottom:-10px}
+
+/* nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .4s,box-shadow .4s,backdrop-filter .4s}
+/* the nav shares the content width (.wrap): logo on the left edge, links centred, Download on the right edge */
+.nav__in{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px;max-width:1280px;margin:0 auto;height:76px;padding:0 24px;font-size:13.5px}
+.nav__in > .btn{justify-self:end}
+.nav.is-scrolled{background:rgba(255,255,255,.85);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);box-shadow:0 1px 0 rgba(13,13,13,.06)}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--brand);font-weight:600;font-size:14px;letter-spacing:.04em;justify-self:start}
+.brand svg{width:22px;height:22px}
+.nav__links{display:flex;gap:clamp(18px,2.6vw,38px)}
+.nav__links a{color:#3a3a3a;transition:color .2s}
+.nav__links a:hover{color:#000}
+.nav .btn{height:38px;padding:0 18px;font-size:13.5px;--bcut:6px}
+
+/* ── hero ── */
+.hero{position:relative;overflow:hidden;background:#fff;padding-bottom:clamp(40px,6vh,64px)}
+/* the land fills the first screen; the app preview rises over its foot */
+.hero__top{position:relative;height:100vh;min-height:680px;max-height:1000px}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+/* the land dissolves into the page before the canvas ends, so the grid never stops in a hard line beside the app frame */
+.hero__top canvas{-webkit-mask-image:linear-gradient(to bottom,#000 62%,rgba(0,0,0,.35) 80%,transparent 96%);mask-image:linear-gradient(to bottom,#000 62%,rgba(0,0,0,.35) 80%,transparent 96%)}
+.hero__copy{position:absolute;left:50%;top:max(160px,19%);transform:translateX(-50%);width:min(92vw,780px);text-align:center;z-index:3;pointer-events:none}
+.hero__copy a,.hero__copy button,.hero__copy p,.hero__copy h1{pointer-events:auto}
+/* the desktop app preview: a placeholder frame until the real screenshot exists */
+.hero__app{position:relative;z-index:4;margin-top:-20vh}
+.appshot{position:relative;aspect-ratio:16/10;margin:0 auto;background:#fff;box-shadow:inset 0 0 0 1px rgba(13,13,13,.12),0 30px 80px -40px rgba(13,13,13,.35);display:grid;place-items:center;
+  clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px))}
+.appshot span{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9a9aa2}
+/* ── callouts beside the app frame (trial, 1 Nov 2026: remove this block and the .callout markup to revert) ──
+   Each card straddles the frame's edge and a hairline runs from it into the app, ending on a ring. */
+.appwrap{position:relative}
+.callout{position:absolute;z-index:2;width:236px;padding:13px 15px 14px;background:#fff;box-shadow:inset 0 0 0 1px rgba(13,13,13,.1),0 18px 40px -22px rgba(13,13,13,.4);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));animation:float 7s ease-in-out infinite}
+.callout small{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8a8a92;margin-bottom:6px}
+.callout b{display:block;font-size:14.5px;font-weight:500;letter-spacing:-.01em;line-height:1.3;color:var(--ink)}
+.callout i{width:7px;height:7px;border-radius:50%;flex:none}
+.callout .dots{display:flex;gap:4px;margin-top:9px}
+.callout .dots i{width:9px;height:9px}
+.callout--l{left:-56px}
+.callout--r{right:-56px;animation-delay:-3.5s}
+.callout--a{top:13%}.callout--b{top:42%}.callout--c{top:70%;animation-delay:-2s}
+/* the hairline into the app and the ring it points at */
+.cline{position:absolute;z-index:1;height:1px;background:rgba(13,13,13,.28);pointer-events:none}
+.cline::after{content:"";position:absolute;top:-4px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.cline--l{left:180px;width:120px}.cline--l::after{right:-4px}
+.cline--r{right:180px;width:120px}.cline--r::after{left:-4px}
+.cline--a{top:calc(13% + 30px)}.cline--b{top:calc(42% + 30px)}.cline--c{top:calc(70% + 30px)}
+@keyframes float{50%{transform:translateY(-6px)}}
+@media (max-width:1100px){ .callout--l{left:16px}.callout--r{right:16px}.cline{display:none} }
+@media (max-width:760px){ .callout,.cline{display:none} }
+@media (prefers-reduced-motion: reduce){ .callout{animation:none} }
+/* ── end callouts ── */
+/* hover fx (trial): motes and the cursor's spotlight carry on from under the hero to the Agents band.
+   Above the section backgrounds and the LED wall, below the app frame, the copy and the step cards. */
+.fxfield{position:absolute;left:0;width:100%;z-index:1;pointer-events:none}
+.hero h1{font-weight:500;letter-spacing:-.04em;line-height:1.02;font-size:clamp(42px,5vw,80px)}
+.hero h1 .g{display:block;color:var(--mute)}
+.hero__sub{margin:22px auto 0;max-width:470px;color:#5b5b66;font-size:clamp(14px,1.1vw,16.5px);line-height:1.45}
+.hero__actions{margin-top:clamp(30px,3.4vw,46px);display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap}
+/* an invisible point the terrain grows from, where the valley's centre sits */
+.hero__anchor{position:absolute;left:50%;top:66%;width:120px;height:120px;transform:translate(-50%,-50%);pointer-events:none}
+/* Titan's eyes for the logos (the bot engine from the old mockups) */
+svg.bot{display:block;overflow:visible}
+.promises{position:relative;margin-top:clamp(28px,4vh,44px);z-index:3;display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(22px,3.6vw,54px);padding:0 16px;color:#77777f;font-size:clamp(13px,1vw,14.5px);font-weight:500;letter-spacing:-.01em}
+.promises span{display:flex;align-items:center;gap:8px}
+.hero .cta::before{display:none}
+.promises svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* section heads */
+section{position:relative}
+.band{padding:clamp(80px,10vw,136px) 0}
+.band--dark{background:var(--black);color:#fff}
+.band--bg{background:var(--bg)}
+.head{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start;margin-bottom:clamp(40px,5vw,64px)}
+.label{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--sub);padding-top:12px}
+.band--dark .label{color:#8e8ea0}
+.head h2,.h2{font-weight:500;letter-spacing:-.035em;line-height:1.05;font-size:clamp(32px,3.6vw,56px);max-width:880px}
+.h2 .g,.head h2 .g{color:var(--mute)}
+.band--dark .head h2 .g{color:#6c6c74}
+.head p{margin-top:18px;max-width:560px;color:var(--sub);font-size:17px}
+.band--dark .head p{color:#a0a0aa}
+
+/* ── how it works: the LED wall ── */
+/* the hero and "How it works" sit on white, up to the Agents band */
+.wall{position:relative;background:#fff;overflow:hidden}
+.wall__stage{position:relative;height:clamp(600px,92vh,860px)}
+.wall__stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.wall__copy{position:absolute;left:50%;top:clamp(64px,10vh,104px);transform:translateX(-50%);width:min(92vw,760px);text-align:center;z-index:2}
+.wall__copy .label{padding:0;margin-bottom:18px;display:block}
+.wall__copy .h2{margin:0 auto}
+.wall__copy p{margin:18px auto 0;max-width:470px;color:var(--sub);font-size:16px}
+.wall__tag{position:absolute;z-index:2;font-family:var(--mono);font-size:11.5px;color:#55555f;letter-spacing:.03em;background:rgba(255,255,255,.85);padding:4px 9px;box-shadow:inset 0 0 0 1px rgba(13,13,13,.08);transform:translateX(-50%);transition:opacity .4s;white-space:nowrap}
+.steps{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-bottom:clamp(64px,8vw,104px);margin-top:-8px}
+.step{text-align:left;padding:22px 22px 24px;background:#f6f6f4;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%);transition:background .4s;position:relative;overflow:hidden}
+.step::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--ink)}
+.step.is-on::after{animation:fill var(--d,5s) linear forwards}
+@keyframes fill{to{width:100%}}
+.step__n{font-family:var(--mono);font-size:12px;color:var(--mute);display:flex;align-items:center;gap:8px}
+.step.is-on .step__n{color:var(--ink)}
+.step.is-on .step__n::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--neon)}
+.step h3{font-size:18px;font-weight:600;letter-spacing:-.015em;margin:14px 0 6px}
+.step p{font-size:14px;color:var(--sub);line-height:1.5}
+
+/* ── agents (dark, over a live ASCII field) ── */
+.agents{overflow:hidden}
+.agents > canvas{position:absolute;inset:0;width:100%;height:100%}
+.agents .wrap{position:relative;z-index:2}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.acard{position:relative;background:var(--card-dark);padding:26px 26px 28px;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%);min-height:300px;display:flex;flex-direction:column;transition:background .4s,transform .5s var(--ease)}
+.acard:hover{background:#1d1d20;transform:translateY(-3px)}
+.acard__top{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:12px;color:#77777f}
+.acard__name{display:flex;align-items:center;gap:10px;color:#e8e8ea;font-size:12.5px;letter-spacing:.02em}
+.acard__name i{width:10px;height:10px;background:var(--c);display:block}
+/* each card's icon is a small LED panel (high definition, like the wall): an icon in dots and a wire with a pulse */
+.acard__glyph{position:relative;margin:20px 0 16px;height:72px}
+.acard__glyph canvas,.tcard .ico canvas{position:absolute;inset:0;width:100%;height:100%}
+.acard h3{font-size:19px;font-weight:500;letter-spacing:-.02em;line-height:1.25;color:#fff}
+.acard ul{list-style:none;margin-top:auto;padding-top:20px;display:grid;gap:7px}
+.acard li{font-size:13.5px;color:#a0a0aa;display:flex;gap:10px;line-height:1.4}
+.acard li::before{content:"";width:5px;height:5px;background:#55555c;margin-top:7px;flex:none}
+.agents__foot{margin-top:28px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;color:#a0a0aa;font-size:14px}
+.agents__foot b{color:#fff;font-weight:500}
+
+/* ── industries ── */
+.ind{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start}
+.ind__list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.ind__item{display:grid;grid-template-columns:34px 1fr;gap:4px 10px;text-align:left;padding:15px 4px 15px 0;border-bottom:1px solid var(--line);position:relative;transition:padding .4s var(--ease)}
+.ind__item .n{font-family:var(--mono);font-size:12px;color:var(--mute);padding-top:3px}
+.ind__item b{font-weight:500;font-size:16px;letter-spacing:-.01em}
+.ind__item small{grid-column:2;font-size:13.5px;color:var(--sub);max-height:0;overflow:hidden;opacity:0;transition:all .4s var(--ease)}
+.ind__item:hover b{color:#000}
+.ind__item.is-on{padding-left:10px}
+.ind__item.is-on .n{color:var(--ink)}
+.ind__item.is-on small{max-height:40px;opacity:1}
+.ind__item.is-on::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;background:var(--neon)}
+.ind__item:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.ind__view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;min-width:0}
+.ind__panel{position:relative;background:var(--bg);aspect-ratio:1/1;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%)}
+.ind__panel canvas{position:absolute;inset:0;width:100%;height:100%}
+.ind__panel .corner{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:11.5px;color:#55555f;z-index:2}
+.ind__panel .corner2{position:absolute;right:18px;bottom:16px;font-family:var(--mono);font-size:11.5px;color:#55555f;z-index:2}
+.ind__text{background:var(--surface);padding:28px;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%);display:flex;flex-direction:column}
+.ind__text h3{font-size:clamp(22px,1.9vw,28px);font-weight:500;letter-spacing:-.025em;line-height:1.15}
+.ind__text > p{margin-top:12px;color:var(--sub);font-size:15px}
+.uses{list-style:none;margin-top:22px;display:grid;gap:0;border-top:1px solid var(--line)}
+.uses li{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.uses li span:last-child{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;color:var(--sub);white-space:nowrap}
+.uses li i{width:8px;height:8px;background:var(--c);display:block}
+.flow{grid-column:1/-1;display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center;background:var(--surface);padding:18px 22px}
+.flow div b{display:block;font-size:14.5px;font-weight:500}
+.flow div span{font-size:13px;color:var(--sub)}
+.flow > i{font-family:var(--mono);font-style:normal;color:var(--mute);font-size:13px}
+.fade-swap{transition:opacity .35s,transform .35s var(--ease)}
+.fade-swap.is-out{opacity:0;transform:translateY(6px)}
+
+/* ── local-first ── */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tcard{background:#fff;padding:26px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)}
+.tcard .ico{position:relative;height:64px;margin-bottom:18px}
+.tcard h3{font-size:17px;font-weight:600;letter-spacing:-.015em}
+.tcard p{margin-top:6px;font-size:14.5px;color:var(--sub)}
+
+/* ── pricing ── */
+.plans{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.plan{background:var(--surface);padding:28px 26px;display:flex;flex-direction:column;gap:6px;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,0 100%)}
+.plan.is-pop{background:var(--black);color:#fff}
+.plan__n{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:16px}
+.plan__n em{font-style:normal;font-family:var(--mono);font-size:11px;font-weight:500;background:var(--neon);color:var(--ink);padding:3px 7px}
+.plan__p{font-size:44px;font-weight:500;letter-spacing:-.04em;margin-top:14px;line-height:1}
+.plan__p small{font-size:14px;letter-spacing:0;color:var(--sub);font-weight:400}
+.plan.is-pop .plan__p small,.plan.is-pop .plan__b,.plan.is-pop li{color:#a0a0aa}
+.plan__b{color:var(--sub);font-size:14px}
+.plan ul{list-style:none;margin:20px 0 26px;display:grid;gap:8px;font-size:14px}
+.plan li{display:flex;gap:9px;color:#3a3a3c}
+.plan li::before{content:"·";font-family:var(--mono);color:var(--mute)}
+.plan .btn{margin-top:auto;justify-content:center;width:100%}
+.note{margin-top:22px;color:var(--sub);font-size:14px;text-align:center}
+
+/* ── FAQ ── */
+.faq{max-width:880px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:16px;padding:22px 0;font-size:18px;font-weight:500;letter-spacing:-.015em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--mono);font-weight:400;color:var(--mute);transition:transform .3s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 0 22px;color:var(--sub);max-width:700px}
+
+/* ── closing band ── */
+.end{position:relative;background:var(--bg);overflow:hidden}
+.end__stage{position:relative;height:clamp(460px,64vh,640px)}
+.end__stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.end__copy{position:absolute;left:50%;bottom:clamp(40px,8vh,72px);transform:translateX(-50%);text-align:center;z-index:2;width:min(92vw,640px)}
+.end__copy p{color:var(--sub);margin:12px 0 28px}
+footer{background:var(--black);color:#a0a0aa;font-size:14px;padding:56px 0 40px}
+.foot{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:24px}
+.foot .brand{color:#fff;display:flex}
+.foot h4{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#6c6c74;margin-bottom:12px}
+.foot a{display:block;padding:3px 0;transition:color .2s}
+.foot a:hover{color:#fff}
+.foot__base{margin-top:48px;padding-top:20px;border-top:1px solid #222226;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:#6c6c74}
+
+/* reveal on scroll */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.rv.is-in{opacity:1;transform:none}
+.rv-d1{transition-delay:.08s}.rv-d2{transition-delay:.16s}.rv-d3{transition-delay:.24s}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+  .step.is-on::after{animation:none}
+  .step.is-on::after{width:100%}
+  .btn,.acard{transition:background .3s,color .3s}
+  .btn:hover,.acard:hover{transform:none}
+}
+
+/* responsive */
+@media (max-width:1100px){
+  .ind{grid-template-columns:1fr}
+  .ind__list{flex-direction:row;flex-wrap:wrap;gap:8px;border-top:0}
+  .ind__item{grid-template-columns:auto;border:0;padding:8px 12px;background:var(--surface);clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)}
+  .ind__item .n,.ind__item small,.ind__item.is-on::before{display:none}
+  .ind__item.is-on{background:var(--ink);color:#fff;padding-left:12px}
+  .ind__item.is-on b{color:#fff}
+  .plans{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .grid3,.trust{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .head{grid-template-columns:1fr;gap:8px}
+  .label{padding-top:0}
+  .foot{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .wrap{padding:0 16px}
+  .nav__links{display:none}
+  .nav__in{grid-template-columns:1fr auto;padding:0 16px;height:64px}
+  .hero__top{min-height:640px}
+  .hero__copy{top:136px}
+  .hero__actions .btn--gray{display:none}
+  .hero__anchor{top:72%;width:84px;height:84px}
+  .hero__app{margin-top:-13vh}
+  .appshot{aspect-ratio:4/5}
+  .promises{gap:10px 20px;font-size:12.5px}
+  .promises span:nth-child(n+4){display:none}
+  .ind__view{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr;gap:6px}
+  .flow > i{transform:rotate(90deg);justify-self:start;padding-left:4px}
+  .wall__tag{display:none}
+}
+@media (max-width:600px){
+  .grid3,.trust,.steps,.plans{grid-template-columns:1fr}
+  .acard{min-height:0}
+  .foot{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a class="brand" href="#top" aria-label="TITAN117 home">
+      <svg class="bot" data-bot="nav" aria-hidden="true"></svg>
+      TITAN117
+    </a>
+    <nav class="nav__links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#agents">Agents</a>
+      <a href="#industries">Industries</a>
+      <a href="#local">Security</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <a class="btn btn--ink" href="#pricing">Download</a>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ═══ hero: the agent terrain, kept from the old mockups ═══ -->
+<section class="hero" id="hero">
+  <div class="hero__top">
+  <canvas data-terrain aria-hidden="true"></canvas>
+  <div class="hero__copy">
+    <h1 data-quiet><span class="g">AI teammates that</span>give you your time back.</h1>
+    <p class="hero__sub" data-quiet>A desktop app for small companies. Titan and a team of specialist agents work on your own laptop, in parallel, around the clock. Nothing happens until you approve it.</p>
+    <div class="hero__actions" data-quiet>
+      <span class="cta"><a class="btn btn--ink btn--lg" href="#pricing"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1 2.6 6.6 1.8v5.4H1zm6.4-.9L15 .6v6.6H7.4zM1 8h5.6v5.4L1 12.6zm6.4 0H15v6.6l-7.6-1.1z"/></svg>Download for Windows</a></span>
+      <a class="btn btn--gray btn--lg" href="#how">See how it works</a>
+    </div>
+  </div>
+  <span class="hero__anchor" id="titan" aria-hidden="true"></span>
+  </div>
+  <div class="hero__app wrap">
+    <div class="appwrap">
+    <div class="appshot" role="img" aria-label="Preview of the TITAN117 desktop app (placeholder)"><span>Desktop app preview</span></div>
+    <!-- callouts (trial: remove from here to "end callouts" to revert) -->
+    <div class="callout callout--l callout--a"><small><i style="background:#c4f012;box-shadow:0 0 0 1px rgba(13,13,13,.15)"></i>01 · You ask</small><b>Titan reads the request and plans the work.</b></div>
+    <span class="cline cline--l cline--a" aria-hidden="true"></span>
+    <div class="callout callout--r callout--b"><small><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.2 6.5 11.2 12.5 5" fill="none" stroke="#2a9a30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>02 · You approve</small><b>Nothing runs until you say yes, here or on your phone.</b></div>
+    <span class="cline cline--r cline--b" aria-hidden="true"></span>
+    <div class="callout callout--l callout--c"><small>03 · The team works</small><b>Specialist agents work in parallel, on your laptop.</b>
+      <span class="dots" aria-hidden="true"><i style="background:#e0a100"></i><i style="background:#2f6fed"></i><i style="background:#8b5cf6"></i><i style="background:#e24b4a"></i><i style="background:#14a37f"></i><i style="background:#ec4899"></i></span></div>
+    <span class="cline cline--l cline--c" aria-hidden="true"></span>
+    <!-- end callouts -->
+    </div>
+  </div>
+  <div class="promises">
+    <span><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="9" rx="1"/><path d="M1.5 16h17"/></svg>Runs on your laptop</span>
+    <span><svg viewBox="0 0 20 20"><path d="M10 2 3.5 4.5v5c0 4 2.8 7 6.5 8.5 3.7-1.5 6.5-4.5 6.5-8.5v-5z"/><path d="m7 10 2 2 4-4"/></svg>Asks before every action</span>
+    <span><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="M12.5 7.2a3 3 0 1 0 0 5.6M6 9h5M6 11h5"/></svg>Cost shown before it runs</span>
+    <span><svg viewBox="0 0 20 20"><path d="M3 7.5a10 10 0 0 1 14 0M5.5 10.3a6.3 6.3 0 0 1 9 0M8.2 13a2.6 2.6 0 0 1 3.6 0"/><path d="M3 3l14 14"/></svg>Works offline for 14 days</span>
+    <span><svg viewBox="0 0 20 20"><rect x="2.5" y="3" width="15" height="11" rx="1.5"/><path d="M7 17h6M10 14v3"/></svg>Windows and macOS</span>
+  </div>
+</section>
+
+<!-- ═══ how it works: an LED wall ═══ -->
+<section class="wall" id="how">
+  <div class="wall__stage">
+    <canvas data-wall aria-hidden="true"></canvas>
+    <div class="wall__copy" data-wquiet>
+      <span class="label" data-scramble>01 · How it works</span>
+      <h2 class="h2"><span class="g">You ask. Titan plans.</span> Nothing runs until you say yes.</h2>
+      <p>Your laptop does the work. Your phone just approves it.</p>
+    </div>
+    <span class="wall__tag" data-tag="0">your laptop</span>
+    <span class="wall__tag" data-tag="1">titan</span>
+  </div>
+  <div class="wrap">
+    <div class="steps" id="steps">
+      <button class="step rv" data-step="0"><span class="step__n">01</span><h3>You ask</h3><p>Type a task in plain words, forward an email or drop in a folder. Titan plans it, picks the agent and shows the cost first.</p></button>
+      <button class="step rv rv-d1" data-step="1"><span class="step__n">02</span><h3>You approve</h3><p>Every file, command, website and email waits for a yes. From the app, the web app or Telegram.</p></button>
+      <button class="step rv rv-d2" data-step="2"><span class="step__n">03</span><h3>The team works</h3><p>Agents work in parallel on your laptop, hand work to each other and keep going while you are away.</p></button>
+      <button class="step rv rv-d3" data-step="3"><span class="step__n">04</span><h3>It lands on your disk</h3><p>Files, drafts, apps and reports, each with its sources, its cost and a version you can roll back.</p></button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ agents ═══ -->
+<section class="band band--dark agents" id="agents">
+  <canvas data-ascii aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="head rv">
+      <span class="label" data-scramble>02 · Agents</span>
+      <div>
+        <h2><span class="g">One assistant.</span> A team of specialists.</h2>
+        <p>Start with Titan and add a teammate when the work grows. They share one memory, one approval layer and one budget.</p>
+      </div>
+    </div>
+    <div class="grid3" id="agentGrid"></div>
+    <div class="agents__foot rv">
+      <span><b>Pick the model per agent.</b> Local models through llama.cpp, free and offline, or the strongest models through OpenRouter. Or bring your own keys.</span>
+      <a class="btn btn--white" href="#pricing">Compare plans</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ industries ═══ -->
+<section class="band" id="industries">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="label" data-scramble>03 · Industries</span>
+      <div>
+        <h2><span class="g">Built for the companies</span> that run on email, files and spreadsheets.</h2>
+      </div>
+    </div>
+    <div class="ind rv">
+      <div class="ind__list" id="indList" role="tablist" aria-label="Industries"></div>
+      <div class="ind__view">
+        <div class="ind__panel">
+          <canvas data-indled aria-hidden="true"></canvas>
+          <span class="corner" id="indCorner">01 / 08</span>
+          <span class="corner2" id="indName"></span>
+        </div>
+        <div class="ind__text fade-swap" id="indText" role="tabpanel"></div>
+        <div class="flow fade-swap" id="indFlow"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ local-first ═══ -->
+<section class="band band--bg" id="local">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="label" data-scramble>04 · Local-first</span>
+      <div>
+        <h2><span class="g">Your company stays</span> on your laptop.</h2>
+        <p>Agents, memory, documents and app data live on your machine. Data leaves only when you share something or send a task to a cloud model you picked.</p>
+      </div>
+    </div>
+    <div class="trust" id="trust"></div>
+  </div>
+</section>
+
+<!-- ═══ pricing ═══ -->
+<section class="band" id="pricing">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="label" data-scramble>05 · Pricing</span>
+      <div>
+        <h2><span class="g">Local models are free.</span> Cloud work is credits, with the cost shown first.</h2>
+        <p>1 credit is €0.01. Every task shows its estimate before it starts and can be capped.</p>
+      </div>
+    </div>
+    <div class="plans" id="plans"></div>
+    <p class="note">Prices before VAT. No free plan or trial. Monthly credits roll over for one month; top-ups last 12 months.</p>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="band band--bg">
+  <div class="wrap">
+    <div class="head rv">
+      <span class="label" data-scramble>06 · Questions</span>
+      <div class="faq" id="faq"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ closing band ═══ -->
+<section class="end">
+  <div class="end__stage">
+    <canvas data-endled aria-hidden="true"></canvas>
+    <div class="end__copy" data-equiet>
+      <h2 class="h2">Give Titan the first task.</h2>
+      <p>Install it, point it at a folder and ask. You approve every step.</p>
+      <span class="cta"><a class="btn btn--ink btn--lg" href="#pricing">Download for Windows</a></span>
+    </div>
+  </div>
+</section>
+<canvas class="fxfield" aria-hidden="true"></canvas>  <!-- hover fx (trial) -->
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a class="brand" href="#top"><svg class="bot" data-bot="foot" data-ink="#ffffff" aria-hidden="true"></svg>TITAN117</a>
+        <p style="margin-top:14px;max-width:300px">AI teammates for small companies, on your own laptop.</p>
+      </div>
+      <div><h4>Product</h4><a href="#how">How it works</a><a href="#agents">Agents</a><a href="#pricing">Pricing</a><a href="#local">Security</a></div>
+      <div><h4>Industries</h4><a href="#industries">Retail</a><a href="#industries">Restaurants</a><a href="#industries">Accounting</a><a href="#industries">Law firms</a></div>
+      <div><h4>Company</h4><a href="#top">About</a><a href="#top">Privacy</a><a href="#top">Terms</a><a href="#top">Contact</a></div>
+    </div>
+    <div class="foot__base"><span>© 2026 TITAN117 · mockup with fictional example data</span><span class="mono">Windows · macOS</span></div>
+  </div>
+</footer>
+
+<script src="assets/bot.js"></script>
+<script>
+/* ═════════ content (from mockup/src/content.py) ═════════ */
+var AGENTS = [
+  {id:'titan', name:'Titan', c:'#c4f012', title:'Plans the work. Nothing touches your files until you say yes.', b:['Approve each action, or set a rule once','Budgets cap what a task can spend','Web pages are read as data, never as instructions']},
+  {id:'folder', name:'Folder agent', c:'#e0a100', title:'Ask your documents. Get the answer and the page it came from.', b:['OCR for scanned paperwork','Spreadsheet maths done in code','Local-only folders never reach a cloud model']},
+  {id:'code', name:'Code builder', c:'#2f6fed', title:'Fixes the bug, runs the tests, opens the pull request.', b:['Plan and act modes','Diffs, tests and git in one place','Sub-agents for review']},
+  {id:'builder', name:'App builder', c:'#8b5cf6', title:'Describe the app. Watch it build, test and publish.', b:['Web, mobile (Expo) and desktop (Tauri)','Browser tests before every publish','Versions you can roll back']},
+  {id:'apps', name:'Sidebar apps', c:'#38c6ec', title:'Your CRM and your stock list, and Titan answers across both.', b:['One local database for every app','Ask across apps in plain language','Build new ones with the app builder']},
+  {id:'qa', name:'QA and SEO', c:'#e24b4a', title:'Tests your site like a customer, then fixes what it finds.', b:['Real-browser tests on every screen size','SEO, accessibility and speed audits','Fixes arrive as one reviewable change']},
+  {id:'auto', name:'Automation', c:'#14a37f', title:'Runs on a schedule and watches the web while you work.', b:['Schedules that catch up after sleep','Record a task once, replay it','Watchers for laws, prices and pages']},
+  {id:'marketing', name:'Marketing', c:'#ec4899', title:'Turns your website into a promo video and a month of posts.', b:['Videos rendered on your laptop','Posts in your brand voice','One calendar for every channel']},
+  {id:'remote', name:'Remote and channels', c:'#8e8ea0', title:'Start a task from your phone. Approve it from chat.', b:['Telegram and the web app','End-to-end encrypted commands','Approvals wherever you are']}
+];
+var AGENT_BY = {}; AGENTS.forEach(function(a){ AGENT_BY[a.id] = a; });
+var INDUSTRIES = [{"id":"retail","name":"Retail and e-commerce","d":"Orders, stock and customers in step.","h":"The shop, the stock and the customers, in step.","s":"Titan answers order emails, watches stock, writes product pages and plans your posts, on your own laptop and only with your approval.","flow":[["New order email","arrives in your inbox"],["Titan matches it","to stock in your inventory app"],["Stock updated","and a reorder drafted"]],"uses":[["Answer order and returns emails","titan"],["Reorder before you run out","auto"],["Write product pages that rank","qa"],["Turn new products into posts","marketing"]]},{"id":"hospitality","name":"Restaurants and cafés","d":"Suppliers, rotas, reviews and the menu.","h":"Less admin between services.","s":"Titan compares supplier prices, builds the rota, keeps your menu online and plans your posts, so the paperwork fits between lunch and dinner.","flow":[["Supplier price lists","from three suppliers"],["Titan compares them","price, delivery, minimums"],["Order email ready","for you to send"]],"uses":[["Compare suppliers and draft the order","titan"],["Build next week's rota","titan"],["Keep the menu and hours up to date","builder"],["Plan posts around specials and events","marketing"]]},{"id":"accounting","name":"Accounting and bookkeeping","d":"Client documents read and summed, with sources.","h":"Every number, with the page it came from.","s":"Titan reads client receipts and invoices, sums them in code and cites every figure, while client folders stay on your own machine.","flow":[["A folder of receipts","scans included"],["Folder agent reads them","and sums in code"],["Quarter summary","a source for every figure"]],"uses":[["Sort a client's receipts by quarter","folder"],["Sum VAT and expenses, with sources","folder"],["Hear when tax guidance changes","auto"],["Chase missing documents","titan"]]},{"id":"legal","name":"Law firms","d":"Search contracts privately, cite the clause.","h":"Search every contract. Cite the clause.","s":"Titan finds notice periods, renewal dates and obligations across your files and answers with the clause and the page, on a model that can run entirely on your laptop.","flow":[["A contracts folder","PDFs and Word files"],["Folder agent searches","on a local model"],["Answer with the clause","file and page linked"]],"uses":[["Find dates and obligations across contracts","folder"],["Keep client files on a local model","folder"],["Track legislation changes","auto"],["Draft standard letters from templates","titan"]]},{"id":"realestate","name":"Real estate agencies","d":"From new listing to booked viewing.","h":"From new listing to booked viewing.","s":"Titan writes listings from your notes, publishes them with a week of posts, answers buyer questions from the property documents and keeps buyers in a CRM.","flow":[["Notes and photos","from the viewing"],["Titan writes the listing","in your house style"],["Listing and posts","scheduled for the week"]],"uses":[["Write listings from notes and photos","titan"],["Publish listings with a week of posts","marketing"],["Answer buyer questions from the documents","folder"],["Match buyers to new listings","apps"]]},{"id":"agencies","name":"Agencies and studios","d":"Client sites, audits and campaigns.","h":"Ship client work while you are in meetings.","s":"Titan builds and tests client sites, runs SEO audits, makes promo videos and plans campaigns, with every change waiting for your approval.","flow":[["A client brief","and their brand kit"],["App builder and QA agent","build and test it"],["A tested site","ready to publish"]],"uses":[["Build and test client websites","builder"],["Turn audits into fixes","qa"],["Make promo videos from a client's site","marketing"],["Plan a month of campaigns","marketing"]]},{"id":"trades","name":"Trades and construction","d":"Quotes, schedules and paperwork.","h":"Quotes and paperwork, handled between jobs.","s":"Send job notes from your phone. Titan drafts the quote from your price list, keeps the schedule and tracks material costs, and you approve from wherever you are.","flow":[["Job notes","sent from your phone"],["Titan drafts the quote","from your price list"],["Quote ready","to approve and send"]],"uses":[["Draft quotes from job notes","titan"],["Keep the schedule and remind customers","auto"],["Track material costs per job","folder"],["Turn finished jobs into posts","marketing"]]},{"id":"wholesale","name":"Wholesale and manufacturing","d":"Orders, stock and suppliers in one place.","h":"Orders, stock and suppliers in one place.","s":"Titan reads purchase orders, keeps stock in step, watches supplier prices and replays the portal tasks nobody wants to do, all on your own laptop.","flow":[["A purchase order PDF","from a customer"],["Folder agent reads it","lines, quantities, dates"],["Order entered","and stock reserved"]],"uses":[["Enter purchase orders for you","folder"],["Watch supplier and competitor prices","auto"],["Answer across orders, stock and customers","apps"],["Replay portal tasks on a schedule","auto"]]}];
+var IND_ICON = {"retail":"<path d=\"M3 4h2l2.2 10.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2\"/><circle cx=\"9.5\" cy=\"19.5\" r=\"1.3\"/><circle cx=\"17\" cy=\"19.5\" r=\"1.3\"/>","hospitality":"<path d=\"M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9Z\"/><path d=\"M17 10h1.5a2.5 2.5 0 0 1 0 5H17\"/><path d=\"M8 3.5c0 1.2 1 1.5 1 2.8M12 3.5c0 1.2 1 1.5 1 2.8\"/>","accounting":"<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2.5\"/><path d=\"M8.5 7h7\"/><path d=\"M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15v2.5\"/>","legal":"<path d=\"M12 4v16M7 20h10M5 7h14\"/><path d=\"M7 7l-3 6a3 3 0 0 0 6 0L7 7ZM17 7l-3 6a3 3 0 0 0 6 0l-3-6Z\"/>","realestate":"<path d=\"M4 11 12 4l8 7\"/><path d=\"M6 9.5V20h12V9.5\"/><path d=\"M10 20v-5h4v5\"/>","agencies":"<path d=\"M4 14V10l11-5v14L4 14Z\"/><path d=\"M15 9.5a3 3 0 0 1 0 5\"/><path d=\"M7 15l1 4.5h3l-1-4\"/>","trades":"<path d=\"M14.5 6.5a4 4 0 0 0-5.3 5.2L4 17l3 3 5.3-5.2a4 4 0 0 0 5.2-5.3l-2.4 2.4-2.6-.6-.6-2.6 2.6-2.2Z\"/>","wholesale":"<path d=\"M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3Z\"/><path d=\"M4 7.5 12 12l8-4.5M12 12v9\"/>"};
+var TRUST = [
+  ['Data stays on your laptop','Agents, memory, documents and app data live on your machine. Mark a folder local-only and it never reaches a cloud model.',' ┌──────┐\n │ ▓▓▓▓ │\n └──┬┬──┘\n ═══╧╧═══'],
+  ['One approval layer','Every file, shell command, website and email goes through it. Approve once, or set a rule for what is always fine.','   ╱╲\n  ╱ ✓╲\n ╱____╲\n  ║  ║'],
+  ['The cost before it runs','Every task shows its estimate first, and a budget caps what it can spend. Local models cost nothing.',' € 0.40\n ▕████▏░░\n est.  cap'],
+  ['Works offline for 14 days','With a signed licence, local work keeps running without a connection. Anything that needs the internet waits in a queue.',' ((·))\n   ╳\n ▔▔▔▔▔▔'],
+  ['Your models, your keys','llama.cpp built in, or OpenRouter, Anthropic, OpenAI and Google keys. Switch per agent or per step.',' [llm]─┐\n [api]─┼─▶\n [key]─┘'],
+  ['Approve from your phone','The web app and Telegram talk to the engine on your laptop with end-to-end encryption.',' ┌──┐\n │✓ │ ⇄ ▓\n └──┘']
+];
+var PLANS = [
+  {n:'Starter', m:15, cr:'700', dev:2, sup:'Email support', blurb:'The way in.'},
+  {n:'Pro', m:25, cr:'1,500', dev:3, sup:'Email support', blurb:'One person running a company.', pop:true},
+  {n:'Max', m:50, cr:'3,500', dev:5, sup:'Priority support', blurb:'Heavy daily use of cloud models.'},
+  {n:'Custom', m:null, blurb:'Teams and agencies.'}
+];
+var FAQ = [
+  ['What is TITAN117?','A desktop app for small companies: Titan, a general assistant, plus specialist agents for code, apps, documents, testing, marketing and automation. It runs on your own laptop.'],
+  ['Does my company data leave my laptop?','Agents, memory, documents and app data live on your machine. Data leaves only when you share something or send a task to a cloud model you picked.'],
+  ['Which models can I use?','Local models through the built-in llama.cpp, free and offline, or the strongest models through OpenRouter with our credits. You can also use your own OpenRouter, Anthropic, OpenAI or Google keys.'],
+  ['Does it work offline?','Yes. With a signed licence, local work keeps running for 14 days without a connection, and anything that needs the internet waits in a queue.'],
+  ['Which computers does it run on?','Windows and macOS.']
+];
+
+/* ═════════ helpers ═════════ */
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(s, r){ return (r || document).querySelector(s); }
+function $$(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+function fit(cv, host){
+  var r = host.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.max(1, Math.round(r.width*dpr)); cv.height = Math.max(1, Math.round(r.height*dpr));
+  return {W:r.width, H:r.height, dpr:dpr, r:r};
+}
+function onResize(fn, host){
+  var t = 0, go = function(){ clearTimeout(t); t = setTimeout(fn, 140); };
+  addEventListener('resize', go);
+  if(window.ResizeObserver && host) new ResizeObserver(go).observe(host);
+}
+function visible(el, fn){
+  if(!('IntersectionObserver' in window)){ fn(true); return; }
+  new IntersectionObserver(function(e){ fn(e[0].isIntersecting); }, {rootMargin:'120px'}).observe(el);
+}
+function hash(a, b){ var x = Math.sin(a*127.1 + b*311.7)*43758.5453; return x - Math.floor(x); }
+function smooth(a, b, x){ x = Math.min(1, Math.max(0, (x - a)/(b - a))); return x*x*(3 - 2*x); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* ═════════ LED wall ═════════
+   A scene drawn in code into a tiny offscreen "field" (one pixel per dot), then read back and shown as
+   scanline rows of dots in five sizes. A pose change dissolves dot by dot in a scattered, row-streaked
+   order, with a flickering front; now and then a row slips sideways for a beat. With two groups the
+   left and right halves change pose on their own. */
+function led(o){
+  var cv = o.canvas, host = o.host || cv.parentNode, ctx = cv.getContext('2d');
+  var fA = document.createElement('canvas'), fB = document.createElement('canvas');
+  var xA = fA.getContext('2d', {willReadFrequently:true}), xB = fB.getContext('2d', {willReadFrequently:true});
+  var G = o.groups || 1, DUR = o.dur || 1.6, ink = o.ink || '#0d0d0d';
+  /* look: rowGap (row spacing in dot pitches; 2.05 reads as scanlines, ~1.2 as a fine halftone), levels (dot
+     sizes), minDot (smallest dot, share of the full radius), tone (field darkness 0..1 to dot level 0..1),
+     shimmer (per-dot flicker), glitch (share of rows that slip each tick), slip (how far, in dots), grid (colour of the unlit LEDs) */
+  var RG = o.rowGap || 2.05, NL = o.levels || 4, MIN = o.minDot || .38, SHIM = o.shimmer == null ? .14 : o.shimmer, GLI = o.glitch == null ? .035 : o.glitch;
+  var tone = o.tone || function(d){ return (d - .16)/.42; };
+  var st = [], W, H, dpr, step, rs, cols, rows, R, seed, mask, grid = null, vis = true, t0 = performance.now(), api = {};
+  for(var g=0; g<G; g++) st.push({cur:o.start ? o.start[g] : 0, next:o.start ? o.start[g] : 0, s:0});
+  function size(){
+    var f = fit(cv, host); W = f.W; H = f.H; dpr = f.dpr;
+    step = o.pitch ? o.pitch(W, H) : Math.max(5, W/205); rs = step*RG;
+    cols = Math.ceil(W/step); rows = Math.ceil(H/rs);
+    fA.width = fB.width = cols; fA.height = fB.height = rows; R = step*.46;
+    seed = new Float32Array(cols*rows); mask = new Float32Array(cols*rows);
+    /* quiet zones: dots fade out around the copy so they never cross it */
+    var boxes = (o.quiet || []).map(function(el){ var c = el.getBoundingClientRect(); return {x0:c.left - f.r.left, x1:c.right - f.r.left, y0:c.top - f.r.top, y1:c.bottom - f.r.top}; });
+    var feather = o.feather || 70, pad = o.pad == null ? 18 : o.pad;
+    for(var j=0; j<rows; j++) for(var i=0; i<cols; i++){
+      var k = j*cols + i, x = (i + .5)*step, y = (j + .5)*rs, q = 1;
+      seed[k] = .55*hash(i, j) + .45*hash(j*3.1, 7.7);
+      for(var b=0; b<boxes.length; b++){
+        var r = boxes[b], dx = Math.max(r.x0 - x, 0, x - r.x1), dy = Math.max(r.y0 - y, 0, y - r.y1);
+        q = Math.min(q, smooth(pad, pad + feather, Math.sqrt(dx*dx + dy*dy)));
+      }
+      if(o.mask) q *= o.mask(x/W, y/H, W, H);
+      mask[k] = q;
+    }
+    /* the unlit LEDs, drawn once per size: a pinpoint on every other cell, faded with the quiet zones */
+    if(o.grid){
+      grid = document.createElement('canvas'); grid.width = cv.width; grid.height = cv.height;
+      var gx = grid.getContext('2d'); gx.setTransform(dpr, 0, 0, dpr, 0, 0); gx.fillStyle = o.grid;
+      for(var j=0; j<rows; j+=2) for(var i=(j/2) % 2; i<cols; i+=2){
+        var q = mask[j*cols + i]; if(q < .05) continue;
+        gx.globalAlpha = q; gx.beginPath(); gx.arc((i + .5)*step, (j + .5)*rs, R*.3, 0, 6.2832); gx.fill();
+      }
+    }
+  }
+  api.go = function(g, p){
+    var s = st[g]; if(p === s.next) return;
+    if(s.cur !== s.next) s.cur = s.next;
+    s.next = p; s.s = performance.now();
+  };
+  api.time = function(sec){ t0 = performance.now() - sec*1000; };
+  api.pose = function(g){ return st[g].next; };
+  function paint(x, poses, t){
+    x.setTransform(1,0,0,1,0,0); x.fillStyle = '#fff'; x.fillRect(0, 0, cols, rows);
+    x.setTransform(cols/W, 0, 0, rows/H, 0, 0);
+    o.draw(x, W, H, t, poses);
+  }
+  /* hover fx (trial): o.hover is the halo radius in px; hp eases toward the pointer, hk fades in and out */
+  var HR = o.hover || 0, hp = {x:0, y:0}, hptr = null, hk = 0;
+  if(HR && !reduce){
+    host.addEventListener('pointermove', function(e){ var r = host.getBoundingClientRect(); hptr = {x:e.clientX - r.left, y:e.clientY - r.top}; if(hk < .01){ hp.x = hptr.x; hp.y = hptr.y; } });
+    host.addEventListener('pointerleave', function(){ hptr = null; });
+  }
+  function frame(now){
+    var t = reduce ? (o.still || 0) : (now - t0)/1000;
+    if(HR){ hk += ((hptr ? 1 : 0) - hk)*.08; if(hptr){ hp.x += (hptr.x - hp.x)*.18; hp.y += (hptr.y - hp.y)*.18; } }
+    if(o.script) o.script(t, api.go);
+    var ms = [], any = false;
+    for(var g=0; g<G; g++){
+      var s = st[g];
+      if(s.cur === s.next || reduce){ s.cur = s.next; ms[g] = 0; continue; }
+      var m = smooth(0, DUR, (now - s.s)/1000);
+      if(m >= 1){ s.cur = s.next; ms[g] = 0; } else { ms[g] = m; any = true; }
+    }
+    paint(xA, st.map(function(s){ return s.cur; }), t);
+    var dA = xA.getImageData(0, 0, cols, rows).data, dB = dA;
+    if(any){ paint(xB, st.map(function(s){ return s.next; }), t); dB = xB.getImageData(0, 0, cols, rows).data; }
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, cv.width, cv.height);
+    if(grid) ctx.drawImage(grid, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var P = [null], tick = Math.floor(t*7), half = cols/2, slip = o.slip || 8;
+    for(var l=1; l<=NL; l++) P.push(new Path2D());
+    for(var j=0; j<rows; j++){
+      var sh = (!reduce && hash(j, tick) > 1 - GLI) ? Math.round((hash(tick, j) - .5)*slip) : 0, y = (j + .5)*rs;
+      for(var i=0; i<cols; i++){
+        var k = j*cols + i, q = mask[k]; if(q < .01) continue;
+        var m = ms[G > 1 && i >= half ? 1 : 0], sd = seed[k];
+        var si = Math.min(cols - 1, Math.max(0, i - sh)), d = (m > 0 && sd < m) ? dB : dA;
+        var v = tone(1 - d[(j*cols + si)*4]/255), hv = 0;
+        /* hover fx: the LEDs under the cursor light up in a soft halo, and lit shapes grow bolder there */
+        if(hk > .01){ var hx = (i + .5)*step - hp.x, hy = y - hp.y, h2 = hx*hx + hy*hy; if(h2 < HR*HR*5) hv = hk*Math.exp(-h2/(HR*HR)); }
+        if(hv > .02) v = Math.max(v, 0) + hv*.4;
+        if(v <= 0) continue; if(v > 1) v = 1;
+        if(m > .001 && m < .999){ var e = Math.abs(sd - m); if(e < .12){ v *= e/.12; if(hash(i + tick, j) <= .4) v *= .3; } }
+        if(!reduce && SHIM) v *= 1 - SHIM + SHIM*Math.sin(t*3.2 + sd*40);
+        v *= q;
+        var L = Math.min(NL, Math.floor(v*NL + .52));
+        if(L < 1) continue;
+        var r = R*Math.max(MIN, L/NL), x = (i + .5)*step;
+        P[L].moveTo(x + r, y); P[L].arc(x, y, r, 0, 6.2832);
+      }
+    }
+    ctx.fillStyle = ink;
+    for(var l=1; l<=NL; l++) ctx.fill(P[l]);
+    if(o.after) o.after(t);
+  }
+  function loop(now){ requestAnimationFrame(loop); if(vis) frame(now); }
+  size();
+  visible(host, function(on){ vis = on; });
+  onResize(function(){ size(); if(reduce) frame(performance.now()); }, host);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ size(); if(reduce) frame(performance.now()); });
+  if(reduce){ frame(performance.now()); api.go = function(g, p){ st[g].cur = st[g].next = p; frame(performance.now()); }; }
+  else requestAnimationFrame(loop);
+  return api;
+}
+
+/* high definition for every LED scene (1 Nov 2026): a fine, near-square halftone in six dot sizes over a faint
+   grid of unlit LEDs, with a calm shimmer and rare, short row slips, so shapes read as drawings, not scanlines */
+var HD = {rowGap:1.2, levels:6, minDot:.3, tone:function(d){ return (d - .04)/.78; }, shimmer:.04, glitch:.012, slip:6, grid:'#d9d9d5'};
+
+/* shapes for the LED scenes, each centred on 0,0 with size S (about its height). Greys become dot
+   sizes: near-black is the biggest dot, light grey a pinpoint, white nothing. */
+function rr(x, X, Y, w, h, r){ x.beginPath(); if(x.roundRect) x.roundRect(X, Y, w, h, r); else x.rect(X, Y, w, h); }
+function lin(x, x0, y0, x1, y1, a, b){ var g = x.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, a); g.addColorStop(1, b); return g; }
+var SHAPE = {
+  laptop: function(x, S, t){
+    rr(x, -.66*S, -.52*S, 1.32*S, .82*S, .05*S); x.fillStyle = '#1a1a1a'; x.fill();
+    rr(x, -.6*S, -.46*S, 1.2*S, .7*S, .02*S); x.fillStyle = lin(x, -.6*S, -.46*S, .6*S, .24*S, '#8a8a8a', '#d2d2d2'); x.fill();
+    x.fillStyle = '#5c5c5c'; x.fillRect(-.6*S, -.46*S, .26*S, .7*S);
+    x.fillStyle = '#2a2a2a'; for(var k=0; k<4; k++) x.fillRect(-.55*S, (-.38 + k*.09)*S, (.15 - (k % 2)*.04)*S, .035*S);
+    /* a chat on the screen: your message right, Titan's plan left, a line typing in */
+    x.fillStyle = '#262626'; rr(x, .02*S, -.36*S, .48*S, .1*S, .02*S); x.fill();
+    x.fillStyle = '#3a3a3a'; rr(x, -.26*S, -.18*S, .56*S, .2*S, .02*S); x.fill();
+    x.fillStyle = '#9c9c9c'; for(var k=0; k<3; k++) x.fillRect(-.22*S, (-.14 + k*.055)*S, (.42 - k*.08)*S, .025*S);
+    var ty = (t*.5) % 1; x.fillStyle = '#1e1e1e'; x.fillRect(-.26*S, .1*S, (.12 + .5*ty)*S, .06*S);
+    x.beginPath(); x.moveTo(-.76*S, .38*S); x.lineTo(.76*S, .38*S); x.lineTo(.68*S, .3*S); x.lineTo(-.68*S, .3*S); x.closePath();
+    x.fillStyle = lin(x, 0, .3*S, 0, .38*S, '#3a3a3a', '#8a8a8a'); x.fill();
+  },
+  phone: function(x, S, t){
+    rr(x, -.3*S, -.56*S, .6*S, 1.12*S, .09*S); x.fillStyle = '#1a1a1a'; x.fill();
+    rr(x, -.26*S, -.51*S, .52*S, 1.02*S, .06*S); x.fillStyle = lin(x, 0, -.51*S, 0, .51*S, '#9a9a9a', '#d8d8d8'); x.fill();
+    rr(x, -.22*S, -.36*S, .44*S, .34*S, .03*S); x.fillStyle = '#f2f2f2'; x.fill();
+    x.fillStyle = '#2a2a2a'; x.fillRect(-.18*S, -.31*S, .2*S, .04*S);
+    x.fillStyle = '#6a6a6a'; for(var k=0; k<3; k++) x.fillRect(-.18*S, (-.23 + k*.055)*S, (.34 - k*.07)*S, .025*S);
+    var p = .5 + .5*Math.sin(t*2.4);
+    rr(x, -.22*S, .2*S, .44*S, .14*S, .03*S); x.fillStyle = p > .5 ? '#0e0e0e' : '#262626'; x.fill();
+    x.strokeStyle = '#fff'; x.lineWidth = .025*S; x.lineCap = 'round'; x.lineJoin = 'round';
+    x.beginPath(); x.moveTo(-.05*S, .27*S); x.lineTo(-.01*S, .305*S); x.lineTo(.07*S, .235*S); x.stroke();
+    rr(x, -.22*S, .04*S, .44*S, .12*S, .03*S); x.fillStyle = '#b4b4b4'; x.fill();
+  },
+  /* Titan's two angry eyes (the logo's blades), no frame; they blink now and then */
+  titan: function(x, S, t){
+    var u = S/22, blink = Math.max(.12, 1 - Math.max(0, Math.sin(t*1.3) - .985)*60);
+    x.save(); x.scale(u, u*blink);
+    x.fillStyle = lin(x, 0, -4, 0, 3, '#3a3a3a', '#0e0e0e'); x.strokeStyle = '#0e0e0e'; x.lineWidth = 1.1; x.lineJoin = 'round';
+    [[1, 8], [-1, -8]].forEach(function(e){
+      x.save(); x.translate(-6.3*e[0], 0); x.rotate(e[1]*Math.PI/180); x.translate(6.3*e[0], 0);
+      x.beginPath(); x.moveTo(-10.6*e[0], -3.6); x.lineTo(-2*e[0], .3); x.lineTo(-2*e[0], 3); x.lineTo(-10.6*e[0], 3); x.closePath();
+      x.fill(); x.stroke(); x.restore();
+    });
+    x.restore();
+  },
+  folder: function(x, S, t){
+    x.beginPath(); x.moveTo(-.6*S, -.36*S); x.lineTo(-.22*S, -.36*S); x.lineTo(-.14*S, -.28*S); x.lineTo(.6*S, -.28*S); x.lineTo(.6*S, .42*S); x.lineTo(-.6*S, .42*S); x.closePath();
+    x.fillStyle = '#2c2c2c'; x.fill();
+    var lift = .04*Math.sin(t*1.2);
+    rr(x, -.44*S, (-.5 + lift)*S, .88*S, .7*S, .02*S); x.fillStyle = '#f0f0f0'; x.fill();
+    x.fillStyle = '#2a2a2a'; x.fillRect(-.36*S, (-.42 + lift)*S, .3*S, .045*S);
+    x.fillStyle = '#7a7a7a'; for(var k=0; k<4; k++) x.fillRect(-.36*S, (-.32 + k*.065 + lift)*S, (.66 - (k % 3)*.12)*S, .025*S);
+    x.beginPath(); x.moveTo(-.6*S, -.12*S); x.lineTo(.6*S, -.12*S); x.lineTo(.6*S, .42*S); x.lineTo(-.6*S, .42*S); x.closePath();
+    x.fillStyle = lin(x, 0, -.12*S, 0, .42*S, '#5a5a5a', '#9e9e9e'); x.fill();
+    x.beginPath(); x.arc(.42*S, .3*S, .17*S, 0, 6.2832); x.fillStyle = '#0e0e0e'; x.fill();
+    x.strokeStyle = '#fff'; x.lineWidth = .04*S; x.lineCap = 'round'; x.lineJoin = 'round';
+    x.beginPath(); x.moveTo(.35*S, .3*S); x.lineTo(.4*S, .35*S); x.lineTo(.5*S, .24*S); x.stroke();
+  }
+};
+
+/* ═════════ how it works: you and Titan, reaching for each other ═════════
+   A 20 s loop in four beats: you ask (laptop, Titan), you approve (phone, Titan), the team works
+   (phone, the folder of finished work), it lands on your disk (laptop, folder). Each side drifts,
+   breathes and rolls in counter-phase; a row of pulses runs between them. */
+(function(){
+  var cv = $('[data-wall]'); if(!cv) return;
+  var LOOP = 20, BEATS = [0, 4, 9, 14], stepsEl = $$('#steps .step'), tags = $$('.wall__tag'), lastBeat = -1, wall;
+  var L = ['laptop', 'phone'], Rr = ['titan', 'folder'], TAGL = ['your laptop', 'your phone'], TAGR = ['titan', 'the work, done'];
+  var geo = {};
+  function place(W, H){
+    var port = H > W*1.1, S = port ? Math.min(W*.34, H*.2) : Math.min(H*.4, W*.21);
+    geo = {S:S, cy:port ? H*.66 : H*.65, lx:W*(port ? .27 : .26), rx:W*(port ? .73 : .74)};
+  }
+  function side(x, W, H, t, which, pose, left){
+    var a = 2*Math.PI*t/LOOP, ph = left ? 0 : Math.PI;
+    var reach = (.012*Math.sin(a + ph) + .005*Math.sin(2*a + 1.3 + ph))*W, sc = 1 + .05*Math.sin(a + .9 + ph), rot = (left ? 1 : -1)*.05*Math.sin(a + 2.1 + ph);
+    x.save(); x.translate((left ? geo.lx + reach : geo.rx - reach), geo.cy + 6*Math.sin(t*.8 + ph)); x.rotate(rot); x.scale(sc, sc);
+    SHAPE[which[pose]](x, geo.S, t); x.restore();
+  }
+  wall = led(Object.assign({canvas:cv, groups:2, quiet:[$('[data-wquiet]')], feather:80, still:2, hover:110,
+    pitch:function(W){ return Math.max(3, W/430); },
+    draw:function(x, W, H, t, poses){
+      place(W, H);
+      /* the link between them: a dotted wire with a few heavier pulses travelling both ways, each with a short tail */
+      var x0 = geo.lx + geo.S*.85, x1 = geo.rx - geo.S*.85, y = geo.cy;
+      x.fillStyle = '#bdbdbd';
+      for(var u=0; u<=1; u+=.025){ x.beginPath(); x.arc(x0 + (x1 - x0)*u, y, 2.6, 0, 6.2832); x.fill(); }
+      for(var k=0; k<3; k++){
+        var p = (t*.22 + k/3) % 1, q = 1 - ((t*.17 + k/3 + .15) % 1);
+        for(var s=0; s<5; s++){
+          x.fillStyle = s ? 'rgba(26,26,26,' + (.5 - s*.09) + ')' : '#1a1a1a';
+          x.beginPath(); x.arc(x0 + (x1 - x0)*p - s*7, y, 6 - s*.7, 0, 6.2832); x.fill();
+          x.fillStyle = s ? 'rgba(90,90,90,' + (.45 - s*.08) + ')' : '#5a5a5a';
+          x.beginPath(); x.arc(x0 + (x1 - x0)*q + s*7, y, 5 - s*.6, 0, 6.2832); x.fill();
+        }
+      }
+      side(x, W, H, t, L, poses[0], true);
+      side(x, W, H, t, Rr, poses[1], false);
+    },
+    script:function(t, go){
+      var u = t % LOOP;
+      go(0, (u >= 4 && u < 14) ? 1 : 0);
+      go(1, (u >= 9 && u < 18.2) ? 1 : 0);
+      var b = u >= 14 ? 3 : u >= 9 ? 2 : u >= 4 ? 1 : 0;
+      if(b !== lastBeat){
+        lastBeat = b;
+        stepsEl.forEach(function(s, i){
+          s.classList.remove('is-on'); void s.offsetWidth;
+          if(i === b){ s.style.setProperty('--d', ((BEATS[i + 1] || LOOP) - BEATS[i]) + 's'); s.classList.add('is-on'); }
+        });
+      }
+    },
+    after:function(){
+      if(!geo.S) return;
+      var l = tags[0], r = tags[1], top = geo.cy + geo.S*.72;
+      l.textContent = TAGL[wall ? wall.pose(0) : 0]; r.textContent = TAGR[wall ? wall.pose(1) : 0];
+      l.style.left = geo.lx + 'px'; r.style.left = geo.rx + 'px'; l.style.top = r.style.top = top + 'px';
+    }
+  }, HD, {grid:null}));  /* no unlit-LED grid behind this scene */
+  stepsEl.forEach(function(s, i){
+    s.addEventListener('click', function(){
+      wall.time(BEATS[i] + .01);
+      if(reduce){ wall.go(0, i === 1 || i === 2 ? 1 : 0); wall.go(1, i >= 2 ? 1 : 0); stepsEl.forEach(function(e, k){ e.classList.toggle('is-on', k === i); }); }
+    });
+  });
+  if(reduce) stepsEl[0].classList.add('is-on');
+})();
+
+/* ═════════ industries: one LED panel per industry icon ═════════ */
+function iconPath(svg){
+  var p = new Path2D(), m;
+  var re = /<(path|circle|rect)([^>]*)\/>/g;
+  function at(s, n){ var r = new RegExp(n + '="([^"]*)"').exec(s); return r ? r[1] : null; }
+  while((m = re.exec(svg))){
+    if(m[1] === 'path') p.addPath(new Path2D(at(m[2], 'd')));
+    else if(m[1] === 'circle'){ var cx = +at(m[2], 'cx'), cy = +at(m[2], 'cy'), r = +at(m[2], 'r'); p.moveTo(cx + r, cy); p.arc(cx, cy, r, 0, 6.2832); }
+    else { var X = +at(m[2], 'x'), Y = +at(m[2], 'y'), w = +at(m[2], 'width'), h = +at(m[2], 'height'), rx = +(at(m[2], 'rx') || 0); if(p.roundRect) p.roundRect(X, Y, w, h, rx); else p.rect(X, Y, w, h); }
+  }
+  return p;
+}
+(function(){
+  var list = $('#indList'), text = $('#indText'), flow = $('#indFlow'); if(!list) return;
+  var icons = INDUSTRIES.map(function(d){ return iconPath(IND_ICON[d.id]); }), cur = 0, auto = true, timer = 0, panel;
+  list.innerHTML = INDUSTRIES.map(function(d, i){
+    return '<button class="ind__item" role="tab" data-i="' + i + '"><span class="n">' + String(i + 1).padStart(2, '0') + '</span><b>' + esc(d.name) + '</b><small>' + esc(d.d) + '</small></button>';
+  }).join('');
+  function render(i){
+    var d = INDUSTRIES[i];
+    text.innerHTML = '<h3>' + esc(d.h) + '</h3><p>' + esc(d.s) + '</p><ul class="uses">' + d.uses.map(function(u){
+      var a = AGENT_BY[u[1]] || AGENT_BY.titan; return '<li><span>' + esc(u[0]) + '</span><span><i style="--c:' + a.c + '"></i>' + esc(a.name) + '</span></li>';
+    }).join('') + '</ul>';
+    flow.innerHTML = d.flow.map(function(f){ return '<div><b>' + esc(f[0]) + '</b><span>' + esc(f[1]) + '</span></div>'; }).join('<i>──▶</i>');
+    $('#indCorner').textContent = String(i + 1).padStart(2, '0') + ' / ' + String(INDUSTRIES.length).padStart(2, '0');
+    $('#indName').textContent = d.id;
+  }
+  function select(i, user){
+    if(user) auto = false;
+    cur = i;
+    $$('.ind__item', list).forEach(function(b, k){ b.classList.toggle('is-on', k === i); b.setAttribute('aria-selected', k === i); });
+    if(panel) panel.go(0, i);
+    [text, flow].forEach(function(el){ el.classList.add('is-out'); });
+    setTimeout(function(){ render(i); [text, flow].forEach(function(el){ el.classList.remove('is-out'); }); }, reduce ? 0 : 260);
+  }
+  list.addEventListener('click', function(e){ var b = e.target.closest('.ind__item'); if(b) select(+b.dataset.i, true); });
+  panel = led(Object.assign({canvas:$('[data-indled]'), dur:1.3, still:1,
+    pitch:function(W){ return Math.max(3, W/210); },
+    draw:function(x, W, H, t, poses){
+      var m = Math.min(W, H);
+      /* a halo of pinpoints and one ring, then the icon in heavy strokes */
+      var g = x.createRadialGradient(W/2, H/2, 0, W/2, H/2, m*.48); g.addColorStop(0, '#a6a6a6'); g.addColorStop(.75, '#cfcfcf'); g.addColorStop(1, '#fff');
+      x.fillStyle = g; x.fillRect(0, 0, W, H);
+      x.strokeStyle = '#8a8a8a'; x.lineWidth = m*.012; x.beginPath(); x.arc(W/2, H/2, m*(.43 + .01*Math.sin(t*.9)), 0, 6.2832); x.stroke();
+      var S = m*.56/24*(1 + .03*Math.sin(t*.8));
+      x.save(); x.translate(W/2, H/2); x.rotate(.05*Math.sin(t*.45)); x.scale(S, S); x.translate(-12, -12);
+      x.strokeStyle = '#0e0e0e'; x.lineWidth = 1.9; x.lineCap = 'round'; x.lineJoin = 'round';
+      x.stroke(icons[poses[0]]); x.restore();
+    }
+  }, HD));
+  select(0);
+  visible(list, function(on){
+    clearInterval(timer);
+    if(on && !reduce) timer = setInterval(function(){ if(auto) select((cur + 1) % INDUSTRIES.length); }, 6500);
+  });
+})();
+
+/* ═════════ closing band: the wordmark on the LED wall, turning into Titan and back ═════════ */
+(function(){
+  var cv = $('[data-endled]'); if(!cv) return;
+  led(Object.assign({canvas:cv, quiet:[$('[data-equiet]')], feather:60, still:1,
+    pitch:function(W){ return Math.max(2.6, W/340); },
+    draw:function(x, W, H, t, poses){
+      var cy = H*.36;
+      if(poses[0] === 0){
+        var fs = Math.min(H*.36, W*.15);
+        x.font = '600 ' + fs + 'px Unbounded, system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+        var w = x.measureText('TITAN117').width; if(w > W*.88){ fs *= W*.88/w; x.font = '600 ' + fs + 'px Unbounded, system-ui, sans-serif'; }
+        x.fillStyle = lin(x, 0, cy - fs/2, 0, cy + fs/2, '#0e0e0e', '#5a5a5a');
+        x.fillText('TITAN117', W/2 + 4*Math.sin(t*.6), cy);
+      } else {
+        x.save(); x.translate(W/2, cy); SHAPE.titan(x, Math.min(H*.5, W*.3), t); x.restore();
+      }
+    },
+    script:function(t, go){ go(0, Math.floor(t/6) % 2); }
+  }, HD));
+})();
+
+/* ═════════ hero: the agent terrain (kept from the old mockups) ═════════
+   A wireframe landscape in perspective with one peak per specialist agent, each a cloud of particles
+   in the agent's colour under a label, and a line from every summit into the valley under Titan, with
+   pulses both ways. In the valley the agents' work gathers: a dense cloud spiralling slowly inward.
+   The cursor lights the nearest agent; clicking Titan sends a pulse out along every line. */
+function terrain(o){
+  var cv = o.canvas, host = o.host, anchor = o.anchor; if(!cv || !host) return;
+  var ctx = cv.getContext('2d');
+  var AG = AGENTS.filter(function(a){ return a.id !== 'titan'; });
+  var SPOT = [[-13,6,7,2.4],[-7,13,8.4,2.6],[5,14,9,2.8],[12,7,6.8,2.4],[-20,1,5.4,2.2],[16,-1,5.6,2.2],[-8.5,-3.5,4,1.8],[7.5,-4,3.6,1.7],[-1,21,7.4,3]];
+  var P = AG.slice(0, SPOT.length).map(function(a, i){
+    var c = a.c, rgb = [parseInt(c.slice(1,3),16), parseInt(c.slice(3,5),16), parseInt(c.slice(5,7),16)];
+    return {name:a.name, rgb:rgb, x:SPOT[i][0], z:SPOT[i][1], h:SPOT[i][2], s:SPOT[i][3], hb:SPOT[i][2], f:0, sx:0, sy:0};
+  });
+  var GREEN = [128,184,0], CORE = [104,160,0], VALLEY = [20,20,20], GRID = '20,20,20', INK = '20,20,20';
+  var W, H, dpr, F, CAM = 9, ZV = 10, Z0 = 14, cx, hy, quiet = [], dots = [], crowd = [], ptr = null, theta = 0, tilt = 0, surge = -1e9, t0 = performance.now(), vis = true;
+  function rnd(seed){ var x = Math.sin(seed*127.1)*43758.5453; return x - Math.floor(x); }
+  function height(x, z){
+    var y = -0.8*Math.exp(-(x*x + z*z)/(2*2.2*2.2));
+    for(var i=0; i<P.length; i++){ var p = P[i], dx = x - p.x, dz = z - p.z; y += p.h*Math.exp(-(dx*dx + dz*dz)/(2*p.s*p.s)); }
+    return y;
+  }
+  var out = {x:0, y:0, d:0, g:0};
+  /* ── hover fx (trial, 1 Nov 2026: delete each "hover fx" block to revert) ──
+     lens: the land bulges away from the cursor and lights up under it; ripples: a click sends a ring
+     through the land; motes: faint particles drift in the empty sky and reach for the cursor */
+  var FX = !reduce, lens = 0, lp = {x:-1e4, y:-1e4}, ripples = [], motes = [], LR = 150;
+  function warp(){
+    out.g = 0;
+    if(lens > .01){
+      var dx = out.x - lp.x, dy = out.y - lp.y, d2 = dx*dx + dy*dy;
+      if(d2 < LR*LR*6){ var d = Math.sqrt(d2) || 1, e = Math.exp(-d2/(LR*LR)); out.g = lens*e; out.x += dx/d*lens*40*e; out.y += dy/d*lens*40*e; }
+    }
+    for(var i=0; i<ripples.length; i++){
+      var rp = ripples[i], dx = out.x - rp.x, dy = out.y - rp.y, d = Math.sqrt(dx*dx + dy*dy) || 1, w = (d - rp.r)/34, e = Math.exp(-w*w)*rp.k;
+      if(e > .01){ out.y -= 9*e; out.g = Math.max(out.g, e*.8); }
+    }
+  }
+  /* ── end hover fx ── */
+  function proj(x, y, z){
+    var c = Math.cos(theta), s = Math.sin(theta), xr = x*c - z*s, zr = x*s + z*c, d = zr + ZV + Z0;
+    if(d < 1.2) return false;
+    out.x = cx + xr*F/d; out.y = hy + (CAM - y + tilt)*F/d; out.d = d; if(FX) warp(); return true;
+  }
+  /* no fade behind the copy (1 Nov 2026): the land runs under the text at full strength; the copy
+     boxes (quiet) only keep the agent labels off the text */
+  function calm(){ return 1; }
+  function size(){
+    var f = fit(cv, host); W = f.W; H = f.H; dpr = f.dpr;
+    F = Math.max(260, Math.min(H*0.95, W*0.62));
+    var ax = W*0.5, ay = H*0.72;
+    if(anchor){ var b = anchor.getBoundingClientRect(); if(b.width){ ax = b.left - f.r.left + b.width/2; ay = b.top - f.r.top + b.height*0.9; } }
+    cx = ax; hy = ay - (CAM + 0.8)*F/(ZV + Z0);
+    quiet = (o.quiet || []).map(function(el){ var c = el.getBoundingClientRect(); return {x0:c.left - f.r.left - 20, x1:c.right - f.r.left + 20, y0:c.top - f.r.top - 20, y1:c.bottom - f.r.top + 20}; });
+    dots = []; var k = 1;
+    P.forEach(function(p, i){
+      for(var j=0; j<380; j++, k++){
+        var r = p.s*Math.min(3, Math.sqrt(-2*Math.log(1e-4 + rnd(k)*0.9999)))*0.8, a = rnd(k + 0.5)*Math.PI*2;
+        dots.push({p:i, x:p.x + Math.cos(a)*r, z:p.z + Math.sin(a)*r, lift:Math.abs(rnd(k + 0.25) - 0.5)*0.5, top:Math.exp(-r*r/(p.s*p.s)), tw:rnd(k + 0.75)*6.28});
+      }
+    });
+    for(var j=0; j<420; j++, k++) dots.push({p:-1, x:(rnd(k) - 0.5)*60, z:rnd(k + 0.5)*34 - 8, lift:0.05, top:0, tw:rnd(k + 0.75)*6.28});
+    crowd = [];
+    for(var j=0; j<1100; j++, k++){
+      var u = rnd(k), r = Math.min(7, 2.6*Math.sqrt(-2*Math.log(1e-4 + rnd(k + 0.5)*0.9999)));
+      crowd.push({r:r, a:rnd(k + 0.25)*6.2832, ph:u, lift:Math.abs(rnd(k + 0.75) - 0.5)*0.6, c:rnd(k + 0.33) < 0.16 ? Math.floor(rnd(k + 0.66)*P.length) : -1, tw:rnd(k + 0.9)*6.28});
+    }
+    /* hover fx: motes, about one per 9000 px² of sky */
+    motes = [];
+    for(var j=0, n=Math.round(W*H*.75/9000); j<n; j++, k++)
+      motes.push({x:rnd(k)*W, y:rnd(k + .3)*H*.8, v:6 + rnd(k + .6)*14, s:1.2 + rnd(k + .8)*1.8, c:rnd(k + .9) < .45 ? Math.floor(rnd(k + .15)*P.length) : -1, ph:rnd(k + .45)*6.28});
+  }
+  /* hover fx: a click on the land (not on a button or link) sends a ring out and a pulse down every line */
+  host.addEventListener('click', function(e){
+    if(!FX || e.target.closest('a, button')) return;
+    var r = host.getBoundingClientRect(); ripples.push({x:e.clientX - r.left, y:e.clientY - r.top, t:performance.now(), r:0, k:1});
+    if(ripples.length > 3) ripples.shift(); surge = performance.now();
+  });
+  host.addEventListener('pointermove', function(e){ var r = host.getBoundingClientRect(); ptr = {x:e.clientX - r.left, y:e.clientY - r.top}; });
+  host.addEventListener('pointerleave', function(){ ptr = null; });
+  document.addEventListener('titan:surge', function(){ surge = performance.now(); });
+  visible(host, function(on){ vis = on; });
+  function grid(){
+    var B = 6, paths = []; for(var b=0; b<B; b++) paths.push(new Path2D());
+    function line(ax, az, bx, bz, n){
+      var prev = false, px = 0, py = 0;
+      for(var i=0; i<=n; i++){
+        var x = ax + (bx - ax)*i/n, z = az + (bz - az)*i/n;
+        if(!proj(x, height(x, z), z)){ prev = false; continue; }
+        var a = Math.max(0, 1 - (out.d - 14)/38)*Math.min(1, Math.abs(x)/34 < 0.75 ? 1 : (1 - Math.abs(x)/34)*4)*calm(out.x, out.y);
+        a = Math.min(1, a + out.g*3); /* hover fx: the wireframe lights up under the cursor */
+        var bi = Math.min(B - 1, Math.floor(a*B));
+        if(prev && a > 0.02){ paths[bi].moveTo(px, py); paths[bi].lineTo(out.x, out.y); }
+        prev = true; px = out.x; py = out.y;
+      }
+    }
+    for(var x=-34; x<=34.01; x+=1.6) line(x, -15, x, 27, 70);
+    for(var z=-15; z<=27.01; z+=1.6) line(-34, z, 34, z, 90);
+    ctx.lineWidth = 1;
+    for(var b=1; b<B; b++){ ctx.strokeStyle = 'rgba('+GRID+','+(0.11*(b + 0.5)/B).toFixed(3)+')'; ctx.stroke(paths[b]); }
+  }
+  function curve(p, i){
+    var mx = p.x/2 + (i % 2 ? 1 : -1)*p.z*0.18, mz = p.z/2 - (i % 2 ? 1 : -1)*p.x*0.18, pts = [];
+    for(var j=0; j<=36; j++){
+      var u = j/36, x = (1-u)*(1-u)*p.x + 2*(1-u)*u*mx, z = (1-u)*(1-u)*p.z + 2*(1-u)*u*mz;
+      if(proj(x, height(x, z) + 0.06, z)) pts.push([out.x, out.y]);
+    }
+    return pts;
+  }
+  function at(pts, u){ var k = Math.min(pts.length - 1, Math.max(0, u*(pts.length - 1))), i = Math.floor(k), f = k - i, b = pts[Math.min(pts.length - 1, i + 1)]; return [pts[i][0] + (b[0] - pts[i][0])*f, pts[i][1] + (b[1] - pts[i][1])*f]; }
+  function draw(now){
+    var t = reduce ? 6 : (now - t0)/1000;
+    theta += ((ptr && !reduce ? (ptr.x/W - 0.5)*0.22 : 0) + (reduce ? 0 : 0.1*Math.sin(t*0.07)) - theta)*0.04;
+    tilt += ((ptr && !reduce ? (ptr.y/H - 0.5)*0.8 : 0) - tilt)*0.04;
+    P.forEach(function(p, i){ p.h = p.hb*(1 + (reduce ? 0 : 0.07*Math.sin(t*0.45 + i*1.7))); });
+    /* hover fx: ease the lens toward the cursor, age the ripples */
+    if(FX){
+      lens += ((ptr ? 1 : 0) - lens)*0.06;
+      if(ptr){ if(lp.x < -1e3){ lp.x = ptr.x; lp.y = ptr.y; } lp.x += (ptr.x - lp.x)*0.14; lp.y += (ptr.y - lp.y)*0.14; }
+      ripples = ripples.filter(function(rp){ var a = (now - rp.t)/1000; rp.r = a*520; rp.k = Math.max(0, 1 - a/1.6); return rp.k > 0; });
+    }
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    grid();
+    /* hover fx: motes drifting up through the sky; near the cursor they brighten and draw a thread to it */
+    if(FX){
+      var MR = 170;
+      for(var j=0; j<motes.length; j++){
+        var m = motes[j], my = ((m.y - t*m.v) % (H*.8) + H*.8) % (H*.8), mx = m.x + 10*Math.sin(t*.3 + m.ph);
+        var edge = Math.min(1, my/(H*.12), (H*.8 - my)/(H*.12)), rgb = m.c >= 0 ? P[m.c].rgb : INK;
+        var dd = ptr ? Math.hypot(mx - lp.x, my - lp.y) : 1e4, near = dd < MR ? 1 - dd/MR : 0;
+        var al = (0.3 + 0.12*Math.sin(t*1.3 + m.ph) + 0.55*near*lens)*edge;
+        if(near > 0 && lens > .05){
+          ctx.strokeStyle = 'rgba('+rgb+','+(0.4*near*lens*edge).toFixed(3)+')'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(lp.x, lp.y); ctx.stroke();
+        }
+        ctx.fillStyle = 'rgba('+rgb+','+Math.max(0, al).toFixed(3)+')';
+        var sz = m.s*(1 + near*lens*.8); ctx.fillRect(mx - sz/2, my - sz/2, sz, sz);
+      }
+      if(lens > .05){
+        /* a soft spotlight and a thin ring that breathes around the cursor */
+        var sg = ctx.createRadialGradient(lp.x, lp.y, 0, lp.x, lp.y, LR*1.2); sg.addColorStop(0, 'rgba(196,240,18,'+(0.1*lens).toFixed(3)+')'); sg.addColorStop(1, 'rgba(196,240,18,0)');
+        ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(lp.x, lp.y, LR*1.2, 0, 6.2832); ctx.fill();
+        ctx.strokeStyle = 'rgba('+INK+','+(0.14*lens).toFixed(3)+')'; ctx.lineWidth = 1; ctx.setLineDash([2, 5]);
+        ctx.beginPath(); ctx.arc(lp.x, lp.y, LR*(0.62 + 0.04*Math.sin(t*2)), 0, 6.2832); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba('+INK+','+(0.6*lens).toFixed(3)+')'; ctx.beginPath(); ctx.arc(lp.x, lp.y, 2.4, 0, 6.2832); ctx.fill();
+      }
+    }
+    var near = -1, best = 150;
+    P.forEach(function(p, i){
+      if(proj(p.x, height(p.x, p.z), p.z)){ p.sx = out.x; p.sy = out.y; p.d = out.d; } else p.d = 0;
+      if(ptr && p.d){ var dd = Math.hypot(ptr.x - p.sx, ptr.y - p.sy); if(dd < best){ best = dd; near = i; } }
+    });
+    P.forEach(function(p, i){ p.f += ((i === near ? 1 : 0) - p.f)*0.1; });
+    proj(0, height(0, 0), 0); var vx = out.x, vy = out.y;
+    var se = (now - surge)/1000;
+    P.forEach(function(p, i){
+      if(!p.d) return;
+      var pts = curve(p, i); if(pts.length < 2) return;
+      var q = calm(p.sx, p.sy), g = ctx.createLinearGradient(p.sx, p.sy, vx, vy), al = (0.32 + 0.55*p.f)*q;
+      g.addColorStop(0, 'rgba('+p.rgb+','+al.toFixed(3)+')'); g.addColorStop(1, 'rgba('+VALLEY+','+(al*0.8).toFixed(3)+')');
+      ctx.strokeStyle = g; ctx.lineWidth = 1 + p.f*0.6; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for(var j=1; j<pts.length; j++) ctx.lineTo(pts[j][0], pts[j][1]);
+      ctx.stroke();
+      if(reduce) return;
+      var pulses = [(t*0.11 + i*0.37) % 1, 1 - ((t*0.09 + i*0.53) % 1)];
+      if(se >= 0 && se < 1.6) pulses.push(1 - Math.min(1, se/1.1));
+      pulses.forEach(function(u, k){
+        var c = at(pts, u), hot = k === 2, r = hot ? 3.2 : 2;
+        ctx.fillStyle = 'rgba('+(hot ? '120,170,0' : p.rgb)+','+((hot ? 0.95 : 0.75)*q).toFixed(3)+')';
+        ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = 'rgba('+(hot ? '196,240,18' : p.rgb)+','+(0.16*q).toFixed(3)+')';
+        ctx.beginPath(); ctx.arc(c[0], c[1], r*3, 0, 6.2832); ctx.fill();
+      });
+    });
+    var buckets = {}, swell = se >= 0 && se < 2.5 ? 1 + 0.7*Math.exp(-se*2.2)*Math.min(1, se*8) : 1;
+    for(var j=0; j<crowd.length; j++){
+      var c = crowd[j], u = reduce ? c.ph : (t*0.035 + c.ph) % 1, rr = c.r*(1.7 - 1.3*u)*swell, ang = c.a + (reduce ? 0 : t*0.12/(0.6 + rr));
+      var x = Math.cos(ang)*rr, z = Math.sin(ang)*rr*0.8;
+      if(!proj(x, height(x, z) + c.lift*(0.4 + rr*0.15), z)) continue;
+      var core = Math.exp(-rr*rr/2.4), fade = Math.min(1, u/0.12)*Math.min(1, (7.5 - rr)/2), tw = reduce ? 1 : 0.7 + 0.3*Math.sin(t*2.2 + c.tw);
+      var a = (0.26 + 0.48*core)*fade*tw*calm(out.x, out.y);
+      if(a < 0.04) continue;
+      var key = (c.c >= 0 ? c.c : core > 0.55 ? 'k' : 'g') + ':' + Math.min(4, Math.floor(a*5)), sz = Math.min(2.6, Math.max(0.9, (1 + 1.2*core)*F/out.d*0.042));
+      (buckets[key] = buckets[key] || []).push(out.x - sz/2, out.y - sz/2, sz);
+    }
+    for(var j=0; j<dots.length; j++){
+      var d = dots[j], p = d.p >= 0 ? P[d.p] : null;
+      if(!proj(d.x, height(d.x, d.z) + d.lift, d.z)) continue;
+      var fog = Math.max(0, 1 - (out.d - 14)/38), tw = reduce ? 1 : 0.75 + 0.25*Math.sin(t*1.6 + d.tw);
+      var a = (p ? (0.42 + 0.58*d.top + 0.3*p.f) : 0.24)*fog*tw*calm(out.x, out.y) + out.g*0.7; /* hover fx: + out.g */
+      if(a < 0.03) continue;
+      var key = (p ? d.p : 'x') + ':' + Math.min(4, Math.floor(a*5)), sz = Math.min(3.4, Math.max(0.9, (p ? 1 + 1.3*d.top : 0.7)*F/out.d*0.045)*(1 + out.g*0.7));
+      (buckets[key] = buckets[key] || []).push(out.x - sz/2, out.y - sz/2, sz);
+    }
+    Object.keys(buckets).forEach(function(key){
+      var parts = key.split(':'), id = parts[0], list = buckets[key];
+      var rgb = id === 'x' ? INK : id === 'g' ? GREEN : id === 'k' ? CORE : P[+id].rgb;
+      ctx.fillStyle = 'rgba('+rgb+','+((+parts[1] + 0.5)/5).toFixed(3)+')';
+      for(var q=0; q<list.length; q+=3) ctx.fillRect(list[q], list[q+1], list[q+2], list[q+2]);
+    });
+    if(W < 700) return;
+    ctx.font = '500 11px "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+    P.forEach(function(p){
+      if(!p.d) return;
+      var q = calm(p.sx, p.sy - 22); if(q < 0.6) return;
+      var w = ctx.measureText(p.name).width + 14, x = p.sx, y = p.sy - 22 - p.f*4;
+      if(quiet.some(function(r){ return x + w/2 > r.x0 && x - w/2 < r.x1 && y + 10 > r.y0 && y - 10 < r.y1; })) return;
+      ctx.globalAlpha = Math.min(1, (q - 0.6)/0.3)*(0.8 + 0.2*p.f);
+      ctx.fillStyle = p.f > 0.5 ? '#141414' : 'rgba(255,255,255,.94)';
+      ctx.fillRect(x - w/2, y - 10, w, 20);
+      if(p.f <= 0.5){ ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1; ctx.strokeRect(x - w/2 + 0.5, y - 9.5, w - 1, 19); }
+      ctx.fillStyle = p.f > 0.5 ? '#fff' : '#3a3a3c';
+      ctx.fillText(p.name, x, y + 0.5);
+      ctx.globalAlpha = 1;
+    });
+  }
+  function loop(now){ requestAnimationFrame(loop); if(vis) draw(now); }
+  size();
+  onResize(function(){ size(); if(reduce) draw(performance.now()); }, host);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ size(); if(reduce) draw(performance.now()); });
+  if(reduce) draw(performance.now()); else requestAnimationFrame(loop);
+}
+terrain({canvas:$('[data-terrain]'), host:$('.hero__top'), anchor:$('#titan'), quiet:$$('#hero [data-quiet]')});
+
+/* ── hover fx (trial): from the foot of the hero's land down to the Agents band, motes in the agents' colours
+   drift upward and reach for the cursor with fine threads, under a faint neon spotlight. Delete to revert. ── */
+(function(){
+  var cv = $('.fxfield'), from = $('.hero__top'), to = $('#agents'); if(!cv || !from || !to || reduce) return;
+  var ctx = cv.getContext('2d'), W, H, dpr, top, motes = [], ptr = null, lp = {x:0, y:0}, lens = 0, vis = false, t0 = performance.now();
+  var COL = AGENTS.filter(function(a){ return a.id !== 'titan'; }).map(function(a){ return [parseInt(a.c.slice(1,3),16), parseInt(a.c.slice(3,5),16), parseInt(a.c.slice(5,7),16)].join(','); });
+  function rnd(k){ var x = Math.sin(k*91.7)*43758.5453; return x - Math.floor(x); }
+  function size(){
+    top = from.getBoundingClientRect().bottom + scrollY;
+    var bottom = to.getBoundingClientRect().top + scrollY;
+    W = document.documentElement.clientWidth; H = Math.max(1, bottom - top); dpr = Math.min(2, devicePixelRatio || 1);
+    cv.style.top = top + 'px'; cv.style.height = H + 'px';
+    cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+    motes = [];
+    for(var k=1, n=Math.round(W*H/11000); k<=n; k++)
+      motes.push({x:rnd(k)*W, y:rnd(k + .3)*H, v:5 + rnd(k + .6)*12, s:1.2 + rnd(k + .8)*1.8, c:rnd(k + .9) < .45 ? Math.floor(rnd(k + .15)*COL.length) : -1, ph:rnd(k + .45)*6.28});
+  }
+  addEventListener('pointermove', function(e){
+    var y = e.clientY + scrollY - top;
+    ptr = (y >= 0 && y <= H) ? {x:e.clientX, y:y} : null;
+    if(ptr && lens < .01){ lp.x = ptr.x; lp.y = ptr.y; }
+  });
+  document.addEventListener('pointerleave', function(){ ptr = null; });
+  function draw(now){
+    var t = (now - t0)/1000, LR = 150, MR = 170;
+    lens += ((ptr ? 1 : 0) - lens)*.06;
+    if(ptr){ lp.x += (ptr.x - lp.x)*.14; lp.y += (ptr.y - lp.y)*.14; }
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(lens > .05){
+      var sg = ctx.createRadialGradient(lp.x, lp.y, 0, lp.x, lp.y, LR*1.2); sg.addColorStop(0, 'rgba(196,240,18,'+(0.1*lens).toFixed(3)+')'); sg.addColorStop(1, 'rgba(196,240,18,0)');
+      ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(lp.x, lp.y, LR*1.2, 0, 6.2832); ctx.fill();
+      ctx.strokeStyle = 'rgba(20,20,20,'+(0.14*lens).toFixed(3)+')'; ctx.lineWidth = 1; ctx.setLineDash([2, 5]);
+      ctx.beginPath(); ctx.arc(lp.x, lp.y, LR*(0.62 + 0.04*Math.sin(t*2)), 0, 6.2832); ctx.stroke(); ctx.setLineDash([]);
+    }
+    for(var j=0; j<motes.length; j++){
+      var m = motes[j], my = ((m.y - t*m.v) % H + H) % H, mx = m.x + 10*Math.sin(t*.3 + m.ph), rgb = m.c >= 0 ? COL[m.c] : '20,20,20';
+      var edge = Math.min(1, my/120, (H - my)/120), dd = ptr ? Math.hypot(mx - lp.x, my - lp.y) : 1e4, near = dd < MR ? 1 - dd/MR : 0;
+      if(near > 0 && lens > .05){ ctx.strokeStyle = 'rgba('+rgb+','+(0.4*near*lens*edge).toFixed(3)+')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(lp.x, lp.y); ctx.stroke(); }
+      ctx.fillStyle = 'rgba('+rgb+','+Math.max(0, (0.24 + 0.1*Math.sin(t*1.3 + m.ph) + 0.55*near*lens)*edge).toFixed(3)+')';
+      var sz = m.s*(1 + near*lens*.8); ctx.fillRect(mx - sz/2, my - sz/2, sz, sz);
+    }
+    if(lens > .05){ ctx.fillStyle = 'rgba(20,20,20,'+(0.6*lens).toFixed(3)+')'; ctx.beginPath(); ctx.arc(lp.x, lp.y, 2.4, 0, 6.2832); ctx.fill(); }
+  }
+  function loop(now){ requestAnimationFrame(loop); if(vis) draw(now); }
+  size();
+  onResize(size, document.body);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(size);
+  visible(cv, function(on){ vis = on; });
+  requestAnimationFrame(loop);
+})();
+/* ── end hover fx ── */
+
+/* Titan's eyes on the logos, from the old mockups' bot engine (assets/bot.js): ink and still, neon on hover */
+(function(){
+  if(!window.TitanBot) return;
+  $$('svg[data-bot]').forEach(function(svg){
+    var ink = svg.dataset.ink || '#141414';
+    var bot = TitanBot.mount(svg, {expression:'colere', color:ink, follow:false, still:true});
+    var host = svg.closest('a') || svg;
+    var on = function(){ bot.setColor(null); }, off = function(){ bot.setColor(ink); };
+    host.addEventListener('mouseenter', on); host.addEventListener('mouseleave', off);
+    host.addEventListener('focusin', on); host.addEventListener('focusout', off);
+  });
+})();
+
+/* ═════════ agents: a live ASCII field behind the cards, lit by a lantern under the cursor ═════════ */
+(function(){
+  var cv = $('[data-ascii]'); if(!cv) return;
+  var host = cv.parentNode, ctx = cv.getContext('2d'), CH = ' .·:-=+*#%@', W, H, dpr, cw = 10, chh = 16, cols, rows, ptr = null, lamp = {x:-999, y:-999}, vis = true, frame = 0, t0 = performance.now();
+  function size(){ var f = fit(cv, host); W = f.W; H = f.H; dpr = f.dpr; cols = Math.ceil(W/cw); rows = Math.ceil(H/chh); }
+  host.addEventListener('pointermove', function(e){ var r = host.getBoundingClientRect(); ptr = {x:e.clientX - r.left, y:e.clientY - r.top}; });
+  host.addEventListener('pointerleave', function(){ ptr = null; });
+  visible(host, function(on){ vis = on; });
+  function draw(now){
+    var t = reduce ? 4 : (now - t0)/1000;
+    if(ptr){ lamp.x += (ptr.x - lamp.x)*.12; lamp.y += (ptr.y - lamp.y)*.12; }
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.font = '400 12px "Geist Mono", ui-monospace, monospace'; ctx.textBaseline = 'top';
+    var B = [[], [], [], [], []];
+    for(var j=0; j<rows; j++) for(var i=0; i<cols; i++){
+      var x = i*cw, y = j*chh;
+      /* two warped waves drifting against each other, as in caustics */
+      var a = Math.sin(i*.09 + t*.5 + Math.sin(j*.21 - t*.3)*1.6), b = Math.cos(j*.17 - t*.4 + Math.sin(i*.05 + t*.2)*2);
+      var v = Math.pow(Math.max(0, 1 - Math.abs(a + b)*.9), 3);
+      var dx = x - lamp.x, dy = y - lamp.y, l = ptr ? Math.exp(-(dx*dx + dy*dy)/(2*150*150)) : 0;
+      v = Math.min(1, v*.55 + l*.65*(.3 + v));
+      if(v < .08) continue;
+      var c = CH[Math.min(CH.length - 1, Math.floor(v*CH.length))], bi = Math.min(4, Math.floor(v*5));
+      B[bi].push(c, x, y);
+    }
+    for(var k=0; k<5; k++){
+      ctx.fillStyle = 'rgba(232,232,234,' + (.05 + k*.06).toFixed(3) + ')';
+      var L = B[k]; for(var q=0; q<L.length; q+=3) ctx.fillText(L[q], L[q+1], L[q+2]);
+    }
+  }
+  function loop(now){ requestAnimationFrame(loop); if(vis && ((frame++ & 1) === 0 || ptr)) draw(now); }
+  size(); onResize(function(){ size(); if(reduce) draw(performance.now()); }, host);
+  if(reduce) draw(performance.now()); else requestAnimationFrame(loop);
+})();
+
+/* ═════════ agent cards, with a small glyph each that scrambles in ═════════ */
+/* line icons (24 × 24) for the small LED panels on the agent and local-first cards; Titan is drawn as its eyes */
+var LED_ICON = {
+  folder:'<path d="M3 7.5V18a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18V9a1.5 1.5 0 0 0-1.5-1.5H12l-2-2.5H4.5A1.5 1.5 0 0 0 3 6.5Z"/><path d="M8 13h8M8 16h5"/>',
+  code:'<path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 5l-3 14"/>',
+  builder:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8.5h18"/><rect x="6" y="11.5" width="5" height="5.5" rx="1"/><path d="M14 12h4M14 15h3"/>',
+  apps:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  qa:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20.5 20.5"/><path d="M7.8 10.6l2 2 3.6-3.8"/>',
+  auto:'<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M12 8v4.5l3 2"/>',
+  marketing:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.2v5.6l4.8-2.8Z"/>',
+  remote:'<rect x="5" y="3" width="10" height="18" rx="2"/><path d="M7.8 12l1.6 1.6 3-3.2"/><path d="M18 9.5a4 4 0 0 1 0 5M20.5 7.5a7 7 0 0 1 0 9"/>',
+  t0:'<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/><rect x="9.5" y="9.5" width="5" height="4" rx=".8"/><path d="M10.5 9.5V8.3a1.5 1.5 0 0 1 3 0v1.2"/>',
+  t1:'<path d="M12 3 5 5.8v5.4c0 4.4 3 7.9 7 9.8 4-1.9 7-5.4 7-9.8V5.8Z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/>',
+  t2:'<circle cx="12" cy="12" r="8.5"/><path d="M15 8.6a4 4 0 1 0 0 6.8M7.5 10.8h5.5M7.5 13.2h5.5"/>',
+  t3:'<path d="M2.5 8.5a14 14 0 0 1 19 0M5.5 11.8a9.5 9.5 0 0 1 13 0M8.6 15a5 5 0 0 1 6.8 0"/><circle cx="12" cy="18.5" r="1"/><path d="M3.5 3.5l17 17"/>',
+  t4:'<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14.2 8.8l2 2"/>',
+  t5:'<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M9.8 12l1.6 1.6 3-3.2"/><path d="M10.5 18h3"/>'
+};
+(function(){
+  var g = $('#agentGrid'); if(!g) return;
+  g.innerHTML = AGENTS.map(function(a, i){
+    return '<article class="acard rv' + (i % 3 ? ' rv-d' + (i % 3) : '') + '" style="--c:' + a.c + '"><div class="acard__top"><span class="acard__name"><i></i>' + esc(a.name) + '</span><span>' + String(i + 1).padStart(2, '0') + '</span></div>' +
+      '<div class="acard__glyph" data-led="' + a.id + '"><canvas aria-hidden="true"></canvas></div><h3>' + esc(a.title) + '</h3><ul>' + a.b.map(function(b){ return '<li>' + esc(b) + '</li>'; }).join('') + '</ul></article>';
+  }).join('');
+})();
+(function(){
+  var t = $('#trust'); if(!t) return;
+  t.innerHTML = TRUST.map(function(x, i){ return '<div class="tcard rv' + (i % 3 ? ' rv-d' + (i % 3) : '') + '"><div class="ico" data-led="t' + i + '"><canvas aria-hidden="true"></canvas></div><h3>' + esc(x[0]) + '</h3><p>' + esc(x[1]) + '</p></div>'; }).join('');
+  var p = $('#plans');
+  p.innerHTML = PLANS.map(function(x, i){
+    var price = x.m ? '€' + x.m + '<small> / month</small>' : 'Talk to us';
+    var li = x.m ? ['<b>' + x.cr + '</b> credits a month', 'Unlimited local models, previews, tests', 'All agents and the app builder', x.dev + ' devices', x.sup] : ['Shared credit pool', 'Teams, roles, audit log, SSO', 'Agency and white-label', 'Dedicated support'];
+    return '<div class="plan rv' + (i ? ' rv-d' + Math.min(3, i) : '') + (x.pop ? ' is-pop' : '') + '"><div class="plan__n">' + x.n + (x.pop ? '<em>Most picked</em>' : '') + '</div>' +
+      '<div class="plan__p" style="' + (x.m ? '' : 'font-size:32px') + '">' + price + '</div><div class="plan__b">' + x.blurb + '</div><ul>' + li.map(function(l){ return '<li><span>' + l + '</span></li>'; }).join('') + '</ul>' +
+      '<a class="btn ' + (x.pop ? 'btn--neon' : x.m ? 'btn--ink' : 'btn--ghost') + '" href="#pricing">' + (x.m ? 'Choose ' + x.n : 'Contact sales') + '</a></div>';
+  }).join('');
+  $('#faq').innerHTML = FAQ.map(function(q, i){ return '<details' + (i ? '' : ' open') + '><summary>' + esc(q[0]) + '</summary><p>' + esc(q[1]) + '</p></details>'; }).join('');
+})();
+
+/* ═════════ card icons: a small LED panel per agent and local-first card ═════════
+   The icon in dots (the agent's colour on the dark cards, ink on the light ones) with a dotted wire and a
+   pulse running out to the right. It dissolves in when the card comes into view and lights up under the cursor. */
+(function(){
+  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ io.unobserve(e.target); e.target._show(); } });
+  }, {threshold:.6}) : null;
+  $$('[data-led]').forEach(function(box, n){
+    var id = box.dataset.led, card = box.closest('.acard, .tcard'), dark = card.classList.contains('acard');
+    var ink = dark ? getComputedStyle(card).getPropertyValue('--c').trim() : '#0d0d0d';
+    var icon = LED_ICON[id] ? iconPath(LED_ICON[id]) : null, off = hash(n, 3);
+    var api = led(Object.assign({canvas:$('canvas', box), host:box, start:[0], dur:1.1, ink:ink, hover:36,
+      pitch:function(){ return 2.4; },
+      draw:function(x, W, H, t, poses){
+        if(!poses[0]) return;
+        /* an activity meter: thin bars that rise and fall, fading out to the right, with a brighter sweep */
+        var m = H*.86, ix = m/2 + 2, cy = H/2, x0 = ix + m*.75, x1 = W - 4, sw = x0 + ((t*.14 + off) % 1)*(x1 - x0 + 80) - 40;
+        for(var k=0, bx=x0; bx<x1; k++, bx+=6){
+          var u = (bx - x0)/(x1 - x0), env = Math.pow(1 - u, .7), hot = Math.exp(-Math.pow((bx - sw)/26, 2));
+          var h = H*(.08 + .34*env*(.5 + .5*Math.sin(t*1.6 + k*.55 + off*9))*(.6 + .4*Math.sin(t*.7 + k*.21)) + .18*hot);
+          var g = Math.round(150 - 70*env - 100*hot); x.fillStyle = 'rgb('+g+','+g+','+g+')';
+          x.fillRect(bx, cy - h/2, 2.6, h);
+        }
+        x.save(); x.translate(ix, cy);
+        if(id === 'titan') SHAPE.titan(x, m*1.05, t);
+        else if(icon){
+          var S = m/24*(1 + .03*Math.sin(t*1.1 + off*6)); x.scale(S, S); x.translate(-12, -12);
+          x.strokeStyle = '#0e0e0e'; x.lineWidth = 2.1; x.lineCap = 'round'; x.lineJoin = 'round'; x.stroke(icon);
+        }
+        x.restore();
+      }
+    }, HD, {rowGap:1, grid:dark ? '#2a2a2e' : '#e2e2de'}));
+    box._show = function(){ setTimeout(function(){ api.go(0, 1); }, 120 + (n % 3)*120); };
+    if(reduce || !io) api.go(0, 1); else io.observe(box);
+  });
+})();
+
+/* ═════════ glyph scramble, reveals and the nav ═════════ */
+var NOISE = '▖▗▘▙▚▛▜▝▞▟░▒▓/\\<>_-=+*#';
+function scramble(el, final, dur){
+  if(reduce){ el.textContent = final; return; }
+  var t0 = performance.now();
+  (function stepF(now){
+    var u = Math.min(1, (now - t0)/dur), n = Math.floor(u*final.length), s = '';
+    for(var i=0; i<final.length; i++){ var ch = final[i]; s += (i < n || ch === ' ' || ch === '\n') ? ch : NOISE[(Math.random()*NOISE.length) | 0]; }
+    el.textContent = s;
+    if(u < 1) requestAnimationFrame(stepF);
+  })(t0);
+}
+(function(){
+  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target; io.unobserve(el);
+      el.classList.add('is-in');
+      if(el.dataset.scramble != null) scramble(el, el.dataset.final, 700);
+      $$('[data-glyph]', el).concat(el.dataset.glyph != null ? [el] : []).forEach(function(g){ scramble(g, g.dataset.glyph, 900); });
+    });
+  }, {threshold:.15}) : null;
+  $$('[data-scramble]').forEach(function(el){ el.dataset.final = el.textContent; });
+  $$('.rv, [data-scramble]').forEach(function(el){ if(io) io.observe(el); else { el.classList.add('is-in'); } });
+  if(!io) $$('[data-glyph]').forEach(function(g){ g.textContent = g.dataset.glyph; });
+  /* glyphs inside elements that are not .rv (none today) still get their text */
+  $$('[data-glyph]').forEach(function(g){ if(!g.closest('.rv')) scramble(g, g.dataset.glyph, 900); });
+  var nav = $('#nav'), onS = function(){ nav.classList.toggle('is-scrolled', scrollY > 24); };
+  addEventListener('scroll', onS, {passive:true}); onS();
+})();
+</script>
+</body>
+</html>

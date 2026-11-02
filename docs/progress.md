@@ -32,6 +32,124 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 1 Nov 2026 · Mockups: desktop app restyled after Cursor ("calm skin")
+
+`new-mockups/assets/desktop.css` had four stacked style layers (reskin, widgets and menus, corner fix, cleanup). One section now replaces them, styled after Cursor:
+
+- neutral greys in light and dark (the dark theme is near Cursor's #181818 / #141414);
+- 13px type and 28px rows;
+- hairline-bordered surfaces with no fills or shadows, square everywhere;
+- page headers that are just a title, one line and the actions;
+- small labels in normal case instead of mono capitals;
+- monochrome agent icons in lists, with colour kept only in an agent's own detail panel.
+
+Kept:
+- the cut-corner buttons, filled so the cut always reads;
+- neon only for the primary action, the selection bar and live dots.
+
+Checked at 1440×900 and 375×812, light and dark: every view fits and there are no script errors.
+
+Automations is back as its own sidebar entry: Home, Agents, Automations, Apps, Library. Library now holds Documents only, with no tabs.
+
+### 1 Nov 2026 · Mockups: desktop app cleanup pass
+
+In `new-mockups/desktop.html`:
+
+- **Sidebar:** four places (Home, Agents, Apps, Library) and the five recent chats. Library holds Documents and Automations as two tabs. Marketplace and Settings moved into the account menu, and the engine card is gone.
+- **Top bar:** the project switcher, search, approvals and your account. Credits and the theme switch moved into the account menu. The status bar is one line.
+- **Surfaces:** flat grey fills with no outline, following design.md for the app. Cut corners stay on large surfaces only, not on buttons. Status shows as a dot and a word.
+- **Neon:** only on actions (New task, Send, Approve), live dots and the selection bar. Switches, meters and the "chief" tag are now grey and ink.
+- **Agents:** cards show only name, status and model. The detail panel opens when you pick an agent and closes with ×.
+- **Chat:** the finished plan folds into one line, the stats become one mono line, and the head shows only the model.
+
+Checked at 1440×900 and 375×812, light and dark: every view fits and there are no script errors.
+
+### 1 Nov 2026 · Mockups: desktop Home simplified, widgets, projects, agent teams, Apps tab
+
+In `new-mockups/desktop.html`:
+
+- **Home** is an LED glyph (Titan's eyes), the greeting and the chat. The chat has an agent dropdown and a model dropdown:
+  - the agent dropdown defaults to Titan, marked "chief" (the feature map's general assistant, which hands work to the specialists); the agents below it are grouped by team;
+  - the model dropdown lists the free local models and OpenRouter models, with each agent's default marked.
+- **Widgets:** below the chat, Home starts empty with "Add a widget". The widgets are Waiting for you, Running now, Recent tasks, Credits, Today's schedule, Team status and Pinned apps. Each one can be removed, and the choice is remembered on the device.
+- **Projects:** the top bar's workspace button is now a workspace › project switcher.
+- **Agents:** grouped as Chief (Titan) and then teams (Dev team, Marketing team, Back office), with a New team button.
+- **Apps:** a new tab with three parts:
+  - apps pinned to the sidebar, which share the local database;
+  - every app built with the app builder (target, status, where it runs, version);
+  - templates.
+- **Fixed:** outlined surfaces in the app and on the website lost their outline at the cut corner. They now draw a hairline along the diagonal.
+
+Checked at 1440×900 and 375×812: no sideways scroll and no script errors.
+
+Open: projects, workspaces and agent teams are a mockup proposal and are not yet in `decisions.md`.
+
+### 1 Nov 2026 · Mockups: the full set rebuilt in the new home page's style (`new-mockups/`)
+
+Every page of the old `mockup/` folder, rebuilt in the style of `mockup/home.html` into a new `new-mockups/` folder, plus the desktop app. The content comes from the old `content.py`, with no new claims. The build is one `src/build.py` that writes every page from `src/content.py`, as before. Pages:
+
+- **Home:** home.html, now linked to the other pages.
+- **Agents:** the 10 agents, each with a live demo:
+  - a task run that stops for your approval;
+  - the approvals list;
+  - the model router with costs;
+  - a phone approval for remote.
+- **Pricing:**
+  - a monthly or yearly switch;
+  - a credit estimator;
+  - the comparison table;
+  - top-ups and rollover;
+  - FAQ.
+- **Security:**
+  - where data lives;
+  - a try-it approval layer;
+  - 8 safeguards with LED icons;
+  - FAQ.
+- **8 industry pages:**
+  - highlights and flow;
+  - four tasks you can run;
+  - what stays local;
+  - FAQ;
+  - the other industries.
+- **Desktop app:** the old app's views and logic, kept. A new skin gives it Inter, square cut-corner surfaces and warm neutrals, in light and dark themes. LED panels take the place of the big avatar on Home and appear in each agent's detail. Neon stays the primary-action colour, with no black buttons or selections.
+
+Shared engine: `assets/led.js`. It gained three things:
+- a guard for panels that are not laid out yet;
+- a stop when a panel's canvas leaves the page;
+- ink that can follow the theme.
+
+The nav has an Industries dropdown and, below 980px, a full-screen menu.
+
+Checked in the browser at 1440×900 and 375×812:
+- every page and every app view fits at 375px with no sideways scroll;
+- no script errors.
+
+Open: whether `new-mockups/` replaces `mockup/`. The hero's app frame is still a placeholder.
+
+### 1 Nov 2026 · Mockups: home page hero reworked, Titan's eyes back
+
+In `mockup/home.html` the hexagon icon is gone. The nav and footer logos now use the eyes from the old mockups (the `TitanBot` engine in `assets/bot.js`), and in the LED scenes Titan is drawn as the same two eyes. Hero changes:
+
+- the "Titan is idle" pill is removed and the copy starts 19% down the screen (136px on phones);
+- the clickable Titan and its "click me" label are removed from the hero; the terrain still centres on the same point;
+- trial "hover fx" on the terrain (each block marked so it can be removed): a lens that bulges the land away from the cursor and lights the wireframe and particles under it, with a faint neon spotlight and a dotted ring; motes of agent colours drifting up through the empty sky that link to the cursor with fine threads; a click on the land sends a ripple out and a neon pulse down every agent line. The motes, spotlight and threads carry on below the hero down to the Agents band (a transparent `.fxfield` canvas under the app frame, copy and step cards), and on the "How it works" wall the LEDs under the cursor light up in a soft halo (the LED engine's new `hover` option). Off with reduced motion;
+- the terrain fades out over the bottom of the first screen (a mask on its canvas), so the grid no longer stops in a hard line beside the app frame;
+- trial: three callouts beside the app frame (you ask, you approve, the team works), each a small card with a hairline into the app; hidden on phones and kept in one marked block so they can be removed;
+- the nav and the app frame now share the sections' content width (1280px container, 1232px of content): logo on the left edge, links centred, Download on the right edge;
+- "How it works" LED wall in high definition: the LED engine takes new options (row spacing, number of dot sizes, tone curve, shimmer, glitch rate and slip, a grid of unlit LEDs), and the wall uses about 1.7× more dots per row, near-square rows instead of scanlines, six dot sizes and a faint unlit grid; the link is a dotted wire with pulses that leave short tails, and Titan's LED eyes are fixed (they were mirrored) and smaller. "How it works" has no unlit grid behind it (plain background). The ASCII glyphs on the 9 agent cards and the 6 local-first cards are replaced by small LED panels in the same high definition: a line icon in dots (the agent's colour on the dark cards, ink on the light ones; Titan as its eyes) and an activity meter of dot bars with a sweep, dissolving in when the card comes into view and lighting up under the cursor. The industries panel and the closing band use the same settings (one shared `HD` preset, with the grid), each with a finer pitch; the closing wordmark's gradient is darker so its letters stay solid;
+- the hero and "How it works" sit on white (`#fff`) up to the Agents band; the four step cards turned light grey (`#f6f6f4`) to stay visible, and the nav's scrolled background is white;
+- "See how it works" is a solid light grey button (`.btn--gray`, `#e4e4e1`) instead of a transparent outline;
+- the terrain no longer fades behind the text, and the text has no blur;
+- a desktop app preview frame (a placeholder for now) rises over the foot of the terrain, with the promises row under it.
+
+Checked at 1440×900 and 375×812: no console errors and no sideways scroll.
+
+### 1 Nov 2026 · Mockups: new home page with dot-matrix LED scenes
+
+A new home page, `mockup/home.html`, built from scratch as one self-contained file (no shared mockup CSS or JS). Two things are kept from the old mockups: the hero's agent terrain (peaks, lines, the gathering in the valley, Titan clickable for a surge) and the buttons' cut corner. Everything else is new: a centered hero on warm off-white (`#f7f7f5`) with the call to action's underglow in the agents' colours, and a dot-matrix LED renderer (scanline rows of dots in five sizes, glitch dissolve between poses, rows that slip sideways for a beat) used three times: "How it works" (laptop and phone reaching for Titan and the finished work, synced to four steps), the industries panel (each industry's icon), and the closing band (the TITAN117 wordmark turning into Titan). Sections: how it works, the 9 agents over a live ASCII field, the 8 industries with their uses and flow, local-first, pricing, FAQ.
+
+Checked in the browser at 1440×900 and 375×812: no console errors, no sideways scroll. Open: the old `mockup/index.html` is unchanged; it is not yet decided whether `home.html` replaces it or moves into `build.py`.
+
 ### 31 Oct 2026 · Mockups: hero eyes angry only on click
 
 Titan's hero eyes no longer surge on a timer (every 5 to 10 s) or on hover; they turn angry and neon only when clicked. Checked: no surge in 14 s idle, one surge on click.
