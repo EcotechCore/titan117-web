@@ -37,6 +37,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 17 Oct 2026 | No free plan and no trial (trial ruled out 18 Oct): the app works only with an active subscription | [13](#13-pricing) |
 | 17 Oct 2026 | Signed licence lease for offline use (14 days, offline mode in V1); the app locks when it expires or the subscription ends | [17](#17-offline-use-and-licence) |
 | 18 Oct 2026 | Logo: an agent avatar (bloub engine), a neon hexagon with an angry face whose eyes follow the cursor; old helmet files, mockups and stand-in media deleted | [9](#9-brand) |
+| 7 Nov 2026 | Website: the framed-grid homepage (`homepage-grid/`, after the Atomist template) is the one design we keep; tomato accent, Titan's angry eyes with the TITAN117 wordmark; all other mockups removed | [18](#18-website-design) |
 
 ---
 
@@ -196,6 +197,12 @@ Decided 17 Oct 2026.
 - **First sign-in needs internet**, once; then the session stays in the OS keychain.
 - **Online-only features** (cloud models, own keys, web search, remote control, publishing, sharing, sync, buying credits, downloading components) show "Needs internet" cards offline; usage reports, sync and notifications queue until the connection is back.
 - **Honest limit:** a desktop app can be tampered with by a determined person. That's acceptable: the paid value that costs us money lives on our server.
+
+## 18. Website design
+
+- **7 Nov 2026:** the website follows `homepage-grid/`: a white framed grid with hairline borders (after the Atomist Next.js/shadcn template's layout), Figtree for text, a **tomato `#ff6347`** accent (`--accent` in `styles.css`), light and dark themes. For the website this replaces the neon-green direction in [§8](#8-design) and [design.md](design.md); the desktop app's rules in §8 are unchanged.
+- **Logo on the website:** Titan's angry eyes, drawn by the bloub engine (`homepage-grid/assets/bot.js`), next to "TITAN117" in Unbounded 600. Ink at rest, looking around on their own, tomato on hover. The restyle and trademark check in [§9](#9-brand) still apply before beta.
+- **Removed on 7 Nov:** every other mockup (`mockup/`, `new-mockups/`, the root `index.html`, which stay in git history; `gemini-mockups/` and `homepage-concept/`, which were never committed and went to the Recycle Bin).
 
 ## 11. Deleting data
 

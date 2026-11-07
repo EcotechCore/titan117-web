@@ -2,16 +2,16 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "mockup",
+      "name": "homepage-grid",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "4178", "--directory", "mockup"],
-      "port": 4178
-    },
-    {
-      "name": "new-mockups",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "4179", "--directory", "new-mockups"],
-      "port": 4179
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4180",
+        "--directory",
+        "homepage-grid"
+      ],
+      "port": 4180
     }
   ]
 }

@@ -32,6 +32,38 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 7 Nov 2026 · Website: keep `homepage-grid/`, remove the other mockups
+
+Decided to keep the framed-grid homepage as the one website design (decisions §18). Removed every other mockup: `mockup/`, `new-mockups/` and the root `index.html` with `git rm` (still in history), and the uncommitted `gemini-mockups/` and `homepage-concept/` to the Recycle Bin. `.claude/launch.json` now has only `homepage-grid`; the sources list and the homepage README point at `homepage-grid/assets/bot.js`. `apps/web` (the Next.js app) is untouched. No phase status changed.
+
+### 7 Nov 2026 · Mockups: framed-grid homepage (`homepage-grid/`)
+
+New standalone homepage following the structure and look of the Atomist Next.js/shadcn template (atomist-nextjs-shadcn.vercel.app), as requested, without using the existing mockups or `design.md`. White framed grid with hairline borders, black-to-orange gradient headlines, Figtree, warm gradient stage, light and dark themes. Sections: hero; five auto-rotating tabs (Titan, App builder, Documents, Automation, Marketing) driving a dark app window with steps, approval card and cost; "Works with" tiles (local models, OpenRouter, Gmail, Calendar, Slack, Notion, Stripe, GitHub, Telegram, Search Console); scroll-lit statement; product facts; feature accordion; the 10 agents; how it works in three steps; the 8 industries as a slider (request, example workflow, four uses, agents involved); pricing from `notes/pricing.md` with monthly/yearly; safe-by-default carousel; FAQ; call to action; footer. Template logos, testimonials, metrics and blog cards are replaced with product facts, since we have no customers yet. Plain HTML/CSS/JS, no build; `homepage-grid` entry added to `.claude/launch.json` (port 4180). Checked in the browser at 800px (light) and 375px (dark): no console errors, no sideways scroll, tabs, industry slider and billing toggle work. Not yet checked: Safari, keyboard-only pass. No phase status changed. Follow-up the same day: accent switched from orange to tomato (`#ff6347`), and the logo now uses Titan's angry eyes and the "TITAN117" wordmark (Unbounded 600) from `new-mockups/index.html`, with `new-mockups/assets/bot.js` copied to `homepage-grid/assets/`; the eyes follow the theme's ink. The logo eyes are 40px with a 5px gap to the wordmark, look around on their own (the engine's idle wander, off under reduced motion) and turn tomato on hover.
+
+### 7 Nov 2026 · Mockups: independent homepage concept (`homepage-concept/`)
+
+Built a standalone homepage from the product decisions, feature map, and architecture, without reading or reusing prior mockups or the existing visual design guidelines, as explicitly requested. Fresh warm-white, ink, and vermilion direction, original orbital SVG/CSS artwork, three interactive illustrative product workflows and deliverable dialogs, six industry examples, capability sections, local-first model/approval explanations, and FAQ. Includes responsive styles, reduced-motion support, and keyboard tab navigation. No dependencies or build step; run instructions in `homepage-concept/README.md`. Planned capabilities and sample outputs are identified as such. JavaScript syntax and Git whitespace checks passed. Browser preview succeeded on 127.0.0.1:4174 after starting the server outside the sandbox. Desktop hero visually inspected; app-building tab, deliverable dialog open/close, industry selection, and back-to-top verified in browser. Mobile visual verification remains incomplete. Existing application and prior mockups retained; no phase status changed.
+
+### 7 Nov 2026 · Mockups: second clean & spacious homepage (`gemini-mockups/spacy.html`)
+
+Added a second standalone homepage mockup in `gemini-mockups/spacy.html` (`assets/spacy.css`, `assets/spacy.js`), keeping `gemini-mockups/index.html` untouched. Designed from a clean slate with generous whitespace, soft rounded geometry and pill navigation, inspired by `mausbot.com` and `x.ai/bot`:
+
+- **Hero:** airy constellation particle field + a floating lineup of 5 autonomous teammate bots (`@Docs`, `@Coder`, `@Titan`, `@Browser`, `#launch-room`) with interactive state pills and click-to-ripple.
+- **Teammate Messenger & Bot Computer:** messaging-app layout where bots are contacts and group chat rooms (`#launch-room`), paired with human-in-the-loop approval cards and a switcher between the **Bot's Computer** (live terminal/browser/index) and the **Companion Phone App**.
+- **Interactive Bot Studio:** live customizer for silhouette shape (8 shapes), expression/persona, activity state and accent colour.
+- **Department Bots Directory:** filterable pre-built bots for Engineering, Operations & Docs, QA & Browser, and Growth & Video.
+
+### 7 Nov 2026 · Mockups: new homepage mockup in `gemini-mockups/`
+
+Built a new homepage mockup inside `gemini-mockups/` (`index.html`, `assets/styles.css`, `assets/app.js`, `assets/bot.js`, `README.md`) following `docs/notes/design.md`, `docs/notes/decisions.md`, `docs/03-architecture.md` and `docs/notes/pricing.md`, blending inspirations from Grok Bot (`x.ai/bot`), Cursor (`cursor.com/home`) and DeepSeek Harness (`deepseek.com/en/harness/`):
+
+- **Hero:** 3D perspective agent terrain with specialist peaks and valley particle gathering, interactive Titan autonomous bot orb with state switcher (`idle`, `surge`, `thinking`, `comet`, `notify`, `wink`, `sleep`), and a live interactive **Desktop App Workbench** (5 clickable scenarios, interactive approval gate, artifact/diff inspector, and Light/Dark calm skin toggle).
+- **01 · The Local Harness (`127.0.0.1`):** 4-stage execution pipeline and live telemetry trace switcher (`Smart Multi-Model`, `Local-Only 0 cr`, `Injection Shield`, `14d Offline Lease`) plus an interactive **Model Router** calculator.
+- **02 · Autonomous Bots:** Titan and the 8 specialists with live `bloub` SVG avatars and a global state lab bar.
+- **03 · Capabilities:** Cursor-style feature rows with clickable PDF/CSV page citations (`local-only` Folder Agent) and the 4-target App Builder & Sidebar SQLite switcher.
+- **04 · Industries:** interactive 8-industry explorer with 3-step workflows, 4 use cases per industry and local-first privacy notes.
+- **05 · Security, 06 · Pricing & Credit Estimator, 07 · FAQ.**
+
 ### 1 Nov 2026 · Mockups: desktop app restyled after Cursor ("calm skin")
 
 `new-mockups/assets/desktop.css` had four stacked style layers (reskin, widgets and menus, corner fix, cleanup). One section now replaces them, styled after Cursor:
