@@ -35,56 +35,103 @@ if (window.TitanBot) $$("svg[data-bot]").forEach((svg) => {
 $("#theme").addEventListener("click", () => bots.forEach((f) => f()));
 
 /* ---------- product stage ---------- */
-const sideAgents = [
-  ["sparkles", "Titan"], ["code", "App builder"], ["folder", "Folder agent"],
-  ["record", "Recorder"], ["megaphone", "Marketing"], ["bug", "QA and tests"],
-];
+// agents in the sidebar, grouped by team; each has its own eye colour, shown while it works
+const agentDefs = {
+  titan: ["Titan", "sparkles", "#ff6347"],
+  folder: ["Folder agent", "folder", "#2f6fed"],
+  recorder: ["Recorder", "record", "#14a37f"],
+  watcher: ["Web watcher", "eye", "#8b5cf6"],
+  app: ["App builder", "code", "#f6a825"],
+  code: ["Code builder", "terminal", "#0db5ed"],
+  qa: ["QA and tests", "bug", "#2a9a30"],
+  marketing: ["Marketing", "megaphone", "#ec4899"],
+  seo: ["SEO agent", "chart", "#7c3aed"],
+  video: ["Promo video", "video", "#e24b4a"],
+};
+const teams = [["Operations", ["folder", "recorder", "watcher"]], ["Build", ["app", "code", "qa"]], ["Growth", ["marketing", "seo", "video"]]];
+const idleInk = "#b4b4bb";
 
 const scenes = [
   {
-    agent: 0, title: "Titan · Supplier follow-up",
+    agent: "titan", title: "Titan · Supplier follow-up", model: "Qwen 7B · local",
+    work: { titan: "approval", watcher: "working" },
     prompt: "Find every supplier email about late deliveries this week, draft replies and add the dates to the calendar.",
     steps: [["done", "Searched Gmail · 14 threads", "4s"], ["done", "Matched 3 suppliers to open orders", "2s"], ["done", "Drafted 3 replies in your tone", "6s"], ["run", "Waiting for your approval", ""]],
     approve: ["Send 3 emails?", "Ionescu SRL, Delta Parts and NordFood. Calendar holds added for the new dates."],
     stats: [["Model", "Qwen 7B · local"], ["Cost", "0 credits"]], big: "3 drafts", bar: 75, out: ["mail", "replies-draft.eml × 3"],
+    uses: [["brain", "Memory: suppliers"], ["mail", "Gmail"], ["calendar", "Calendar"]],
   },
   {
-    agent: 1, title: "App builder · Booking app",
+    agent: "app", title: "App builder · Booking app", model: "DeepSeek V3 · cloud",
+    work: { app: "approval", qa: "working", seo: "working" },
     prompt: "Build a booking web app for my salon: services, staff, time slots and a reminder email.",
-    steps: [["done", "Plan approved · 6 pages, 4 tables", "1m"], ["done", "Coder wrote 38 files", "4m"], ["done", "Tests pass in Chromium, Firefox, WebKit", "52s"], ["run", "Publish to salon-booking.app?", ""]],
-    approve: ["Publish the web app?", "Version 3 is ready. Hosting costs about 40 credits a month."],
+    steps: [["done", "Plan approved · 6 pages, 4 tables", "1m"], ["done", "Coder wrote 38 files", "4m"], ["done", "QA: tests pass in 3 browsers", "52s"], ["run", "Publish to salon-booking.app?", ""]],
+    approve: ["Publish the web app?", "Version 3 is ready, SEO built in. Hosting costs about 40 credits a month."],
     stats: [["Planner", "Strong cloud model"], ["Coder", "DeepSeek · 212 credits"]], big: "v3 ready", bar: 90, out: ["globe", "Preview on localhost:5173"],
+    uses: [["layers", "Booking template"], ["palette", "Brand kit"], ["git", "Export to GitHub"]],
   },
   {
-    agent: 2, title: "Folder agent · Contracts",
+    agent: "folder", title: "Folder agent · Contracts", model: "Qwen 7B · local",
+    work: { folder: "working" },
     prompt: "Which supplier contracts renew automatically before March, and what is the notice period?",
     steps: [["done", "Indexed /Contracts · 214 files", "38s"], ["done", "OCR on 31 scanned PDFs", "1m"], ["done", "Found 7 matching clauses", "3s"], ["done", "Answer with file and page", ""]],
     approve: null,
     stats: [["Folder", "Local models only"], ["Cost", "0 credits"]], big: "7 contracts", bar: 100, out: ["file", "Nord_supply_2024.pdf · p. 4, §9.2"],
+    uses: [["lock", "Never leaves the laptop"], ["brain", "Memory scope: legal"], ["file", "OCR"]],
   },
   {
-    agent: 3, title: "Recorder · Weekly stock export",
+    agent: "recorder", title: "Recorder · Weekly stock export", model: "Qwen 7B · local",
+    work: { recorder: "working", watcher: "working" },
     prompt: "Every Monday at 8:00, log in to the supplier portal, export stock levels and update the inventory sheet.",
-    steps: [["done", "Recorded 9 browser steps", ""], ["done", "Login from OS keychain", "1s"], ["done", "Paused for 2FA code", ""], ["run", "Next run · Monday 08:00", ""]],
+    steps: [["done", "Recorded 9 browser steps", ""], ["done", "Login from OS keychain", "1s"], ["done", "Paused for your 2FA code", ""], ["run", "Next run · Monday 08:00", ""]],
     approve: null,
-    stats: [["Schedule", "Weekly"], ["Last run", "Succeeded"]], big: "9 steps", bar: 60, out: ["calendar", "stock-levels.xlsx updated"],
+    stats: [["Schedule", "Every Monday"], ["Last run", "Succeeded"]], big: "9 steps", bar: 60, out: ["calendar", "stock-levels.xlsx updated"],
+    uses: [["clock", "Scheduler"], ["key", "Keychain login"], ["sparkles", "Saved as a skill"]],
   },
   {
-    agent: 4, title: "Marketing · March calendar",
+    agent: "marketing", title: "Marketing · March calendar", model: "Cloud · auto",
+    work: { marketing: "approval", video: "working", seo: "working" },
     prompt: "Plan a month of posts for LinkedIn and Instagram from our brand kit, around the spring launch.",
-    steps: [["done", "Read brand kit from memory", "1s"], ["done", "Planned 18 posts around 3 dates", "22s"], ["done", "Made images and captions", "2m"], ["run", "Schedule 18 posts?", ""]],
+    steps: [["done", "Read brand kit from memory", "1s"], ["done", "Planned 18 posts around 3 dates", "22s"], ["done", "Promo video: 30s cut from the site", "2m"], ["run", "Schedule 18 posts?", ""]],
     approve: ["Schedule 18 posts?", "LinkedIn × 8, Instagram × 10. They go out even with the laptop closed."],
     stats: [["Model", "Cloud · 96 credits"], ["Brand kit", "Applied"]], big: "18 posts", bar: 85, out: ["calendar", "March content calendar"],
+    uses: [["palette", "Brand kit"], ["video", "Promo video"], ["send", "Scheduled publishing"]],
+  },
+  {
+    agent: "code", title: "Code builder · Checkout fix", model: "Qwen Coder · cloud",
+    work: { code: "approval", qa: "working" },
+    prompt: "Fix the wrong total on the checkout page, add a test for it, and open a pull request.",
+    steps: [["done", "Read the repo · 214 files", "9s"], ["done", "Plan: 3 files to change", "4s"], ["done", "QA: 48 of 48 tests pass", "41s"], ["run", "Open the pull request?", ""]],
+    approve: ["Open a pull request?", "fix/checkout-total into main · 3 files, +46 −12. The QA agent added 2 tests."],
+    stats: [["Model", "Qwen Coder · cloud"], ["Cost", "38 credits"]], big: "+46 −12", bar: 90, out: ["git", "Diff ready for review"],
+    uses: [["git", "GitHub"], ["terminal", "Sandboxed shell"], ["brain", "Project memory"]],
   },
 ];
 
-function renderSide(active) {
-  $("#app-agents").innerHTML = sideAgents.map(([i, n], k) =>
-    `<div class="app-item${k === active ? " on" : ""}">${ic(i)}${n}${k === active ? '<span class="dot"></span>' : ""}</div>`).join("");
-}
+// sidebar: Titan, then each team; the eyes are mounted once and only change state per tab
+const agentBots = {};
+$("#app-agents").innerHTML =
+  `<div class="ag" data-ag="titan"><svg class="bot" aria-hidden="true"></svg>Titan<span class="ag-st"></span></div>` +
+  teams.map(([team, ids]) => `<div class="team-label">${team}<span>${ids.length}</span></div>` +
+    ids.map((id) => `<div class="ag" data-ag="${id}"><svg class="bot" aria-hidden="true"></svg>${agentDefs[id][0]}<span class="ag-st"></span></div>`).join("")).join("");
+if (window.TitanBot) $$("#app-agents .ag").forEach((row) => {
+  agentBots[row.dataset.ag] = TitanBot.mount($("svg", row), { expression: "colere", color: idleInk, follow: false, still: reduced });
+});
 
-// model shown in the message box, per scene
-const sceneModels = ["Qwen 7B · local", "DeepSeek V3 · cloud", "Qwen 7B · local", "Qwen 7B · local", "Cloud · auto"];
+function updateSide(s) {
+  $$("#app-agents .ag").forEach((row) => {
+    const id = row.dataset.ag, w = s.work[id], st = $(".ag-st", row), bot = agentBots[id];
+    row.classList.toggle("on", id === s.agent);
+    st.className = "ag-st" + (w ? " " + w : "");
+    st.textContent = w === "working" ? "Working" : w === "approval" ? "Needs you" : "";
+    if (bot) {
+      bot.setColor(w ? agentDefs[id][2] : idleInk);
+      bot.setState(w === "working" ? "thinking" : w === "approval" ? "notify" : "idle");
+    }
+  });
+  $("#app-approvals").textContent = Object.values(s.work).filter((w) => w === "approval").length || "";
+  $("#app-approvals").style.display = $("#app-approvals").textContent ? "" : "none";
+}
 
 // the black activity log in the inspector: one line per step, the running one in tomato
 function logHTML(s) {
@@ -94,26 +141,28 @@ function logHTML(s) {
 
 function sceneHTML(s) {
   const [agent, task] = s.title.split(" · ");
+  const helpers = Object.keys(s.work).filter((id) => id !== s.agent).map((id) => agentDefs[id][0]);
   const steps = s.steps.map(([st, t, time], k) =>
     `<div class="step ${st}" style="animation-delay:${k * 0.18}s"><i>${st === "done" ? "✓" : "•"}</i>${t}<small>${time}</small></div>`).join("");
   const approve = s.approve
     ? `<div class="approve"><b>${s.approve[0]}</b><p>${s.approve[1]}</p><div class="approve-row"><span>Approve</span><span>Review</span><span>Deny</span></div></div>`
     : `<div class="out">${ic(s.out[0])}${s.out[1]}</div>`;
   return `
-    <div class="app-top"><div class="app-title">${task}<small>${agent} · started just now</small></div>
-      <div class="app-chips"><span class="chip on">Local</span><span class="chip">Cloud</span></div></div>
+    <div class="app-top"><div class="app-title">${task}<small>${agent}${helpers.length ? " with " + helpers.join(" and ") : ""} · started just now</small></div>
+      <div class="app-chips"><span class="chip${s.model.includes("local") ? " on" : ""}">Local</span><span class="chip${s.model.includes("local") ? "" : " on"}">Cloud</span></div></div>
     <div class="app-prompt">${s.prompt}</div>
     <div class="app-grid">
-      <div class="panel"><h5>${ic("sparkles", "width:13px;height:13px")}${agent}</h5>${steps}${approve}</div>
+      <div class="panel"><h5>${ic(agentDefs[s.agent][1], "width:13px;height:13px")}${agent}</h5>${steps}${approve}</div>
       <div class="panel soft"><h5>Task</h5>
         <div class="big">${s.big}</div>
         <div class="bar"><div style="width:${s.bar}%"></div></div>
         ${s.stats.map(([k, v]) => `<div class="kv">${k}<b>${v}</b></div>`).join("")}
+        <div class="uses">${s.uses.map(([i, t]) => `<span>${ic(i)}${t}</span>`).join("")}</div>
         ${s.approve ? `<div class="out">${ic(s.out[0])}${s.out[1]}</div>` : ""}
         <div class="term">${logHTML(s)}</div>
       </div>
     </div>
-    <div class="composer">Ask Titan anything…<span class="chip on">${sceneModels[scenes.indexOf(s)]}</span><span class="send">${ic("arrow-up")}</span></div>`;
+    <div class="composer">Ask Titan anything…<span class="chip on">${s.model}</span><span class="send">${ic("arrow-up")}</span></div>`;
 }
 
 const tabs = $$(".tab");
@@ -126,10 +175,10 @@ function showTab(i, user) {
   });
   // restart the progress bar
   const sel = tabs[i]; sel.style.animation = "none"; void sel.offsetWidth; sel.style.animation = "";
-  renderSide(scenes[i].agent);
+  updateSide(scenes[i]);
   const main = $("#app-main");
   main.innerHTML = sceneHTML(scenes[i]);
-  $("#app-tab").innerHTML = `${ic(sideAgents[scenes[i].agent][0])}${scenes[i].title.split(" · ")[1]}`;
+  $("#app-tab").innerHTML = `${ic(agentDefs[scenes[i].agent][1])}${scenes[i].title.split(" · ")[1]}`;
   main.classList.remove("fade-swap"); void main.offsetWidth; main.classList.add("fade-swap");
   if (user) { $(".tabs").classList.add("paused"); clearInterval(tabTimer); }
 }

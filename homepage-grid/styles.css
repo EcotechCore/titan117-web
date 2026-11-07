@@ -156,7 +156,7 @@ svg.bot { display: block; overflow: visible; }
 .hero-note { margin-top: 20px; font-size: 13px; color: var(--muted-fg); }
 
 /* ---------- tab strip ---------- */
-.tabs { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--border); }
+.tabs { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--border); }
 .tab {
   position: relative; display: flex; align-items: center; justify-content: center; gap: 10px;
   height: 64px; background: none; border: 0; border-right: 1px solid var(--border);
@@ -197,7 +197,36 @@ svg.bot { display: block; overflow: visible; }
   display: grid; grid-template-columns: 220px 1fr; min-height: 500px;
   font-size: 13px;
 }
-.stage .app { grid-template-rows: auto 1fr; }
+/* one fixed height for every tab, so the page never jumps while the tabs rotate */
+.stage .app { grid-template-rows: auto 1fr; grid-template-columns: 236px 1fr; height: 660px; }
+.stage .app-main, .stage .app-side { overflow: hidden; }
+.bar-btn { position: relative; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; color: var(--w-muted); }
+.bar-btn .icon { width: 15px; height: 15px; }
+.bar-btn b { position: absolute; top: 1px; right: 0; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 600; display: grid; place-items: center; }
+/* workspace switcher */
+.ws { display: flex; align-items: center; gap: 9px; padding: 6px; margin-bottom: 8px; border-radius: 9px; }
+.ws:hover { background: var(--w-hover); }
+.ws-ic { width: 28px; height: 28px; border-radius: 8px; background: var(--w-ink); color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 600; letter-spacing: .02em; flex: none; }
+.ws-name { font-weight: 600; font-size: 13px; line-height: 1.25; min-width: 0; }
+.ws-name small { display: block; font-weight: 400; font-size: 11px; color: var(--w-muted); }
+.ws > .icon { margin-left: auto; width: 14px; height: 14px; color: var(--w-faint); }
+/* agents, grouped by team, each with its own eyes */
+.team-label { display: flex; align-items: center; justify-content: space-between; font-size: 10px; font-weight: 500; letter-spacing: .08em; color: var(--w-faint); padding: 10px 8px 3px; text-transform: uppercase; }
+.team-label span { letter-spacing: 0; font-weight: 400; }
+.ag { display: flex; align-items: center; gap: 9px; height: 28px; padding: 0 8px; border-radius: 7px; color: var(--w-soft); border: 1px solid transparent; transition: background .2s, border-color .2s; }
+.ag svg.bot { width: 20px; height: 20px; flex: none; }
+.ag.on { background: #fff; color: var(--w-ink); font-weight: 500; border-color: var(--w-line); box-shadow: 0 1px 2px rgba(0, 0, 0, .05); }
+.ag-st { margin-left: auto; font-size: 10px; font-weight: 500; white-space: nowrap; }
+.ag-st.working { color: var(--w-muted); background: linear-gradient(90deg, var(--w-faint) 30%, var(--w-ink) 50%, var(--w-faint) 70%) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 1.6s linear infinite; }
+.ag-st.approval { color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 7px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.auto { display: flex; align-items: center; gap: 9px; height: 26px; padding: 0 8px; color: var(--w-soft); }
+.auto .icon { width: 14px; height: 14px; color: var(--w-muted); }
+.auto small { margin-left: auto; font: 10px var(--mono); color: var(--w-faint); }
+/* features the task uses: memory, skills, triggers, tools */
+.uses { display: flex; flex-wrap: wrap; gap: 5px; }
+.uses span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border: 1px solid var(--w-line); background: #fff; border-radius: 999px; font-size: 10.5px; color: var(--w-soft); white-space: nowrap; }
+.uses .icon { width: 11px; height: 11px; color: var(--w-muted); }
 .app-bar {
   grid-column: 1 / -1; display: flex; align-items: center; gap: 14px;
   height: 40px; padding: 0 12px; background: var(--w-side); border-bottom: 1px solid var(--w-line);
@@ -520,7 +549,7 @@ svg.bot { display: block; overflow: visible; }
   .menu-btn { display: grid; }
   .nav.open { display: flex; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; gap: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 8px 24px 16px; }
   .nav.open a { padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .tabs { grid-template-columns: repeat(5, minmax(150px, 1fr)); overflow-x: auto; scrollbar-width: none; }
+  .tabs { grid-template-columns: repeat(6, minmax(150px, 1fr)); overflow-x: auto; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .features, .pricing, .ind-slide, .faq { grid-template-columns: 1fr; }
   .feat-media, .plans, .ind-vis { border-right: 0; border-bottom: 1px solid var(--border); }
@@ -540,7 +569,9 @@ svg.bot { display: block; overflow: visible; }
   .header-actions .btn { display: none; }
   .hero { padding: 72px 16px 64px; }
   .stage { padding: 32px 16px 0; }
-  .app { grid-template-columns: 1fr; min-height: 0; }
+  .app, .stage .app { grid-template-columns: 1fr; min-height: 0; }
+  .stage .app { height: 920px; }
+  .stage .term { display: none; }
   .app-side { display: none; }
   .app-grid { grid-template-columns: 1fr; }
   .app-chips { display: none; }

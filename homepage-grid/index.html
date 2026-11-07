@@ -30,6 +30,8 @@
   <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
   <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-updown" viewBox="0 0 24 24"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
@@ -89,7 +91,7 @@
         <svg class="icon theme-icon-light"><use href="#i-moon"/></svg>
         <svg class="icon theme-icon-dark"><use href="#i-sun"/></svg>
       </button>
-      <a class="btn btn-glow" href="#pricing">Get started</a>
+      <a class="btn btn-glow" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
       <button class="icon-btn menu-btn" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><svg class="icon"><use href="#i-menu"/></svg></button>
     </div>
   </div>
@@ -104,10 +106,10 @@
       <h1 class="h1 rv">Your AI team,<br><span class="grad">on your own laptop</span></h1>
       <p class="lead rv">Titan117 is a general assistant and nine specialist agents for small companies. They build apps, read your documents, test your site, market your business and watch the web. Your data stays on your machine, and nothing goes out without your OK.</p>
       <div class="hero-ctas rv">
-        <a class="btn btn-glow" href="#pricing">Get started</a>
+        <a class="btn btn-glow" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
         <a class="btn btn-dark" href="#how">See how it works</a>
       </div>
-      <p class="hero-note rv">Local models free and unlimited · Cloud models through credits or your own key</p>
+      <p class="hero-note rv">For Windows and macOS · Local models free and unlimited · Any model on OpenRouter, with credits or your own key</p>
     </div>
 
     <div class="tabs" role="tablist" aria-label="What Titan117 does" id="product">
@@ -116,6 +118,7 @@
       <button class="tab" role="tab" aria-selected="false" data-tab="2"><svg class="icon"><use href="#i-folder"/></svg>Documents</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="3"><svg class="icon"><use href="#i-clock"/></svg>Automation</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="4"><svg class="icon"><use href="#i-megaphone"/></svg>Marketing</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="5"><svg class="icon"><use href="#i-terminal"/></svg>Code &amp; QA</button>
     </div>
 
     <div class="stage">
@@ -123,16 +126,24 @@
         <div class="app-bar">
           <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <div class="app-tabs"><span class="app-tab on" id="app-tab"></span><span class="app-tab"><svg class="icon"><use href="#i-plus"/></svg></span></div>
+          <div class="app-bar-right">
+            <span class="bar-btn" title="Memory"><svg class="icon"><use href="#i-brain"/></svg></span>
+            <span class="bar-btn" title="Approvals"><svg class="icon"><use href="#i-shield"/></svg><b id="app-approvals">1</b></span>
+            <span class="bar-btn" title="Apps"><svg class="icon"><use href="#i-layers"/></svg></span>
+          </div>
         </div>
         <aside class="app-side">
-          <div class="app-brand logo"><svg class="bot" data-bot="app" data-ink="#141414" aria-hidden="true"></svg>TITAN117</div>
+          <div class="ws">
+            <span class="ws-ic">AN</span>
+            <span class="ws-name">Atelier Nord<small>Pro · 3 devices</small></span>
+            <svg class="icon"><use href="#i-updown"/></svg>
+          </div>
           <div class="app-search"><svg class="icon"><use href="#i-search"/></svg>Search<kbd>Ctrl K</kbd></div>
-          <div class="app-label">AGENTS</div>
           <div id="app-agents"></div>
-          <div class="app-label">WORKSPACE</div>
-          <div class="app-item"><svg class="icon"><use href="#i-brain"/></svg>Memory</div>
-          <div class="app-item"><svg class="icon"><use href="#i-shield"/></svg>Approvals</div>
-          <div class="app-item"><svg class="icon"><use href="#i-layers"/></svg>Apps</div>
+          <div class="app-label">AUTOMATIONS</div>
+          <div class="auto"><svg class="icon"><use href="#i-record"/></svg>Stock export<small>Mon 08:00</small></div>
+          <div class="auto"><svg class="icon"><use href="#i-eye"/></svg>Law watch<small>Daily 07:00</small></div>
+          <div class="auto"><svg class="icon"><use href="#i-chart"/></svg>SEO re-audit<small>Fri 18:00</small></div>
         </aside>
         <div class="app-main" id="app-main"></div>
       </div>
@@ -373,7 +384,7 @@
       <h2 class="h2 rv">Give your company <span class="grad">a team that never sleeps in</span></h2>
       <p class="lead rv">Download Titan117, sign in, and hand over your first task in minutes.</p>
       <div class="hero-ctas rv">
-        <a class="btn btn-glow" href="#pricing">Get started</a>
+        <a class="btn btn-glow" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
         <a class="btn btn-dark" href="#faq">Read the FAQ</a>
       </div>
     </div>
