@@ -39,6 +39,10 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 18 Oct 2026 | Logo: an agent avatar (bloub engine) with an angry face; ~~a neon hexagon whose eyes follow the cursor~~ (since 7 Nov: the angry eyes beside TITAN117, ink at rest, tomato on hover); old helmet files, mockups and stand-in media deleted | [9](#9-brand) |
 | 7 Nov 2026 | Website: the framed-grid homepage (`homepage-grid/`, after the Atomist template) is the one design we keep; tomato accent, Titan's angry eyes with the TITAN117 wordmark; all other mockups removed | [18](#18-website-design) |
 | 7 Nov 2026 | Desktop app follows the current style: tomato `#ff6347` replaces neon green; light-gray sidebar, white workspace, black only for text, done marks and the activity log; agent eyes in their own colours; reference `desktop-mockup/`, rules in design.md 0.2 | [19](#19-desktop-app-style) |
+| 7 Nov 2026 | Your own coding tools (13.14): the code builder can hand work to Claude Code, Codex, Cursor's agent, OpenCode or Antigravity already installed and signed in on the laptop, run unmodified, under the user's own plan; we never touch their logins | [20](#20-your-own-coding-tools) |
+| 7 Nov 2026 | The app grows through add-ons Titan builds on request (agents, skills, tools, sidebar apps); agents never modify the core; safe mode and rollback; core fixes ship through our updates. In V1 | [21](#21-how-the-app-evolves) |
+| 7 Nov 2026 | Error reports: opt-in, shown in full before sending, no files, prompts or keys by default; grouped in the product owner portal; kept 90 days. In V1 | [22](#22-error-reports) |
+| 7 Nov 2026 | Security model in two parts (protecting users, protecting us), in `docs/security.md`: remote control off by default with two-factor and laptop-only approvals, end-to-end encryption in V1, a network policy per task, private chats only with web parity, a product owner portal, release protections, a pen test before beta | [23](#23-security-model) |
 
 ---
 
@@ -59,7 +63,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 - **Model sources:** local models (llama.cpp, built in), OpenRouter, and the user's own Anthropic, OpenAI or Google key.
 - **Paying for cloud models:** our credits, or the user's own key. Both need a subscription.
 - **Subscription first, then credits** to top up (Lovable's model). Plan names, prices and credits per plan are still open.
-- **No sign-in with chat subscriptions** (Claude Pro or Max, ChatGPT Plus or Pro, Gemini plans): Anthropic's terms ban it outside its own apps and it blocks such tools; OpenAI's position is unclear. Revisit only if a provider officially allows it.
+- **No sign-in with chat subscriptions** (Claude Pro or Max, ChatGPT Plus or Pro, Gemini plans): Anthropic's terms ban it outside its own apps and it blocks such tools; OpenAI's position is unclear. Revisit only if a provider officially allows it. Not to be confused with [§20](#20-your-own-coding-tools): running the vendor's own tool that the user signed into themselves.
 
 ## 4. Open-source reuse
 
@@ -218,13 +222,64 @@ Decided 17 Oct 2026.
 - **Type:** Figtree for the app, Unbounded only for the TITAN117 wordmark.
 - The logo restyle and trademark check in §9 still apply.
 
+## 20. Your own coding tools
+
+- **7 Nov 2026 (feature 13.14):** the code builder and the app builder can hand a coding task to a coding tool the user already has on the laptop: **Claude Code, Codex, Cursor's agent, OpenCode or Antigravity**. Titan117 starts it, feeds it the task, shows its steps and routes its approvals; the user keeps their own plan. Our own engine (OpenCode with local or OpenRouter models) stays the default and the fallback. Like T3 Code (MIT, ideas only for now), which "orchestrates" these tools with the credentials users already have.
+- **Why it's allowed (Anthropic, checked 7 Nov 2026):** Anthropic's Claude Code legal page lets products run Claude Code if the binary is **unmodified** with its sign-in methods intact, **each user authenticates with their own** subscription or API key, and nobody **pays for, resells or intermediates** their usage; it adds that its rules don't prevent "an end user from signing in to the unmodified Claude Code binary with their own Claude subscription". What it forbids: offering Claude sign-in inside our own app, routing requests through users' subscriptions, collecting or storing Claude credentials or session tokens, and Agent-SDK products on subscription logins (they must use API keys). Source: https://code.claude.com/docs/en/legal-and-compliance
+- **Rules we follow for every tool:**
+  1. Run the vendor's **own, unmodified** CLI or official SDK, installed by the user (or downloaded from the vendor with their OK). No patched binaries, no spoofed headers, no reimplementation of their client.
+  2. **Sign-in only through the vendor's own flow** (`claude auth login`, `codex login`, and so on), started by the user. We never read, copy, store, forward or proxy their tokens; their credential folders are off-limits to our agents (guardrails §8).
+  3. **No reselling or paying** for their usage; it stays on the user's plan. Credits are never charged for it.
+  4. It runs **inside our sandbox and approval layer**: only the task's folder, risky commands and pushes wait for the user.
+  5. **Names in plain text only:** we may say Titan117 "runs Claude Code"; never the vendor's names or logos in our product, feature or plan names, or anything suggesting a partnership.
+  6. Accept Anthropic's **Commercial Terms** for running Claude Code in our product, and check each vendor's terms before launch.
+- **Still to check before launch:** OpenAI (Codex with a ChatGPT plan in a third-party app: not clearly allowed or forbidden), Cursor (its agent CLI and SDK terms), Google (Antigravity), xAI (Grok CLI). Until a vendor's terms are clear, its adapter ships as an experimental option with an API-key mode.
+- **Risk:** vendors change these terms and enforce without notice (Anthropic restricted third-party harnesses several times in 2026). Every adapter has a kill switch we can flip from our cloud, and the task falls back to our own engine.
+
+## 21. How the app evolves
+
+- **7 Nov 2026, in V1 (features 18.1–18.9):** Titan117 is built like an operating system. The **core** (engine, permission and approval layer, model router, credits and metering, licence lease, sync, update channel) is fixed, signed and changed only by our releases. **Everything above it** (agents, skills, tools, sidebar apps, automations) can be added, changed and removed by users and by Titan.
+- When a user needs something we didn't build, they ask Titan; it plans the add-on, shows what it will create and what it may access, and builds it after their OK, using the agent builder (§4 of the feature map), the coding engine and the app builder. Add-ons are packages with a `titan.json` manifest, run in the marketplace sandbox, have versions and rollback, and can be shared on the marketplace.
+- **Agents never modify the core** on the user's computer: no writing to the app's files, its permission, credit or licence settings, or its update channel. Why: an agent that could edit the permission layer could switch off every safety check (one poisoned web page would be enough); it would break code signing and auto-update; it would make the licence and metering trivially bypassable; and every user would run a different app we couldn't support.
+- **Safe mode:** if the app can't start, or keeps failing after an add-on changed, it starts with add-ons off and offers to roll back or remove the one that broke it.
+- **Core fixes come from us:** Titan can attach a write-up and a suggested fix to an error report (§22), with the user's consent; we review it and ship it to everyone through auto-update.
+- Plan: agents and skills on request in phase 11; tools, sidebar apps, add-on packages, safe mode and the core-is-off-limits checks in phase 16; the fix loop in phase 18.
+
+## 22. Error reports
+
+- **7 Nov 2026, in V1 (features 19.1–19.11):** when something breaks, the user can send us a report and we see it in the product owner portal. It must never look like hidden telemetry in a local-first product, so:
+  - **Opt-in:** "always ask" is the default; the user can switch to "send automatically" or "never".
+  - **Shown in full** before anything leaves the laptop.
+  - **What's in it:** versions, OS, the agent or feature, the error and stack trace, the last redacted log lines, the user's note. **Never** file contents, prompts, memory, keys, passwords or tokens; prompts and files only if the user ticks a box for that one report; nothing from "local models only" folders.
+  - **Offline:** reports wait in the offline queue.
+  - **Kept 90 days**, deleted with the account.
+- **Where they go (leaning):** our own Convex tables (`errorReports`, `errorGroups`) and the product owner portal in the web app, so the data stays with us and follows our deletion rules. A hosted tracker is the alternative if we outgrow it: GlitchTip (MIT) or Bugsink can be self-hosted; Sentry's service and its MIT SDKs could be used, but its server is fair-code (ideas only, §4). Native crashes use Electron's crash reporter.
+- Each report gets a reference ID; groups link to an issue and the release that fixed them, so the app can say "Fixed in 1.4, update now?".
+- Errors from add-ons go to the user, not to us, unless the add-on's author opts in.
+- Plan: error capture and the redacted local log in phase 1; reports end to end (card, Report a problem, crash reporter, queue, product owner portal, reference IDs, setting) in phase 5; triage and the fix loop in phase 18.
+
+## 23. Security model
+
+- **7 Nov 2026:** security is written in [`docs/security.md`](../security.md) in two parts, **protecting our users** (their data, laptop and account) and **protecting us** (credits, subscriptions, our keys, our releases, our portal). Rules with their enforcement are in the guardrails.
+- **Remote control** (users): off by default, switched on per laptop; **two-factor required** to switch it on (Clerk, a passkey first); pairing confirmed on the laptop; **laptop-only approvals** for deleting, payments, sending files or data out, installing add-ons and changing permissions (or remotely after a second factor, if the user chooses); alerts on every remote task; "Revoke all devices". **As easy as possible:** the one-time setup is part of the setup checklist, and everything else can be approved anywhere.
+- **End-to-end encryption is V1** (feature 9.5), with the key design in the architecture: device keys made on each device, pairing confirmed by a matching code, ciphertext only in Convex, key rotation when a device is removed. Chat channels can't be end-to-end, and the app says so.
+- **Network policy per task** (after Claude Code, Codex, Cursor and the browser agents): site lists, ask before a new site once private data was read, block requests carrying private content.
+- **Chat channels:** one-time-code linking, private chats only in V1; **the web and phone apps can do everything a channel can.**
+- **Product owner portal** (us): a separate app for the owner and employees, with error reports, accounts, credit corrections, kill switches and releases; two-factor required; every view logged.
+- **Our money and keys:** balance and entitlements only on the server, the proxy checks before every call, a signed licence lease, device limits on the server, hard spending caps on every paid provider. A cracked app only unlocks local features (accepted, §17).
+- **Our releases** (the owner's development process): cloud code signing, a second signature for updates, branch protection, pinned GitHub Actions, a second approval to publish, two-factor everywhere.
+- **Process:** `security.txt` with `security@titan117.com`; an incident checklist with a rotation step per key; an **external penetration test before the public beta** (phase 18).
+- **Accepted risks:** malware already on a user's laptop; cracking the licence for local features; chat channels not being end-to-end; users approving a harmful action they were shown; vendors changing their terms.
+
 ## 11. Deleting data
 
 To write in phase 2, as in Ninjathons: account deletion with a grace period, then a batched hard delete in our cloud, Clerk and payments. **Every new Convex table gets a row here when it's created.**
 
 | Data | Tables | On account deletion |
 |---|---|---|
-| *(none yet)* | | |
+| Remote control keys (planned, phase 15; decisions §23): each paired device's public key, its name and pairing time; never private keys or message content | `deviceKeys` | Deleted with the device and on account deletion |
+| Product owner portal audit (planned, phase 5; decisions §23): which admin viewed or changed what, and when | `adminAudit` | Kept 2 years for accountability; user references removed on account deletion |
+| Error reports (planned, phase 5; decisions §22): app and component versions, OS, feature, error, stack trace, redacted log lines, the user's note, a reference ID; grouped by signature | `errorReports`, `errorGroups` | Reports deleted after 90 days, and at once on account deletion; groups keep only counts and versions, with no user link |
 
 ---
 

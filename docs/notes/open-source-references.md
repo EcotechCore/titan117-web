@@ -216,6 +216,7 @@ The projects most like Titan117: local-first desktop apps (Electron) that run pe
 
 | Project | What to take | Licence (believed) | Use | Folder | Licence checked | Commit |
 |---|---|---|---|---|---|---|
+| [pingdotgg/t3code](https://github.com/pingdotgg/t3code) | Orchestrates Claude Code, Codex, Cursor, OpenCode, Antigravity and Grok from one window with the user's own sign-ins: the model for feature 13.14 (decisions §20) | MIT | Ideas | not cloned | MIT | |
 | [jeremy-prt/bloub](https://github.com/jeremy-prt/bloub) | Agent avatars: one SVG shape morphing through 15 states (thinking, notify, orbit…), 8 shapes, 16 expressions, eyes that follow the pointer. Its framework-free `src/bot/` engine will draw the logo and every agent avatar; the homepage logo's eyes run its bundled build (`homepage-grid/assets/bot.js`) | MIT | Code | `avatars/bloub` | MIT (Jérémy Perret, 2026) | `b4bb3c1` |
 | [ayangabryl/asciify-engine](https://github.com/ayangabryl/asciify-engine) | ASCII backgrounds. The old mockup's ASCII field (`mockup/src/js/10-bg.js`, removed with the mockups on 7 Nov 2026; still in git history) ported its `caustics`, `contour` and `ripple` scenes, its value noise and its lantern hover (`src/field/field-shaders.ts`, `src/field/glyph-field.ts`): lines one cell wide via `fwidth` | MIT | Code | not cloned | MIT (ayangabryl, 2026) | `8925e5b` |
 

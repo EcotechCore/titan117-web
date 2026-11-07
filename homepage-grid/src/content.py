@@ -227,10 +227,10 @@ AGENTS = [
         "caps": [
             ("folder", "Any local repo", "Open a repository or folder that already lives on your laptop."),
             ("note", "Plan, then act", "See the plan and the files it will touch before anything changes."),
-            ("code", "Reviewable diffs", "Accept or reject every edit."),
+            ("code", "Reviewable diffs", "Accept or reject every edit, and ask for a review of any diff or pull request."),
             ("terminal", "Tests and dev server", "Runs commands through the sandboxed shell."),
             ("git", "Branches and pull requests", "Commits and opens pull requests on GitHub."),
-            ("bug", "Code review", "Reviews a diff or pull request for bugs."),
+            ("key", "Your own coding tools", "Already have Claude Code, Codex or Cursor? Titan117 can run it on your laptop under your own sign-in and plan, inside its approvals."),
         ],
         "steps": [
             ("Open a repo", "Pick the folder; it learns the project's conventions."),
@@ -246,8 +246,8 @@ AGENTS = [
         ],
         "needs": [
             ("Runs on", "Your laptop, in the folders you open"),
-            ("Models", "Any model, local or on OpenRouter"),
-            ("Cost", "Free on local models; cloud models use credits"),
+            ("Models", "Any model, local or on OpenRouter, or a coding tool you already have"),
+            ("Cost", "Free on local models; cloud models use credits; your own coding tool stays on your plan"),
             ("Asks first", "Risky commands, pushing and opening pull requests"),
         ],
         "pairs": ["qa", "app-builder", "titan"],
@@ -562,11 +562,11 @@ LESSONS = [
       ("Approve and schedule", "Posts go out on time, even with the laptop closed where the platform allows it.")],
      ["Nothing is posted without your approval."]),
     ("phone", "remote", "Control it from your phone", "Pair your phone, link Telegram, and approve tasks on the go.", 6, "Beginner",
-     [("Pair a device", "Scan the code in the app to pair the web app or phone."),
+     [("Switch on remote control", "In the desktop app, turn on remote control and add a passkey or authenticator once. Then scan the code to pair the web app or phone, and confirm on the laptop."),
       ("Link Telegram", "Message Titan; the laptop does the work while it is on."),
       ("Approve from chat", "Approval requests arrive where you are."),
       ("WhatsApp, if you want", "Bring your own WhatsApp Business account on the official API.")],
-     ["Commands and results are end-to-end encrypted.", "Only linked accounts count as you."]),
+     ["Commands and results are end-to-end encrypted.", "Deleting, payments and sending files out are approved on the laptop.", "Revoke all devices in one click if a phone is lost."]),
     ("credits", "models", "Credits and your own keys", "What a credit is, what is free, and how to cap spending.", 4, "Beginner",
      [("What a credit is", "1 credit = €0.01 of cloud usage at our price."),
       ("What is free", "Local models, previews, tests, documents and anything on your own key."),
@@ -593,6 +593,7 @@ FAQ_GROUPS = [
         ("What is a credit?", "One credit is €0.01 of cloud model usage at our price. Every task shows its estimate first and can be capped."),
         ("What is free?", "Local models, previews, tests, documents, and anything run with your own API key."),
         ("Do credits expire?", "Monthly credits roll over for one month. Top-up credits last 12 months while a paid plan is active."),
+        ("Can I use Claude Code, Codex or Cursor that I already pay for?", "Yes, for coding work. If one of them is installed and signed in on your laptop, the code builder and app builder can hand it the task. Titan117 runs the vendor's own program, you sign in through the vendor's own screen, and the usage stays on your plan: no credits, and we never see your login. Each tool's terms are checked before launch."),
     ]),
     ("pricing", "Plans and billing", [
         ("Is there a free plan or trial?", "No. Titan117 works with a subscription from €15 a month. Local models are unlimited on every plan."),
@@ -607,8 +608,9 @@ FAQ_GROUPS = [
         ("How many devices can I use?", "Two on Starter, three on Pro, five on Max, and as many as you need on Custom."),
     ]),
     ("remote", "Remote control and channels", [
-        ("Can I use it from my phone?", "Yes. Start and approve tasks from the web app, the phone app, or Telegram and WhatsApp. The laptop does the work while it is on."),
-        ("Is remote control secure?", "Commands and results are end-to-end encrypted; our servers pass along what they can't read. Only linked accounts count as you."),
+        ("Can I use it from my phone?", "Yes. Start, watch and approve tasks from the web app or the phone app, which can do everything, or from Telegram and WhatsApp. The laptop does the work while it is on."),
+        ("Is remote control secure?", "It is off until you switch it on in the desktop app, which asks for two-factor once (a passkey is the quickest). New devices are confirmed on your laptop's screen, and the riskiest actions (deleting, payments, sending files out, installing add-ons) are approved on the laptop. Commands and results are end-to-end encrypted, so our servers pass along what they can't read. You get an alert when a remote task starts, and can revoke all devices in one click."),
+        ("Can I do everything from the web app, or only from Telegram?", "Everything. The web and phone apps can start, watch, approve and cancel tasks, show results and take a file. Telegram and WhatsApp are a convenience for private chats; group chats are not supported."),
         ("Do I need a WhatsApp Business account?", "Yes, for WhatsApp: you connect your own account on the official WhatsApp Business Platform, and Meta bills you directly. Telegram is free."),
     ]),
 ]

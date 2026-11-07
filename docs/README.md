@@ -7,6 +7,7 @@
 | [01-launch-roadmap-v1.md](01-launch-roadmap-v1.md) | The 19 phases to launch, each with a check that marks it done |
 | [03-architecture.md](03-architecture.md) | Cloud, desktop engine, two repos, model flows, key flows, security |
 | [guardrails.md](guardrails.md) | Rules for both repos, each with what enforces it |
+| [security.md](security.md) | Threat model in two parts (protecting users, protecting us), accepted risks, vulnerability reporting, incident checklist |
 | [progress.md](progress.md) | Phase status and a dated log of the work done |
 | [notes/decisions.md](notes/decisions.md) | Every decision so far and the open ones; wins over other docs |
 | [notes/brainstorming-feature-map.md](notes/brainstorming-feature-map.md) | Every feature, by area; all of it is V1 |

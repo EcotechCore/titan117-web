@@ -92,6 +92,7 @@ A background process in TypeScript (Node or Bun). Its parts:
 | Scheduler and job queue | Scheduled and long tasks with checkpoints, resume after sleep (1.5, 1.6, 8.1) | SQLite |
 | Tools | Browser (Playwright), sandboxed shell, files, code, MCP client, web search | Each in its own process where possible |
 | Coding engine | All code work: the code builder and the app builder (§13, §6) | OpenCode in headless server mode, as a child process (leaning, open decision 11) |
+| Your own coding tools | Hands a coding task to a tool the user already has (feature 13.14, decisions §20) | One adapter per tool that starts the vendor's unmodified CLI as a child process through the sandboxed shell, in the task's folder; reads its output stream; maps its permission prompts to our approvals. Never reads, copies or forwards the tool's credentials |
 | Local models | Running models on the laptop | llama.cpp (MIT), built in |
 | Components manager | Downloads, updates and removes heavy parts (1.13) | Our code |
 | Requirements checker | "You need this first" cards before a task starts (1.16–1.19) | Our code |
@@ -120,7 +121,19 @@ Next.js on Vercel, built on the Ninjathons patterns (guardrail wrappers, entitle
 - Shared artifacts viewer with comments (17.13, 17.14).
 - Marketplace browsing (§10).
 
-The web app holds no company data and runs no agents.
+The web app holds no company data and runs no agents. **Everything a chat channel can do, the web app can do too** (start, watch, approve, cancel, results, add a file).
+
+### Product owner portal
+
+A separate Next.js app at its own address (for example `admin.titan117.com`) for us: error reports (§22 of the decisions), accounts and plans, credit corrections, kill switches for add-ons and coding-tool adapters, releases. Clerk organisation with MFA enforced, `adminQuery`/`adminMutation` only, every view and change written to `adminAudit` ([security.md](security.md) B6).
+
+### End-to-end encryption of remote control
+
+- **Keys:** each device (laptop, browser, phone) makes its own X25519 key pair; private keys stay in the OS keychain or as a non-extractable browser key. Convex stores public keys per device.
+- **Pairing:** the new device scans the laptop's QR; both show the same 6-character code derived from the two public keys; the user confirms on the laptop, which then trusts that key.
+- **Messages:** commands are sealed to the target laptop's key; events and results to every paired device of the account (libsodium, XChaCha20-Poly1305). Convex keeps ciphertext plus routing metadata: device, command type, time, size, status.
+- **Revoking:** the removed device's key is deleted, and the laptop rotates its own key and re-shares it with the remaining devices; "Revoke all devices" resets every pairing.
+- **Chat channels are not end-to-end** (the platform sees the message); the app says so when a channel is linked.
 
 ### Convex
 
@@ -191,6 +204,21 @@ The router also handles: model per agent and per step (2.3), escalation from che
 5. Errors go back to the agents until the checks pass or the budget runs out.
 6. A new version is saved; optionally the app is added to the sidebar (6.2).
 
+### Sending an error report
+
+1. A crash (Electron's crash reporter) or an error in the engine, an agent or a tool is caught and written to the local log, with keys and tokens redacted.
+2. The window shows "Something went wrong" with the full report; nothing is sent until the user says so (or has chosen "send automatically").
+3. The engine sends it through the cloud bridge to Convex (`errorReports`); offline, it waits in the offline queue.
+4. Convex groups it by signature (`errorGroups`) and returns a reference ID; the product owner portal in the web app shows groups, counts, versions and alerts.
+5. When a release fixes a group, the app shows "Fixed in 1.4, update now?" to users who reported it.
+
+### Building an add-on on request
+
+1. The user asks Titan for something we don't have; Titan proposes the add-on (an agent and skills, a tool, or a sidebar app) and the permissions it needs.
+2. After the user's OK, the agent builder, the coding engine or the app builder creates it as a package with a `titan.json` manifest.
+3. It installs through the same permissions screen and sandbox as a marketplace item, with a version to roll back to.
+4. The core (engine, permission layer, credits, licence, updates) is outside every agent's allowed folders, so nothing can modify it.
+
 ### Sharing an artifact
 
 1. The user clicks Share; the artifact (only that one) is uploaded to Convex storage.
@@ -232,7 +260,10 @@ The full rules, each with what enforces it, are in [guardrails.md](guardrails.md
 - Shell and coding tasks run in separate processes, limited to allowed folders.
 - Web content is data, never instructions; agents can't write it into memory as rules (4.9).
 - Secrets only in the OS keychain, never in memory, recordings or logs.
-- Remote commands only from paired devices of the same account; end-to-end encryption later (9.5).
+- Remote commands only from paired devices of the same account; **end-to-end encryption in V1** (9.5, design below); remote control off by default, two-factor to switch it on, laptop-only approvals for the riskiest actions ([security.md](security.md) A1).
+- A network policy per task: site lists, asking before new sites after private data, blocking requests that carry private content (A3).
+- The product owner portal: named people, two-factor, every view logged (B6).
+- The threat model, accepted risks, vulnerability reporting and the incident checklist: [security.md](security.md).
 - Signed installers and signed updates.
 - Marketplace items: permissions screen, sandbox, dependency scan, pinned commits (§10).
 

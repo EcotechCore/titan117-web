@@ -64,7 +64,7 @@ An AI team for small companies that runs on your own laptop: a general assistant
 | 2.7 | Image, voice and video providers | V1 | OpenRouter covers text and some images; video needs a second provider (fal.ai or Replicate, to check) |
 | 2.8 | Compare models side by side | V1 | Same prompt, several models |
 | 2.9 | Your own key from a model provider | V1 | Anthropic, OpenAI or Google API keys, used directly next to OpenRouter; kept in the OS keychain |
-| 2.10 | No sign-in with chat subscriptions | Decided | Claude Pro or Max, ChatGPT Plus or Pro and similar plans are not used to run our agents (see Not doing) |
+| 2.10 | No sign-in with chat subscriptions | Decided | Claude Pro or Max, ChatGPT Plus or Pro and similar plans are not used to run our agents (see Not doing). Different from 13.14, where your own installed coding tool runs under its own sign-in |
 
 ## 3. Chat and the memory agent
 
@@ -226,9 +226,13 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 | 9.2 | Device list, paired by code or QR | V1 | Online or offline status |
 | 9.3 | Start and watch agents from the browser | V1 | Commands through Convex; the desktop only connects out |
 | 9.4 | Approvals from the web | V1 | |
-| 9.5 | End-to-end encryption of commands and results | V1 | Our servers pass along what they can't read |
+| 9.5 | End-to-end encryption of commands and results | V1 | Our servers pass along what they can't read. Device keys made on each device, pairing confirmed by a matching code on the laptop, keys rotated when a device is removed (architecture, security.md A2) |
 | 9.6 | Mobile app on the same mechanism | V1 | |
-| 9.7 | Chat channels: Telegram, WhatsApp, Discord, Slack | V1 | Message Titan from your phone and the laptop does the work while it's on; channels linked to an account, approvals work there too. Telegram first (decisions §14); WhatsApp is bring-your-own through the official Cloud API (decisions §15) |
+| 9.7 | Chat channels: Telegram, WhatsApp, Discord, Slack | V1 | Message Titan from your phone and the laptop does the work while it's on; channels linked to an account, approvals work there too. Telegram first (decisions §14); WhatsApp is bring-your-own through the official Cloud API (decisions §15). Linked with a one-time code; private chats only in V1 |
+| 9.8 | **Safe remote control, easily** | V1 | Off by default; switched on per laptop in the desktop app; two-factor required to switch it on (a passkey suggested first, part of the setup checklist); pairing confirmed on the laptop (decisions §23) |
+| 9.9 | Laptop-only approvals | V1 | Deleting, payments, sending files or data out, installing add-ons, changing permissions and pairing are approved on the laptop, or remotely after a second factor if the user chooses |
+| 9.10 | Alerts and revoke all | V1 | A quiet alert on every device when a remote task starts; "Revoke all devices" from the web app, the desktop app or the alert email |
+| 9.11 | The web and phone apps do everything chat does | V1 | Start, watch, approve, cancel, read results, add a file: chat channels are a convenience, never the only way |
 
 ## 10. Marketplace (free, built on GitHub)
 
@@ -257,6 +261,7 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 | 11.5 | BYOK | V1 | Key kept on the device, in the OS keychain |
 | 11.6 | Teams, roles, audit log | V1 | |
 | 11.7 | Agency and white-label plan | V1 | |
+| 11.8 | **Product owner portal** | V1 | Our own admin app at its own address, for the owner and employees: error reports (§19), accounts and plans, credit corrections, kill switches, releases; two-factor required; every view logged (decisions §23) |
 
 ## 12. Trust and security (across everything)
 
@@ -267,6 +272,8 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 - Memory you control (3.3), memory scopes (3.4), "local models only" folders (7.7).
 - Secrets in the OS keychain, never in files, recordings or memory (8.5, 11.5).
 - Account deletion and GDPR: to write up, like Ninjathons' decisions §4.
+- A network policy per task: site lists, asking before a new site once private data was read, blocking requests that carry private content (security.md A3).
+- The full threat model, in two parts (protecting users, protecting us), accepted risks, vulnerability reporting and the incident checklist: [security.md](../security.md).
 
 ## 13. Code builder and the shared coding engine
 
@@ -287,6 +294,7 @@ One coding engine runs inside the desktop app and powers every agent that writes
 | 13.11 | Live preview next to the code | V1 | For web apps; shared with the app builder |
 | 13.12 | Open in the user's editor | V1 | VS Code, Cursor, JetBrains |
 | 13.13 | Start and watch coding tasks remotely | V1 | Web app (§9) and chat channels (9.7) |
+| 13.14 | **Use the coding tools you already have** | V1 | If Claude Code, Codex, Cursor's agent, OpenCode or Antigravity is installed and signed in on the laptop, the code builder and app builder can hand a coding task to it instead of our engine. Titan117 starts the vendor's own, unmodified program; you sign in through the vendor's own flow; usage stays on your plan. Rules in decisions §20 |
 
 ## 14. SEO
 
@@ -401,11 +409,47 @@ Every artifact can be downloaded in the formats that fit it, from a Download but
 | 17.24 | Agents can save files too | V1 | "Save the offer as PDF in the Client X folder" works as a task, with no clicks |
 | 17.25 | Google Docs, Sheets and Slides | V1 | Through the user's Google account (MCP, 3.6) |
 
+## 18. Growing the app (it evolves without touching its core)
+
+Titan117 is built like an operating system: a **fixed core** we sign and update (the engine, the permission and approval layer, model routing, credits, licence, sync) and **everything above it** that users and Titan can add to, change and remove (agents, skills, tools, sidebar apps, automations). When someone needs something we didn't build, Titan builds it on top, as an add-on. No agent ever edits the core (decisions §21).
+
+| # | Feature | Stage | Notes |
+|---|---|---|---|
+| 18.1 | **Ask Titan for what's missing** | V1 | "I need an agent that…", "connect to our invoicing software", "a screen to track X": Titan plans the add-on, shows what it will create and what it may access, and builds it after your OK |
+| 18.2 | Agents and skills on request | V1 | Titan writes a new agent definition (4.1) and the skills it needs (3.5); it appears in the sidebar under a team you pick |
+| 18.3 | Tools on request | V1 | A small connector (an MCP tool, 3.6) for software we don't support, written by the coding engine (§13), with declared permissions |
+| 18.4 | Sidebar apps on request | V1 | A screen built by the app builder and added to the sidebar with the `titan` SDK (6.2) |
+| 18.5 | Add-ons are sandboxed packages | V1 | Every add-on has a `titan.json` manifest (10.1) listing its permissions; it runs in the sandbox (10.8) and goes through the same permissions screen as a marketplace item (10.7); versions and one-click rollback |
+| 18.6 | Share what you built | V1 | Publish an add-on to the marketplace (10.6); other companies install it with the same checks |
+| 18.7 | **Safe mode** | V1 | If the app fails to start or keeps failing after an add-on changed, it starts with add-ons off and offers to roll back or remove the one that broke it |
+| 18.8 | The core is off-limits | V1 | Agents and add-ons can't write to the app's own files, its settings for permissions, credits or licence, or its update channel (guardrails §4) |
+| 18.9 | Core fixes come from us | V1 | When the problem is in the core, Titan writes up what went wrong, and optionally a suggested fix, for an error report (19.6); we review it and ship the fix to everyone through auto-update (1.10) |
+
+## 19. Error reports
+
+When something breaks, the user can send us a report in one click, and we see it, grouped, in our product owner portal. Opt-in, shown in full before sending, never with the user's files, prompts or keys (decisions §22).
+
+| # | Feature | Stage | Notes |
+|---|---|---|---|
+| 19.1 | Catch every error | V1 | App crashes (Electron's crash reporter), engine and agent errors, add-on errors, failed tasks; written to a local, redacted log |
+| 19.2 | "Something went wrong" card | V1 | After a crash or failed task: what happened in plain words, "Send a report?", and **the full report shown before it leaves the laptop** |
+| 19.3 | Report a problem | V1 | A Help menu button for things that aren't crashes ("the app builder got stuck"), with a note and an optional screenshot |
+| 19.4 | What a report holds | V1 | App and component versions, OS, the agent or feature, the error and stack trace, the last log lines (redacted), the user's note. **Never** file contents, prompts, memory, keys, passwords or tokens; prompts and files only if the user ticks a box for that one report; nothing from "local models only" folders |
+| 19.5 | Reference ID and follow-up | V1 | Each report gets an ID (for example `T117-4F2A`); the app later shows "Fixed in 1.4, update now?" for errors linked to a release |
+| 19.6 | Suggested fix | V1 | Optionally attached by Titan with the user's consent (18.9) |
+| 19.7 | Setting | V1 | Always ask (default), send automatically, or never; changeable any time |
+| 19.8 | Offline | V1 | Reports wait in the offline queue (1.24) and send when the connection is back |
+| 19.9 | Product owner portal | V1 | For us: errors grouped by signature with counts, versions, OS and first/last seen; open a report; link a group to an issue and the release that fixes it; alerts on new or spiking errors |
+| 19.10 | Add-ons' errors | V1 | Go to the user, not to us, unless the add-on's author opts in through the marketplace |
+| 19.11 | Retention | V1 | Reports kept 90 days, deleted with the account (decisions §11) |
+
 ## Not doing
 
 - Hosted agents that keep running when the laptop is closed. A paid cloud runner could come much later, but it isn't the product.
 - Bypassing CAPTCHAs, paywalls or site terms in the web watcher and the recorder.
-- Signing in with chat subscriptions (Claude Pro or Max, ChatGPT Plus or Pro, Gemini plans) to run our agents. Anthropic's terms have banned this outside its own apps since February 2026 and it blocks such tools, and users' accounts can be banned. OpenAI's position is unclear. Users bring an API key instead (2.9). Revisit only if a provider officially allows it for third-party apps.
+- Agents changing the app's own code or core settings on the user's computer (18.8). The app grows through add-ons; the core changes only through our signed updates.
+- Hidden telemetry. Error reports are opt-in and shown in full before sending (§19).
+- Signing in with chat subscriptions (Claude Pro or Max, ChatGPT Plus or Pro, Gemini plans) to run our agents. Anthropic's terms have banned this outside its own apps since February 2026 and it blocks such tools, and users' accounts can be banned. OpenAI's position is unclear. Users bring an API key instead (2.9). Revisit only if a provider officially allows it for third-party apps. This is not the same as 13.14: there, Titan117 starts the vendor's own unmodified tool that you installed and signed into yourself, and never sees your login.
 
 ## Open decisions
 
@@ -552,3 +596,15 @@ Every artifact can be downloaded in the formats that fit it, from a Download but
 - A Download button on every artifact, in every format that fits: PDF, Word, PowerPoint, Excel, CSV, Markdown, offline HTML, PNG, SVG, ZIP of the code; real editable files, converted on the laptop; several at once as a ZIP; agents can save files to a folder
 - Optional sharing by private link, with comments; local until you share
 - Live data from sidebar apps, scheduled updates, and turning an artifact into a real app
+
+**18. Growing the app**
+- Ask Titan for an agent, skill, tool or sidebar app we don't have; it builds it as a sandboxed add-on after your OK
+- Add-ons have manifests, permissions, versions and rollback; share them on the marketplace
+- Safe mode starts the app with add-ons off when something breaks
+- The core (engine, permissions, credits, licence, updates) is never changed by an agent; core fixes come from us through auto-update
+
+**19. Error reports**
+- Crashes and failed tasks caught and logged locally, redacted
+- "Send a report?" with the full report shown first; a Report a problem button; always ask, send automatically, or never
+- Never files, prompts, memory or keys unless you tick a box; reference IDs and "fixed in" follow-ups
+- An product owner portal for us with grouped errors, versions and alerts; reports kept 90 days
