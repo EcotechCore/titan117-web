@@ -2,7 +2,7 @@
 
 Version 0.2 · 7 Nov 2026 (replaces 0.1 of 16 Oct 2026; decisions §19)
 
-The desktop app's design rules, written from the clickable mockup in [`desktop-mockup/`](../../desktop-mockup/README.md), which grew out of the app window on the website. The website has its own system in [`homepage-grid/design.md`](../../homepage-grid/design.md); both share the colours, type and logo below.
+The desktop app's design rules, written from the clickable mockup in the desktop repo (`titan117-desktop/mockup/`), which grew out of the app window on the website. The website has its own system in [`homepage-grid/design.md`](../../homepage-grid/design.md); both share the colours, type and logo below.
 
 **What changed from 0.1:** neon green `#c4f012` is gone. The one accent is **tomato `#ff6347`**, the font is Figtree, and the logo is Titan's angry eyes next to the TITAN117 wordmark. The rule that matters most stays: **no black buttons or selections in the app.**
 

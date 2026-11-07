@@ -1,6 +1,6 @@
 # Guardrails
 
-Draft, 15 Oct 2026. The rules every piece of work in `titan117-web` and `titan117-desktop` follows, so what we build works and doesn't open security holes. Shared doc: edited in `titan117-web`, copied to the desktop repo (decision 17). Built on the Ninjathons guardrail ("every check happens in Convex, before the data leaves the server") and extended for the desktop engine. Architecture: [03-architecture.md](03-architecture.md). Features: [notes/brainstorming-feature-map.md](notes/brainstorming-feature-map.md).
+Draft, 15 Oct 2026. The rules every piece of work in `titan117-web`, `titan117-desktop` and `titan117-pop` follows, so what we build works and doesn't open security holes. Shared doc: edited in `titan117-web`, copied to the desktop repo (decision 17). Built on the Ninjathons guardrail ("every check happens in Convex, before the data leaves the server") and extended for the desktop engine. Architecture: [03-architecture.md](03-architecture.md). Features: [notes/brainstorming-feature-map.md](notes/brainstorming-feature-map.md).
 
 **How this file works:** every rule names what **enforces** it (a lint rule, a test, a CI check, or a review step). A rule nobody checks is a wish, so new rules come with their check. If a check fails, the work isn't done and the pull request doesn't merge.
 
@@ -123,11 +123,12 @@ Why these rules: remote control lets a task started from the web, a phone or cha
 
 *Enforced by:* tests on both sides, and the compatibility test in the desktop repo.
 
-## 10. Two repos in step
+## 10. Repos in step
 
-- Backend changes land first and stay backward compatible while older desktop versions use them.
+- Backend changes land first and stay backward compatible while older desktop versions (and the portal) use them.
 - Protocol messages carry a version; an old desktop shows "please update".
-- The desktop repo updates `@titan117/shared` in its own commit, at a fixed version.
+- The desktop and portal repos update `@titan117/shared` in their own commit, at a fixed version.
+- The portal has no backend: every admin function lives in `titan117-web`'s Convex, behind `adminQuery`/`adminMutation`.
 
 *Enforced by:* the compatibility test in desktop CI, and the docs copy check (decision 17).
 
@@ -148,7 +149,7 @@ Why these rules: remote control lets a task started from the web, a phone or cha
 
 ## 12b. The product owner portal
 
-Our own admin app ([security.md](security.md) B6), separate from the user web app, at its own address: error reports, accounts and plans, credit corrections, kill switches, releases.
+Our own admin app ([security.md](security.md) B6), in its own repo `titan117-pop`, separate from the user web app, at its own address: error reports, accounts and plans, credit corrections, kill switches, releases.
 
 - Only named people; the admin role is set from the Convex CLI, never from a screen.
 - **Two-factor required** (Clerk organisation with MFA enforced).
@@ -163,7 +164,7 @@ Our own admin app ([security.md](security.md) B6), separate from the user web ap
 - `titan117-desktop`: a version tag builds, signs (Apple notarization, Windows certificate) and publishes; staged rollout of updates; a way to pull a bad update.
 - **CI secrets scoped per job**: the signing certificate only in the desktop release job, the Vercel token only in the web deploy.
 - **Signing keys never as files** ([security.md](security.md) B5): code signing through a cloud signing service (Azure Trusted Signing; Apple notarization); updates also signed with our own update key, which the app pins.
-- **Branch protection on `main`** in both repos: pull requests only, CI green; a second developer's review once there are two.
+- **Branch protection on `main`** in every repo: pull requests only, CI green; a second developer's review once there are two.
 - **GitHub Actions pinned to exact commits.**
 - **Releases need a second step**: a protected GitHub environment approved by a second person, or by the owner with two-factor while alone.
 - **Two-factor on every account that can ship or bill**: GitHub, Apple, Microsoft, Vercel, Convex, Clerk, Stripe, OpenRouter, the domain registrar.
@@ -182,7 +183,7 @@ The app builder writes code for users, so its output gets guardrails too:
 
 ## 15. Pull request checklist
 
-Copied into both repos' pull request template:
+Copied into every repo's pull request template:
 
 - [ ] Typecheck, lint, tests and build pass
 - [ ] New gated functions or tools have denial tests
@@ -195,14 +196,14 @@ Copied into both repos' pull request template:
 
 ## 16. CI per repo
 
-| Check | `titan117-web` | `titan117-desktop` |
-|---|---|---|
-| Typecheck, lint, build | ✓ | ✓ |
-| Tests, including denial and coverage tests | ✓ (Convex functions) | ✓ (engine tools and API) |
-| Prompt injection suite | | ✓ |
-| Compatibility test against the backend | | ✓ |
-| What's inside the build | | ✓ |
-| Docs copy is current | | ✓ |
-| Secret scanning | ✓ | ✓ |
-| Vulnerable dependencies | ✓ | ✓ |
-| Licence check | ✓ | ✓ |
+| Check | `titan117-web` | `titan117-desktop` | `titan117-pop` |
+|---|---|---|---|
+| Typecheck, lint, build | ✓ | ✓ | ✓ |
+| Tests, including denial and coverage tests | ✓ (Convex functions, including admin) | ✓ (engine tools and API) | ✓ (screens refuse without the admin role) |
+| Prompt injection suite | | ✓ | |
+| Compatibility test against the backend | | ✓ | ✓ |
+| What's inside the build | | ✓ | |
+| Docs copy is current | | ✓ | ✓ |
+| Secret scanning | ✓ | ✓ | ✓ |
+| Vulnerable dependencies | ✓ | ✓ | ✓ |
+| Licence check | ✓ | ✓ | ✓ |

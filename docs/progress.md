@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** planning is done (feature map, architecture, guardrails, design, roadmap). **Next step:** phase 0, Setup, when you say so: the two repos, CI, the shared packages and an empty Electron app running on Windows. Nothing else is open before it.
+**Now:** planning is done and the docs are cleaned up and in sync with the desktop repo (7 Nov 2026). **Next step:** phase 0, Setup, when you say so. Before it: two-factor on every account, the OpenRouter spending cap and the `security@titan117.com` mailbox, and the GitHub organisation decision; during it: the shell-sandbox decision for phase 1. Long-lead items to start now: Apple Developer Program, Windows code signing, trademark check.
 
 ## Phases
 
@@ -31,6 +31,26 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 7 Nov 2026 · Third repo for the product owner portal; EcotechCore owns the repos
+
+- **Decided** (decisions §6 and a table row): the product owner portal gets its own repo, **`titan117-pop`**: a Next.js app with no backend of its own (admin-only Convex functions stay in this repo; it installs `@titan117/shared` like the desktop app), deployed as its own Vercel project. All three repos belong to the **EcotechCore** GitHub organisation. Also fixed decisions §5 (the default search provider is OpenRouter, not "open").
+- **"Two repos" became three** everywhere: decisions §6 and rows, architecture §2 (repo table, rules, release table, the portal section with a leaning for a separate Clerk application for staff), guardrails (scope, §10, §12b, branch protection, pull request template, CI table with a pop column), security B5/B6, roadmap (repos line, phase 0 now "all" with the portal deployed behind two-factor, phase 5 now "desktop, web, pop"), scope, docs README, CLAUDE.md, README.
+- **Sync script** renamed `scripts/sync-docs.py`: syncs `titan117-desktop` and `titan117-pop` (any that exist next to this repo), or `--repo` targets; `--check` for CI. Ran it: both in sync.
+- **Local `titan117-pop`** created next to the other repos (git initialised on `main`, README, `.gitignore`, its own `docs/progress.md`, shared docs and CLAUDE.md). Not pushed; to push once the empty repo exists under EcotechCore. Nothing committed in any repo.
+
+### 7 Nov 2026 · Desktop mockup moved to the desktop repo
+
+- `desktop-mockup/` moved to `titan117-desktop/mockup/` (it's the reference for the real desktop app), removed here with `git rm`; its preview config moved to the desktop repo's `.claude/launch.json` (port 4181). References in decisions §19 and the desktop `design.md` now point to the desktop repo; docs re-synced (`--check` passes).
+- Root `README.md` rewritten (it was saved in UTF-16 and only held the repo name): what the repo holds, the docs sync command, the website and its design doc.
+- Checked: the moved mockup's stylesheet and scripts resolve and `app.js` parses; not opened in a browser from its new place. Nothing committed.
+
+### 7 Nov 2026 · Docs cleanup, decisions, desktop repo in sync
+
+- **Social posting in V1 without platform approvals** (decisions §24): ready-to-post packages, Copy and open, Time to post reminders with the phone's share sheet, calendar and CSV export; no posting APIs, so no Meta, TikTok or LinkedIn app reviews and no paid X API in V1; automatic publishing after V1 (feature 15.4b). Updated feature map 15.2/15.4, decisions §14/§15, roadmap phase 14 and its check, `v1-scope.md`, the marketing agent page, the marketing lesson, the FAQ, the real-estate flow, the day-one tile, the homepage's marketing example and the desktop mockup.
+- **Decided:** error reports in our own Convex tables in V1 (was leaning); web search billed through our credit proxy (fixes §14, which still said sub-keys); the website moves into the Next.js web app in phase 2 from the same content (decisions §18, roadmap phase 2, architecture).
+- **Cleaned up:** feature map 1.1 (Electron), 11.2 (prices), 11.4 (Vercel streaming route, not a Convex action), §13 and the summary (OpenCode decided); the feature map's open-decisions list rewritten as a table of what's still open, with the phase that needs it and a leaning; decisions §3, §7 and their rows (prices and OpenCode decided); decisions' open list (GitHub organisation, shell sandbox, trademark, legal); `v1-scope.md` "Decide before phase 0" now shows each item's status, and "Set up before phase 0" lists two-factor, the spending cap, the security mailbox, branch protection, the references folder (not created yet) and the long-lead purchases; architecture (Electron and OpenCode decided, marketing pages move in phase 2); roadmap risks (no social API reviews in V1, the eyes logo); docs README (brand and both design docs); CLAUDE.md (website design doc, security doc, what the shared docs are).
+- **Desktop repo synced** with the new `scripts/sync-desktop-docs.py` (copy, or `--check` for CI): 11 docs and CLAUDE.md updated, `docs/security.md` added, and 53 files that decisions §9 and §18 had retired removed with `git rm` (the helmet logo files, the old brand media, and `docs/mockups/final-a`). The desktop repo's own `progress.md` is untouched; nothing committed in either repo.
 
 ### 7 Nov 2026 · Security model: protecting users, protecting us
 

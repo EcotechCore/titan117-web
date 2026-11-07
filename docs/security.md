@@ -96,7 +96,7 @@ A stolen signing certificate or a compromised build could push malware to **ever
 
 - The code-signing key lives in a **cloud signing service** (Azure Trusted Signing for Windows; Apple's Developer ID through the notarization service), never as a file on a laptop.
 - **Updates are signed twice**: by the platform certificate and by our own update key; the app pins our update key and refuses anything else.
-- **Branch protection** on `main` in both repos: changes through pull requests with green CI; once there are two developers, a review from the other one.
+- **Branch protection** on `main` in every repo: changes through pull requests with green CI; once there are two developers, a review from the other one.
 - **GitHub Actions pinned to exact commits**; CI secrets scoped per job.
 - **Publishing a release needs a second step**: a protected GitHub environment that asks a second person to approve, or, while you're alone, your own approval with two-factor.
 - Two-factor on every account that can ship: GitHub, Apple, Microsoft, Vercel, Convex, Clerk, Stripe, the domain registrar.
@@ -104,7 +104,7 @@ A stolen signing certificate or a compromised build could push malware to **ever
 
 ### B6. The product owner portal
 
-Our own admin app, separate from the user web app, at its own address (for example `admin.titan117.com`), for the product owner and employees: error reports (§22), accounts and plans, credits (corrections only as new ledger rows with a reason), kill switches for add-ons and coding-tool adapters (§20), releases.
+Our own admin app, in its own repo (`titan117-pop`), separate from the user web app, at its own address (for example `admin.titan117.com`), for the product owner and employees: error reports (§22), accounts and plans, credits (corrections only as new ledger rows with a reason), kill switches for add-ons and coding-tool adapters (§20), releases.
 
 - **Only named people**, admin role set from the Convex CLI, never from a screen.
 - **Two-factor required** (Clerk organisation with MFA enforced).

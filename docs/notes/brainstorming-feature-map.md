@@ -26,7 +26,7 @@ An AI team for small companies that runs on your own laptop: a general assistant
 
 | # | Feature | Stage | Notes |
 |---|---|---|---|
-| 1.1 | Desktop shell for Windows and macOS | V1 | Tauri or Electron, open |
+| 1.1 | Desktop shell for Windows and macOS | V1 | Electron (decisions §12) |
 | 1.2 | Sign in with the Titan117 account | V1 | Clerk |
 | 1.3 | Sidebar: agents, apps, chats, marketplace | V1 | Built apps live here too (§6) |
 | 1.4 | Hardware check at first launch | V1 | RAM and GPU decide which local models to suggest |
@@ -255,13 +255,13 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 | # | Feature | Stage | Notes |
 |---|---|---|---|
 | 11.1 | Sign-in | V1 | Clerk |
-| 11.2 | Subscription plans | V1 | Lovable-style tiers, prices open |
+| 11.2 | Subscription plans | V1 | Starter €15, Pro €25, Max €50, Custom; no free plan ([pricing](pricing.md), decisions §13) |
 | 11.3 | Credit ledger and top-ups | V1 | In Convex, atomic deductions |
-| 11.4 | OpenRouter proxy with metering | V1 | A Convex HTTP action holds our key |
+| 11.4 | OpenRouter proxy with metering | V1 | A streaming route on Vercel holds our one secret key; Convex keeps the ledger and the rules (decisions §12) |
 | 11.5 | BYOK | V1 | Key kept on the device, in the OS keychain |
 | 11.6 | Teams, roles, audit log | V1 | |
 | 11.7 | Agency and white-label plan | V1 | |
-| 11.8 | **Product owner portal** | V1 | Our own admin app at its own address, for the owner and employees: error reports (§19), accounts and plans, credit corrections, kill switches, releases; two-factor required; every view logged (decisions §23) |
+| 11.8 | **Product owner portal** | V1 | Our own admin app in its own repo (`titan117-pop`) at its own address, for the owner and employees: error reports (§19), accounts and plans, credit corrections, kill switches, releases; two-factor required; every view logged (decisions §23) |
 
 ## 12. Trust and security (across everything)
 
@@ -277,7 +277,7 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 
 ## 13. Code builder and the shared coding engine
 
-One coding engine runs inside the desktop app and powers every agent that writes code: the code builder (5.7), the app builder (§6), web, mobile and desktop apps (6.1, 6.3, 6.4), and Titan's one-off scripts (3.11). Leaning towards **OpenCode** as that engine (to confirm, open decision 11).
+One coding engine runs inside the desktop app and powers every agent that writes code: the code builder (5.7), the app builder (§6), web, mobile and desktop apps (6.1, 6.3, 6.4), and Titan's one-off scripts (3.11). That engine is **OpenCode** (MIT), pinned and behind our own adapter (decisions §12).
 
 | # | Feature | Stage | Notes |
 |---|---|---|---|
@@ -323,9 +323,10 @@ Out of reach with open source: backlink databases, competitors' traffic estimate
 | # | Feature | Stage | Notes |
 |---|---|---|---|
 | 15.1 | Brand kit in memory | V1 | Logo, colours, fonts, tone of voice, products, audience; read from the website and edited by you; every marketing agent uses it |
-| 15.2 | Social posts | V1 | Text and images for LinkedIn, Facebook, Instagram, X, TikTok; ideas from Postiz (AGPL, so ideas only). All five in V1 (decisions §14); X is bring-your-own (decisions §15) |
+| 15.2 | Social posts | V1 | Text, images and video for LinkedIn, Facebook, Instagram, X, TikTok, published by the user in a click (15.4); ideas from Postiz (AGPL, so ideas only). No platform posting APIs in V1 (decisions §24) |
 | 15.3 | Content calendar | V1 | A month of posts planned from goals, launches and holidays |
-| 15.4 | Scheduled publishing that works with the laptop closed | V1 | Where a platform's API supports scheduled posts, the post is handed over in advance so it goes out on time; otherwise it publishes when the app is open |
+| 15.4 | **Ready to post** (no platform approvals needed) | V1 | each post comes as a ready-to-post package (text, hashtags, images or video sized for the platform); **Copy and open** copies the text and opens the platform's own post screen (LinkedIn and X pre-fill the text); **Time to post** reminders from the content calendar on the laptop and phone, where one tap opens the phone's share sheet with the media attached (Instagram, TikTok, Facebook); export the calendar (.ics) and a CSV for the platforms' own free schedulers such as Meta Business Suite. Nothing posts automatically, and nothing automates the platforms' websites (their terms forbid it) |
+| 15.4b | Automatic scheduled publishing through the platforms' APIs | After V1 | Needs each platform's app review (Meta for Facebook and Instagram, TikTok, LinkedIn) and X's paid API; start Meta business verification and the legal pages early (decisions §24) |
 | 15.5 | Newsletters | V1 | Ideas from Listmonk (AGPL, ideas only); sent through the user's email provider (Brevo, Amazon SES, Mailgun, Postmark), which also handles scheduled sends |
 | 15.6 | Email sequences and lead scoring | V1 | Ideas from Mautic (GPL, ideas only) |
 | 15.7 | Landing pages | V1 | Built by the app builder (§6), with SEO (§14) and a form that feeds the CRM |
@@ -337,7 +338,7 @@ Out of reach with open source: backlink databases, competitors' traffic estimate
 | 15.13 | Ad drafts | V1 | Google and Meta ads written and set up as drafts; you launch them and set the budget |
 | 15.14 | Review and mention monitoring | V1 | Through the web watcher (5.5) |
 
-Everything that publishes, sends or spends money needs your approval (4.5). Each social platform needs its own app review before it lets us post through its API, which takes time; X and WhatsApp are bring-your-own: the user sets up and pays for their own access, with our guided setup (decisions §15).
+Everything that publishes, sends or spends money needs your approval (4.5). In V1 the user publishes social posts themselves in a click (15.4), so no platform has to approve our app; automatic publishing comes after V1 (decisions §24). WhatsApp, as a chat channel, stays bring-your-own (decisions §15).
 
 ## 16. Web search
 
@@ -453,24 +454,19 @@ When something breaks, the user can send us a report in one click, and we see it
 
 ## Open decisions
 
-1. Tauri or Electron for the desktop app.
-2. Clerk Billing or Stripe directly. Ninjathons picked Stripe directly for regional prices, one-time payments and VAT; the same reasons may apply here.
-3. Plan names, prices and what each plan includes (credits per month, BYOK on which plans).
-4. First customer: small businesses with no developers, developers, or agencies.
-5. Target hardware: mostly Macs or mostly Windows laptops. Decides how much local models can carry.
-6. Video provider for AI clips (fal.ai, Replicate, other).
-7. Which open-source code to build on for the app builder, the QA agent and browser control, after a licence check.
-8. What V1 is: the smallest set of the features above that we launch with.
-9. How the shell is sandboxed on Windows and macOS, and which commands count as risky.
-10. Which chat channel comes first (9.7); WhatsApp has the strictest rules for bots.
-11. The coding engine (§13). Leaning: OpenCode (MIT, a headless server with a TypeScript SDK, 75+ providers including Ollama and OpenRouter). Alternatives: Cline (Apache 2.0, strong approval flow), Kilo Code (orchestrator mode), Aider (Python, git-first). Roo Code is reported archived. If OpenCode wins, it may replace a separate bolt.diy or Dyad fork for the app builder (6.19).
-12. Paid data providers for SEO (keywords, SERP positions, backlinks) and their price in credits.
-13. Which social platforms come first (15.2), given each one's API review and costs.
-14. Decided 15 Oct 2026 (§16): search is a paid API through credits by default (OpenRouter or Brave), the user's own key as an option, and free mode (ddgs or open-webSearch) as an opt-in only. Left to pick: OpenRouter or Brave as the default.
-15. Decided 15 Oct 2026 (2.10): no sign-in with chat subscriptions; provider API keys instead.
-16. Decided 15 Oct 2026: two repositories, `titan117-web` and `titan117-desktop`. The web repo owns the Convex backend and the shared protocol and publishes them as a private, versioned package (`@titan117/shared`); the desktop repo installs a fixed version. Protocol messages carry a version number, and a test in the desktop repo checks it against the latest backend.
-17. Decided 15 Oct 2026: docs in both repositories. Shared product docs (feature map, roadmap, architecture, cross-repo decisions) are the same in both: edited in `titan117-web`, copied to `titan117-desktop` by a script, and a CI check in the desktop repo fails if its copy is out of date. Each repo also keeps its own `progress.md`, decisions and test plan for its side.
-18. Decided 16 Oct 2026: V1 is everything in this map. Titan117 is not launched until the whole product works well; the work is split into implementation phases (draft in v1-scope.md). Still out: everything under "Not doing".
+Settled decisions live in [decisions.md](decisions.md) (Electron, Node, Stripe directly, OpenCode, our credit proxy, OpenRouter search, prices, small companies first on Windows and macOS, Telegram first, all of this map in V1, two repos, shared docs). Still open, with the phase that needs the answer:
+
+| # | Open decision | Needed by | Leaning |
+|---|---|---|---|
+| 1 | How the shell is sandboxed on Windows and macOS, and which commands count as risky (3.8) | Phase 1 | Separate process per command in an allowed folder with a timeout; OS sandbox where available; a risky-command list reviewed with the guardrail tests |
+| 2 | Which local models ship as defaults, by laptop tier (2.1, 1.4) | Phase 1 | A small model for search and embeddings built in; a 7–8B instruct model suggested on 16 GB laptops |
+| 3 | ~~GitHub owner~~ | Decided | The EcotechCore organisation owns `titan117-web`, `titan117-desktop` and `titan117-pop` (decisions §6) |
+| 4 | Open-source base for the app builder, the QA agent and browser control, after a licence check (6.19) | Phases 7–8 | OpenCode plus Playwright; bolt.diy, Dyad and open-lovable for ideas |
+| 5 | Paid data provider for SEO keywords and positions, and its price in credits (14.6, 14.7) | Phase 12 | DataForSEO |
+| 6 | Video provider for AI clips (2.7, 5.1) | Phase 14 | fal.ai or Replicate |
+| 7 | Terms of OpenAI, Cursor, Google and xAI for running their coding tools (13.14) | Phase 7 | Check each; experimental with an API-key mode until clear (decisions §20) |
+| 8 | Trademark check on "Titan117" and our own restyle of the eyes logo | Before beta | Check the name now; restyle in phase 18 |
+| 9 | Legal basics: privacy policy, terms, GDPR deletion plan, open-source licence audit | Phase 2 (pages online), phase 18 (audit) | Privacy policy and terms online with the web app basics |
 
 ---
 
@@ -563,7 +559,7 @@ When something breaks, the user can send us a report in one click, and we see it
 - Account deletion and GDPR to write up
 
 **13. Code builder and the coding engine**
-- One coding engine (leaning: OpenCode) behind every agent that writes code
+- One coding engine (OpenCode, pinned behind our adapter) behind every agent that writes code
 - Plan then act; diffs you accept or reject; runs commands, tests and the dev server
 - Any model; git, commits and pull requests; project memory
 - Sub-agents and a code review agent; live preview; open in your editor; remote tasks
@@ -577,7 +573,7 @@ When something breaks, the user can send us a report in one click, and we see it
 
 **15. Marketing**
 - Brand kit in memory, used by every marketing agent
-- Social posts, a content calendar, and scheduled publishing that works with the laptop closed
+- Social posts and a content calendar, ready to post in a click with reminders (automatic publishing after V1)
 - Newsletters through your email provider; email sequences and lead scoring
 - Landing pages, images, videos, analytics and campaign reports
 - Lead finding into the CRM; ad drafts and review monitoring
@@ -607,4 +603,4 @@ When something breaks, the user can send us a report in one click, and we see it
 - Crashes and failed tasks caught and logged locally, redacted
 - "Send a report?" with the full report shown first; a Report a problem button; always ask, send automatically, or never
 - Never files, prompts, memory or keys unless you tick a box; reference IDs and "fixed in" follow-ups
-- An product owner portal for us with grouped errors, versions and alerts; reports kept 90 days
+- A product owner portal for us (its own repo, `titan117-pop`) with grouped errors, versions and alerts; reports kept 90 days

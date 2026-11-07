@@ -11,18 +11,18 @@ Related: [architecture](03-architecture.md) · [guardrails](guardrails.md) · [d
 - **Launch when the whole product works well,** not earlier. No public release before phase 18.
 - **Local-first:** agents run on the user's laptop; our cloud only does accounts, plans, credits, devices and what users choose to share.
 - **Every phase meets the guardrails:** typecheck, lint, tests and build pass; refusals are tested; it was seen working in the real app; `progress.md` is updated.
-- **Repos:** `titan117-web` (web app, Convex, shared package) and `titan117-desktop` (Electron shell, engine, agents). A phase names which repo it touches.
+- **Repos** (EcotechCore organisation): `titan117-web` (web app, Convex, shared package), `titan117-desktop` (Electron shell, engine, agents) and `titan117-pop` (the product owner portal). A phase names which repo it touches.
 
 ## Phases
 
 | # | Phase | Repo | Depends on | Done when |
 |---|---|---|---|---|
-| 0 | Setup | both | — | Both repos build in CI; an empty app builds and runs locally on Windows |
+| 0 | Setup | all | — | Every repo builds in CI; an empty app builds and runs locally on Windows; the portal's empty app deploys behind two-factor |
 | 1 | Engine core | desktop | 0 | Chat with a local and an OpenRouter model works; a tool call waits for approval; denial tests pass |
 | 2 | Accounts and money | web, desktop | 0 | A test purchase adds credits; a task deducts them; an API key in the keychain works; an ended subscription locks the app |
 | 3 | Titan and memory | desktop | 1 | Titan finishes 10 scripted everyday tasks; the prompt-injection suite passes |
 | 4 | Web search and artifacts | desktop, web | 3 | A research task produces a sourced report that downloads as PDF, Word and Excel, and shares by link |
-| 5 | Install and setup | desktop, web | 1 | A fresh Windows and Mac go from download to first task with no manual installs; with the network off, local work runs for 14 days, then the app locks; a forced crash produces a report the user reviews before sending, and it shows up grouped in the product owner portal with nothing secret in it |
+| 5 | Install and setup | desktop, web, pop | 1 | A fresh Windows and Mac go from download to first task with no manual installs; with the network off, local work runs for 14 days, then the app locks; a forced crash produces a report the user reviews before sending, and it shows up grouped in the product owner portal with nothing secret in it |
 | 6 | Folder agent | desktop | 3 | Answers on a real test set of documents cite the right file and page |
 | 7 | Coding engine and code builder | desktop | 3 | The code builder fixes a set of real issues in a sample repo and opens a pull request |
 | 8 | App builder: web | desktop | 7 | Five sample web apps build, pass their tests and publish |
@@ -31,7 +31,7 @@ Related: [architecture](03-architecture.md) · [guardrails](guardrails.md) · [d
 | 11 | Agent builder | desktop | 3 | A user creates an agent in the form; a manager agent splits a task between two agents; Titan builds a new agent and its skills from a request |
 | 12 | QA and SEO agents | desktop | 8 | Both run end to end on a real site, and their reports download |
 | 13 | Automation | desktop | 3 | A recorded task replays on a schedule; the law watcher reports a real change |
-| 14 | Marketing and video | desktop | 4, 12 | A website turns into a promo video and a month of posts scheduled on two platforms |
+| 14 | Marketing and video | desktop | 4, 12 | A website turns into a promo video and a month of ready-to-post posts; on two platforms a post is published from its reminder with Copy and open (desktop) and the share sheet (phone) |
 | 15 | Remote and channels | web, desktop | 2, 3 | A task started from the phone runs on the laptop and is approved from chat; remote control is off until switched on with two-factor, the laptop confirms pairing, a laptop-only approval can't be answered from the web, and Convex holds no readable command or result |
 | 16 | Marketplace | web, desktop | 11 | A community agent and an app template install safely from GitHub; Titan builds a tool and a sidebar app on request as sandboxed add-ons; a broken add-on triggers safe mode and rolls back; no agent or add-on can write to the core |
 | 17 | Teams and plans | web, desktop | 2 | A team of three shares agents and apps with roles enforced |
@@ -46,7 +46,7 @@ Related: [architecture](03-architecture.md) · [guardrails](guardrails.md) · [d
 Feature numbers point to the feature map.
 
 ### 0 · Setup
-- Two repos, CI per [guardrails §16](guardrails.md), lint rules (Convex wrappers, `defineTool`, no desktop-to-web imports), secret scanning, licence check.
+- The three repos under EcotechCore, CI per [guardrails §16](guardrails.md), lint rules (Convex wrappers, `defineTool`, no desktop-to-web imports), secret scanning, licence check.
 - Convex dev deployment, Clerk dev instance, Stripe test mode, OpenRouter account.
 - Empty Electron app that builds and runs locally on Windows (unsigned during development). Signing, notarization and the auto-update channel come before the first external testers (decisions §16).
 - `@titan117/shared` package published privately; docs copy check.
@@ -61,6 +61,7 @@ Feature numbers point to the feature map.
 
 ### 2 · Accounts and money
 - Web: sign-up, plans, credits pages, invoices, download (9.1); desktop sign-in through the browser (1.2).
+- The website moves into the web app: the pages of `homepage-grid/` (home, agents, industries, pricing, FAQ, Learn) rebuilt in Next.js from typed content, following `homepage-grid/design.md`; privacy policy and terms online; `security.txt` (decisions §18).
 - Payments, credit ledger, top-ups, metering (11.1–11.4); your own OpenRouter, Anthropic, OpenAI and Google keys (11.5, 2.9).
 - Signed licence lease, lock screen and subscription checks on the desktop (1.23, decisions §17).
 
@@ -77,7 +78,7 @@ Feature numbers point to the feature map.
 ### 5 · Install and setup
 - Plug-and-play installer, setup wizard, hardware check, components manager, requirement cards, alternatives, setup checklist, health check, keep awake, checkpoints, notifications, auto-update (1.3–1.6, 1.9–1.21).
 - Offline mode and the offline queue (1.22, 1.24): every feature checked with the network off.
-- Error reports end to end (§19, decisions §22): crash reporter, "Something went wrong" card with the full report shown first, Report a problem, the always-ask setting, offline queue, reference IDs; in `titan117-web` the `errorReports` and `errorGroups` tables and the product owner portal with grouping and alerts.
+- Error reports end to end (§19, decisions §22): crash reporter, "Something went wrong" card with the full report shown first, Report a problem, the always-ask setting, offline queue, reference IDs; in `titan117-web` the `errorReports` and `errorGroups` tables and their admin functions; in `titan117-pop` the error screens with grouping and alerts.
 
 ### 6 · Folder agent
 - Watched folders, all document types, OCR, local search, citations, spreadsheet calculations, local-only folders, read-only (§7, 5.4).
@@ -106,7 +107,7 @@ Feature numbers point to the feature map.
 - Scheduler, web watcher, recorder and replay, logins from the keychain, computer use in a VM and on the user's desktop, recording other desktop apps (5.5, 5.6, §8).
 
 ### 14 · Marketing and video
-- Brand kit, promo video, social posts, content calendar, scheduled publishing, newsletters, sequences, landing pages, images, analytics, reports, lead finding, ad drafts, monitoring (5.1, 5.9, §15). Video on Revideo or Motion Canvas plus FFmpeg; X is a bring-your-own connector with guided setup (decisions §15). Apply for the LinkedIn, Meta and TikTok app reviews early.
+- Brand kit, promo video, social posts, content calendar, ready to post with reminders (15.4, no platform APIs, decisions §24), newsletters, sequences, landing pages, images, analytics, reports, lead finding, ad drafts, monitoring (5.1, 5.9, §15). Video on Revideo or Motion Canvas plus FFmpeg; X is a bring-your-own connector with guided setup (decisions §15). Apply for the LinkedIn, Meta and TikTok app reviews early.
 
 ### 15 · Remote and channels
 - Device pairing, remote tasks and approvals from the web, chat channels, end-to-end encryption, phone app (9.2–9.7). Telegram first; WhatsApp as a bring-your-own connector on the official Cloud API, with guided setup (decisions §14, §15).
@@ -134,9 +135,9 @@ Feature numbers point to the feature map.
 | Scope: everything in V1 is a very large build | Strict phase checks; internal use from phase 8 on to find problems early; cut-or-delay decisions recorded in decisions.md |
 | Local models too weak on ordinary laptops | Hardware check, OpenRouter fallback with cost shown, test sets per agent |
 | Coding engine (OpenCode) API changes | Pin versions, wrap it behind our own interface, compatibility tests |
-| Platform rules: app stores, social APIs, Google | Start API reviews early (phase 14 needs approvals months ahead) |
+| Platform rules: app stores, social APIs, Google | Social posting in V1 needs no API reviews (ready to post, decisions §24); app store accounts and signing bought early |
 | Signing and notarization delays | Buy the Apple and Windows signing accounts well before the first external testers (decisions §16) |
-| Trademark: "Titan117" and the avatar logo | Trademark check and our own restyled avatar before beta |
+| Trademark: "Titan117" and the eyes logo | Trademark check now; our own restyle of the eyes before beta |
 | Prompt injection and unsafe actions | Guardrails §4–§5, approval layer, injection suite in CI |
 
-Open decisions before phase 0 are listed in [decisions.md](notes/decisions.md#open-decisions).
+Open decisions, each with the phase that needs it, are listed in the [feature map](notes/brainstorming-feature-map.md#open-decisions); the ones for phase 0 also in [decisions.md](notes/decisions.md#open-decisions).
