@@ -83,25 +83,37 @@ function renderSide(active) {
     `<div class="app-item${k === active ? " on" : ""}">${ic(i)}${n}${k === active ? '<span class="dot"></span>' : ""}</div>`).join("");
 }
 
+// model shown in the message box, per scene
+const sceneModels = ["Qwen 7B · local", "DeepSeek V3 · cloud", "Qwen 7B · local", "Qwen 7B · local", "Cloud · auto"];
+
+// the black activity log in the inspector: one line per step, the running one in tomato
+function logHTML(s) {
+  return s.steps.map(([st, t], k) =>
+    `<div><em>09:${String(12 + k * 2).padStart(2, "0")}</em> ${st === "done" ? "✓" : "<b>●</b>"} ${t.toLowerCase()}</div>`).join("");
+}
+
 function sceneHTML(s) {
+  const [agent, task] = s.title.split(" · ");
   const steps = s.steps.map(([st, t, time], k) =>
     `<div class="step ${st}" style="animation-delay:${k * 0.18}s"><i>${st === "done" ? "✓" : "•"}</i>${t}<small>${time}</small></div>`).join("");
   const approve = s.approve
     ? `<div class="approve"><b>${s.approve[0]}</b><p>${s.approve[1]}</p><div class="approve-row"><span>Approve</span><span>Review</span><span>Deny</span></div></div>`
     : `<div class="out">${ic(s.out[0])}${s.out[1]}</div>`;
   return `
-    <div class="app-top"><div class="app-title">${s.title}</div>
-      <div class="app-chips"><span class="chip on">Local</span><span class="chip">Cloud</span><span class="chip">Activity</span></div></div>
-    <div class="app-prompt"><span>YOU</span>${s.prompt}</div>
+    <div class="app-top"><div class="app-title">${task}<small>${agent} · started just now</small></div>
+      <div class="app-chips"><span class="chip on">Local</span><span class="chip">Cloud</span></div></div>
+    <div class="app-prompt">${s.prompt}</div>
     <div class="app-grid">
-      <div class="panel"><h5>Steps</h5>${steps}${approve}</div>
-      <div class="panel"><h5>Task</h5>
+      <div class="panel"><h5>${ic("sparkles", "width:13px;height:13px")}${agent}</h5>${steps}${approve}</div>
+      <div class="panel soft"><h5>Task</h5>
         <div class="big">${s.big}</div>
         <div class="bar"><div style="width:${s.bar}%"></div></div>
         ${s.stats.map(([k, v]) => `<div class="kv">${k}<b>${v}</b></div>`).join("")}
-        ${s.approve ? `<div class="out" style="margin-top:auto">${ic(s.out[0])}${s.out[1]}</div>` : ""}
+        ${s.approve ? `<div class="out">${ic(s.out[0])}${s.out[1]}</div>` : ""}
+        <div class="term">${logHTML(s)}</div>
       </div>
-    </div>`;
+    </div>
+    <div class="composer">Ask Titan anything…<span class="chip on">${sceneModels[scenes.indexOf(s)]}</span><span class="send">${ic("arrow-up")}</span></div>`;
 }
 
 const tabs = $$(".tab");
@@ -117,6 +129,7 @@ function showTab(i, user) {
   renderSide(scenes[i].agent);
   const main = $("#app-main");
   main.innerHTML = sceneHTML(scenes[i]);
+  $("#app-tab").innerHTML = `${ic(sideAgents[scenes[i].agent][0])}${scenes[i].title.split(" · ")[1]}`;
   main.classList.remove("fade-swap"); void main.offsetWidth; main.classList.add("fade-swap");
   if (user) { $(".tabs").classList.add("paused"); clearInterval(tabTimer); }
 }

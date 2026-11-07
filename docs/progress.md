@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 7 Nov 2026 · Website: light desktop-app window on the homepage
+
+The app window in the homepage stage and the features block is now a light desktop app, after Cursor, Antigravity and Claude's desktop app: a title bar with window dots and a task tab, a light-gray sidebar (white selected item with a hairline, no black selection), a white workspace with the request in a gray bubble, Titan's steps (black done marks), a light inspector with one black activity log, an approval card in a tomato tint with a tomato Approve button, and a message box with the model and a tomato send button. The backdrop behind the features window is light to match (dark variant in dark mode). Checked in the browser at 800px in light and dark and at 375px: no console errors, no sideways scroll.
+
 ### 7 Nov 2026 · Website: keep `homepage-grid/`, remove the other mockups
 
 Decided to keep the framed-grid homepage as the one website design (decisions §18). Removed every other mockup: `mockup/`, `new-mockups/` and the root `index.html` with `git rm` (still in history), and the uncommitted `gemini-mockups/` and `homepage-concept/` to the Recycle Bin. `.claude/launch.json` now has only `homepage-grid`; the sources list and the homepage README point at `homepage-grid/assets/bot.js`. `apps/web` (the Next.js app) is untouched. No phase status changed.
