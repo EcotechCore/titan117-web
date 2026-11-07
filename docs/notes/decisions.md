@@ -14,7 +14,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 15 Oct 2026 | App builder: one target per project (web, mobile or desktop); the sidebar is an option | [7](#7-app-builder) |
 | 15 Oct 2026 | One coding engine for all code work, leaning OpenCode | [7](#7-app-builder) |
 | 16 Oct 2026 | V1 is everything in the feature map; launch only when it all works | [1](#1-scope) |
-| 16 Oct 2026 | Design: style tile A on the OpenAI base settings, neon green as the one accent | [8](#8-design) |
+| 16 Oct 2026 | ~~Design: style tile A on the OpenAI base settings, neon green as the one accent~~ (replaced 7 Nov by tomato and the current style) | [8](#8-design) |
 | 16 Oct 2026 | Desktop app: no black buttons or selections; pro desktop layout | [8](#8-design) |
 | 16 Oct 2026 | ~~Logo: outline helmet (variation 03), to be redrawn as our own before beta~~ (replaced 18 Oct by the hexagon avatar) | [9](#9-brand) |
 | 16 Oct 2026 | Build plan: 19 phases with a check that marks each one done | [10](#10-build-plan) |
@@ -36,8 +36,9 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 17 Oct 2026 | Tooling: pnpm as the package manager, Vitest for tests, Playwright for end-to-end tests | [16](#16-company-and-development-setup) |
 | 17 Oct 2026 | No free plan and no trial (trial ruled out 18 Oct): the app works only with an active subscription | [13](#13-pricing) |
 | 17 Oct 2026 | Signed licence lease for offline use (14 days, offline mode in V1); the app locks when it expires or the subscription ends | [17](#17-offline-use-and-licence) |
-| 18 Oct 2026 | Logo: an agent avatar (bloub engine), a neon hexagon with an angry face whose eyes follow the cursor; old helmet files, mockups and stand-in media deleted | [9](#9-brand) |
+| 18 Oct 2026 | Logo: an agent avatar (bloub engine) with an angry face; ~~a neon hexagon whose eyes follow the cursor~~ (since 7 Nov: the angry eyes beside TITAN117, ink at rest, tomato on hover); old helmet files, mockups and stand-in media deleted | [9](#9-brand) |
 | 7 Nov 2026 | Website: the framed-grid homepage (`homepage-grid/`, after the Atomist template) is the one design we keep; tomato accent, Titan's angry eyes with the TITAN117 wordmark; all other mockups removed | [18](#18-website-design) |
+| 7 Nov 2026 | Desktop app follows the current style: tomato `#ff6347` replaces neon green; light-gray sidebar, white workspace, black only for text, done marks and the activity log; agent eyes in their own colours; reference `desktop-mockup/`, rules in design.md 0.2 | [19](#19-desktop-app-style) |
 
 ---
 
@@ -91,12 +92,14 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 ## 8. Design
 
 - **Direction:** style tile **A · Quiet** on the OpenAI base settings (system fonts, 8px grid, 5px radius, flat, 400ms ease), white, black and gray with **neon green `#c4f012`** as the one accent. Full rules: [design.md](design.md). All mockups were deleted on 18 Oct.
-- **Desktop app:** no black buttons or selections. Primary actions are neon; selected items are white with a neon edge; dark panels became light tints.
+- **Desktop app:** no black buttons or selections. ~~Primary actions are neon; selected items are white with a neon edge; dark panels became light tints.~~ Since 7 Nov: primary actions are tomato, selected items are white with a hairline, approvals use a tomato tint ([§19](#19-desktop-app-style)).
+- **Superseded 7 Nov 2026:** the neon-green accent and style tile A. The website follows §18, the desktop app §19; the rules are in [`homepage-grid/design.md`](../../homepage-grid/design.md) and [design.md](design.md) 0.2.
 - **Desktop layout:** the pro version (title bar with task tabs, icon rail, sidebar, run inspector, status bar) is the direction for the desktop app.
 
 ## 9. Brand
 
-- **Logo (18 Oct 2026):** Titan's avatar, a neon `#c4f012` hexagon with the angry expression, drawn live by the bloub engine (MIT, see [open-source-references](open-source-references.md#website-and-brand)). Its eyes follow the cursor, and its animation states (thinking, needs you, done, offline) show what Titan is doing. The other agents get their own bloub avatars (shape, colour or gradient, mood).
+- **Logo (7 Nov 2026):** Titan's angry eyes (bloub engine, `colere`) beside **TITAN117** in Unbounded 600; ink at rest, looking around on their own, tomato on hover. Agents get the same eyes in their own colours (§19). This replaces the neon hexagon below.
+- ~~**Logo (18 Oct 2026):** Titan's avatar, a neon `#c4f012` hexagon with the angry expression~~, drawn live by the bloub engine (MIT, see [open-source-references](open-source-references.md#website-and-brand)). Its eyes follow the cursor, and its animation states (thinking, needs you, done, offline) show what Titan is doing. The other agents get their own bloub avatars (shape, colour or gradient, mood).
 - **Deleted on 18 Oct:** the helmet logo files and states, all mockups and the stand-in images and video from verdictu-web. New media will be made for Titan117.
 - bloub's author describes it as a recreation of the x.ai bot avatar, so the shapes and eyes **must be restyled as our own and trademark-checked (with the name "Titan117") before beta.**
 - ~~16 Oct: the outline helmet (variation 03) with neon eyes.~~ Replaced by the avatar above.
@@ -202,7 +205,18 @@ Decided 17 Oct 2026.
 
 - **7 Nov 2026:** the website follows `homepage-grid/`: a white framed grid with hairline borders (after the Atomist Next.js/shadcn template's layout), Figtree for text, a **tomato `#ff6347`** accent (`--accent` in `styles.css`), light and dark themes. For the website this replaces the neon-green direction in [§8](#8-design) and [design.md](design.md); the desktop app's rules in §8 are unchanged.
 - **Logo on the website:** Titan's angry eyes, drawn by the bloub engine (`homepage-grid/assets/bot.js`), next to "TITAN117" in Unbounded 600. Ink at rest, looking around on their own, tomato on hover. The restyle and trademark check in [§9](#9-brand) still apply before beta.
+- **Design system and pages (7 Nov):** the website's rules are written in [`homepage-grid/design.md`](../../homepage-grid/design.md). Pages: home, agents (overview and one page per agent), industries (overview and one per industry), pricing, FAQ and Learn (guides with a video and step-by-step text per lesson); Agents and Industries are hover dropdowns in the nav. Sub-pages are generated by `homepage-grid/src/build.py` from `src/content.py`.
 - **Removed on 7 Nov:** every other mockup (`mockup/`, `new-mockups/`, the root `index.html`, which stay in git history; `gemini-mockups/` and `homepage-concept/`, which were never committed and went to the Recycle Bin).
+
+## 19. Desktop app style
+
+- **7 Nov 2026:** the desktop app follows the same style as the website's app window, worked out in the clickable mockup [`desktop-mockup/`](../../desktop-mockup/README.md). Rules: [design.md](design.md) 0.2.
+- **Colour:** tomato `#ff6347` is the one accent and replaces neon green `#c4f012` everywhere (actions, the running step, counts that need you, focus ring). Light gray `#f4f4f5` for the sidebar and title bar, white for the workspace, `#fafafa` for the task details panel.
+- **Black** only for text, done marks, progress bars and the activity log. Still **no black buttons or selections**: primary actions are tomato with white text; selected rows are white with a hairline.
+- **Agents** show Titan's eyes in their own colour (Titan tomato, Folder agent blue, Recorder teal, Web watcher violet, App builder amber, Code builder cyan, QA green, Marketing pink, SEO purple, Promo video red): gray at rest, animated while working or waiting for you.
+- **Layout:** title bar with one tab per task; sidebar with the workspace switcher, New task, search, the views (Tasks, Approvals, Automations, Memory), Titan and the teams (Operations, Build, Growth), automations, credits and the user; the workspace; a task details panel with the activity log.
+- **Type:** Figtree for the app, Unbounded only for the TITAN117 wordmark.
+- The logo restyle and trademark check in §9 still apply.
 
 ## 11. Deleting data
 

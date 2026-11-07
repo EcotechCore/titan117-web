@@ -15,9 +15,9 @@
     document.documentElement.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   </script>
 </head>
-<body>
+<body data-page="home" data-root="">
 
-<!-- icon sprite -->
+<!-- @icons -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 1.5l1.9 6.2 5.7-3.1-3.1 5.7 6 1.7-6 1.7 3.1 5.7-5.7-3.1L12 22.5l-1.9-6.2-5.7 3.1 3.1-5.7-6-1.7 6-1.7-3.1-5.7 5.7 3.1z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></symbol>
@@ -30,6 +30,9 @@
   <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
   <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17 7h.01"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
   <symbol id="i-updown" viewBox="0 0 24 24"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -74,28 +77,52 @@
   <symbol id="i-star4" viewBox="0 0 24 24"><path d="M12 2c.7 5.3 4.7 9.3 10 10-5.3.7-9.3 4.7-10 10-.7-5.3-4.7-9.3-10-10 5.3-.7 9.3-4.7 10-10z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-half" viewBox="0 0 24 24"><path d="M11 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/><path d="M14 3.5a9 9 0 0 1 0 17" /></symbol>
   <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5"/></symbol>
+  <symbol id="i-time" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></symbol>
 </svg>
+<!-- /@icons -->
 
+<!-- @header -->
 <header class="header">
   <div class="header-inner">
-    <a class="logo" href="#top" aria-label="TITAN117 home"><svg class="bot" data-bot="nav" aria-hidden="true"></svg>TITAN117</a>
+    <a class="logo" href="index.html" aria-label="TITAN117 home"><svg class="bot" data-bot="nav" aria-hidden="true"></svg>TITAN117</a>
     <nav class="nav" id="nav" aria-label="Main">
-      <a href="#product" class="active">Product</a>
-      <a href="#agents">Agents</a>
-      <a href="#industries">Industries</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
+      <a href="index.html#product" data-nav="home">Product</a>
+      <div class="nav-item">
+        <a class="nav-trigger" href="agents/index.html" data-nav="agents" aria-haspopup="true">Agents<svg class="icon"><use href="#i-down"/></svg></a>
+        <div class="dropdown dd-agents">
+          <a class="dd-feature" href="agents/titan/index.html">
+            <span class="dd-feature-mark"><svg data-agent-bot data-color="#ff6347" data-follow="false" aria-hidden="true"></svg></span>
+            <b>Titan</b><small>Your general assistant, and the one who runs the team.</small>
+            <span class="link-more">Meet Titan <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <div class="dd-grid"><a class="dd-item" href="agents/folder-agent/index.html"><span class="dd-ic" style="--c:#2f6fed"><svg class="icon"><use href="#i-folder"/></svg></span><span><b>Folder agent</b><small>Your documents</small></span></a><a class="dd-item" href="agents/recorder/index.html"><span class="dd-ic" style="--c:#14a37f"><svg class="icon"><use href="#i-record"/></svg></span><span><b>Recorder</b><small>Repeat it for me</small></span></a><a class="dd-item" href="agents/web-watcher/index.html"><span class="dd-ic" style="--c:#8b5cf6"><svg class="icon"><use href="#i-eye"/></svg></span><span><b>Web watcher</b><small>Changes that matter</small></span></a><a class="dd-item" href="agents/app-builder/index.html"><span class="dd-ic" style="--c:#f6a825"><svg class="icon"><use href="#i-code"/></svg></span><span><b>App builder</b><small>Web, mobile, desktop</small></span></a><a class="dd-item" href="agents/code-builder/index.html"><span class="dd-ic" style="--c:#0db5ed"><svg class="icon"><use href="#i-terminal"/></svg></span><span><b>Code builder</b><small>For developers</small></span></a><a class="dd-item" href="agents/qa/index.html"><span class="dd-ic" style="--c:#2a9a30"><svg class="icon"><use href="#i-bug"/></svg></span><span><b>QA and tests</b><small>Websites and apps</small></span></a><a class="dd-item" href="agents/marketing/index.html"><span class="dd-ic" style="--c:#ec4899"><svg class="icon"><use href="#i-megaphone"/></svg></span><span><b>Marketing</b><small>Posts and campaigns</small></span></a><a class="dd-item" href="agents/seo/index.html"><span class="dd-ic" style="--c:#7c3aed"><svg class="icon"><use href="#i-chart"/></svg></span><span><b>SEO agent</b><small>Search visibility</small></span></a><a class="dd-item" href="agents/promo-video/index.html"><span class="dd-ic" style="--c:#e24b4a"><svg class="icon"><use href="#i-video"/></svg></span><span><b>Promo video</b><small>Website to video</small></span></a></div>
+          <div class="dd-foot"><span>Grouped in teams: Operations, Build, Growth</span><a class="link-more" href="agents/index.html">All agents <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a class="nav-trigger" href="industries/index.html" data-nav="industries" aria-haspopup="true">Industries<svg class="icon"><use href="#i-down"/></svg></a>
+        <div class="dropdown dd-industries">
+          <div class="dd-grid"><a class="dd-item" href="industries/retail/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-store"/></svg></span><span><b>Retail and e-commerce</b><small>Listings, stock and campaigns</small></span></a><a class="dd-item" href="industries/hospitality/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-cup"/></svg></span><span><b>Restaurants and cafés</b><small>Menus, bookings and reviews</small></span></a><a class="dd-item" href="industries/accounting/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-calc"/></svg></span><span><b>Accounting and bookkeeping</b><small>Reconciliations and client files</small></span></a><a class="dd-item" href="industries/legal/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-scale"/></svg></span><span><b>Law firms</b><small>Contracts with cited answers</small></span></a><a class="dd-item" href="industries/realestate/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-home"/></svg></span><span><b>Real estate agencies</b><small>Listings, videos and follow-ups</small></span></a><a class="dd-item" href="industries/agencies/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-palette"/></svg></span><span><b>Agencies and studios</b><small>Build, test, rank and report</small></span></a><a class="dd-item" href="industries/trades/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-hammer"/></svg></span><span><b>Trades and construction</b><small>Quotes and jobs from your phone</small></span></a><a class="dd-item" href="industries/wholesale/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-box"/></svg></span><span><b>Wholesale and manufacturing</b><small>Stock, orders and supplier portals</small></span></a></div>
+          <div class="dd-foot"><span>Workflows ready for eight kinds of small company</span><a class="link-more" href="industries/index.html">All industries <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+        </div>
+      </div>
+      <a href="pricing/index.html" data-nav="pricing">Pricing</a>
+      <a href="learn/index.html" data-nav="learn">Learn</a>
+      <a href="faq/index.html" data-nav="faq">FAQ</a>
     </nav>
     <div class="header-actions">
       <button class="icon-btn" id="theme" aria-label="Toggle theme">
         <svg class="icon theme-icon-light"><use href="#i-moon"/></svg>
         <svg class="icon theme-icon-dark"><use href="#i-sun"/></svg>
       </button>
-      <a class="btn btn-glow" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
+      <a class="btn btn-glow btn-download" href="pricing/index.html"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
       <button class="icon-btn menu-btn" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><svg class="icon"><use href="#i-menu"/></svg></button>
     </div>
   </div>
 </header>
+<!-- /@header -->
 
 <main id="top" class="frame">
 
@@ -106,7 +133,7 @@
       <h1 class="h1 rv">Your AI team,<br><span class="grad">on your own laptop</span></h1>
       <p class="lead rv">Titan117 is a general assistant and nine specialist agents for small companies. They build apps, read your documents, test your site, market your business and watch the web. Your data stays on your machine, and nothing goes out without your OK.</p>
       <div class="hero-ctas rv">
-        <a class="btn btn-glow" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
+        <a class="btn btn-glow btn-download" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
         <a class="btn btn-dark" href="#how">See how it works</a>
       </div>
       <p class="hero-note rv">For Windows and macOS · Local models free and unlimited · Any model on OpenRouter, with credits or your own key</p>
@@ -150,23 +177,37 @@
     </div>
   </section>
 
-  <!-- WORKS WITH -->
+  <!-- DAY ONE: jobs you can hand over; hover shows the agent that takes it -->
   <section class="section">
     <div class="with-head">
-      <h2 class="h2 rv"><span class="grad">Works with</span></h2>
-      <p class="lead rv" style="margin-top:16px">The models you choose and the tools you already use. Hover a tile to see how Titan uses it.</p>
+      <h2 class="h2 rv">What Titan does <span class="grad">on day one</span></h2>
+      <p class="lead rv" style="margin-top:16px">Ten jobs you can hand over the day you install it. Hover a tile to see which agent takes it, and what it costs.</p>
     </div>
     <div class="logos">
-      <div class="logo-cell"><svg class="icon"><use href="#i-cpu"/></svg>Local models<span class="tag">Free, private, offline. Suggested from your laptop's RAM and GPU</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-globe"/></svg>OpenRouter<span class="tag">The strongest cloud models, through credits or your own key</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-mail"/></svg>Gmail<span class="tag">Read, draft and reply. Sending always asks first</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-calendar"/></svg>Calendar<span class="tag">Plan, schedule and remind</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-hash"/></svg>Slack<span class="tag">A chat channel to Titan, and a tool for it</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-note"/></svg>Notion<span class="tag">Pages and databases through MCP</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-card"/></svg>Stripe<span class="tag">Payments data for reports and apps</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-git"/></svg>GitHub<span class="tag">Branches, commits and pull requests. Export any app</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-send"/></svg>Telegram<span class="tag">Message Titan from your phone; approve from chat</span></div>
-      <div class="logo-cell"><svg class="icon"><use href="#i-chart"/></svg>Search Console<span class="tag">Real search data for the SEO agent</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-folder"/></svg>Sort my Downloads<span class="tag"><b>Titan</b>Files into folders, renamed and deduplicated · free on a local model</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-file"/></svg>Invoices to Excel<span class="tag"><b>Titan</b>Reads every PDF and builds the sheet, sent to you on Telegram</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-search"/></svg>Ask my contracts<span class="tag"><b>Folder agent</b>Answers with the file, page and passage · never leaves the laptop</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-video"/></svg>Site to promo video<span class="tag"><b>Promo video</b>Script, voiceover and your brand colours, read from your website</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-bug"/></svg>Test my website<span class="tag"><b>QA and tests</b>Chromium, Firefox and WebKit, with tests that then run without AI</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-chart"/></svg>Fix my SEO<span class="tag"><b>SEO agent</b>Audit, fixes and real Search Console data, re-checked every week</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-megaphone"/></svg>A month of posts<span class="tag"><b>Marketing</b>LinkedIn, Instagram and Facebook from your brand kit, after your OK</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-code"/></svg>Build a booking app<span class="tag"><b>App builder</b>Web, mobile or desktop, previewed on your laptop for free</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-record"/></svg>Weekly export<span class="tag"><b>Recorder</b>Record a supplier portal export once; it runs every Monday on its own</span></div>
+      <div class="logo-cell"><svg class="icon"><use href="#i-eye"/></svg>Watch law changes<span class="tag"><b>Web watcher</b>Checks the sources daily and tells you what changed that matters</span></div>
+    </div>
+  </section>
+
+  <!-- VIDEO: drop the file at assets/titan-demo.mp4 (data-src) and it plays here -->
+  <section class="section" id="video">
+    <div class="with-head">
+      <h2 class="h2 rv">See Titan <span class="grad">at work</span></h2>
+      <p class="lead rv" style="margin-top:16px">One real task from request to result: Titan plans it, the agents do the work on the laptop, and you approve what leaves it.</p>
+    </div>
+    <div class="video-stage" id="video-stage">
+      <video id="demo-video" playsinline preload="none" data-src="assets/titan-demo.mp4"></video>
+      <button class="video-play" type="button" aria-label="Play the video"><svg class="icon"><use href="#i-play"/></svg></button>
+      <button class="video-close" type="button" aria-label="Close the video"><svg class="icon"><use href="#i-x"/></svg></button>
+      <p class="video-note" role="status">The demo video is coming soon.</p>
     </div>
   </section>
 
@@ -236,7 +277,7 @@
         </div>
         <div class="feat-item">
           <button aria-expanded="false"><span class="feat-ic"><svg class="icon"><use href="#i-phone"/></svg></span>Control it from anywhere</button>
-          <div class="feat-body"><div><p>Start tasks and approve them from the web app, your phone, or Telegram, WhatsApp, Discord and Slack. Commands are end-to-end encrypted; the laptop does the work.</p></div></div>
+          <div class="feat-body"><div><p>Start tasks and approve them from the web app, your phone, or Telegram and WhatsApp. Commands are end-to-end encrypted; the laptop does the work.</p></div></div>
         </div>
       </div>
     </div>
@@ -246,7 +287,6 @@
   <section class="section agents-band" id="agents">
     <div class="pad">
       <div class="sec-head">
-        <span class="eyebrow">// The team</span>
         <h2 class="h2">Meet <span class="grad">the agents</span></h2>
         <p class="lead">Titan runs the team and hands parts of a job to the specialist that does it best. Clone any agent and make it your own.</p>
       </div>
@@ -292,8 +332,8 @@
       <article class="how-card rv">
         <div class="how-vis">
           <div class="vis-approve">
-            <b>Send 3 supplier emails?</b>
-            <p style="color:var(--muted-fg)">Drafts ready for Ionescu SRL, Delta Parts, NordFood</p>
+            <b>Send the report on Telegram?</b>
+            <p style="color:var(--muted-fg)">invoices-march.xlsx · 42 invoices, 3 overdue</p>
             <div class="row"><span class="yes">Approve</span><span>Review</span></div>
           </div>
         </div>
@@ -384,31 +424,33 @@
       <h2 class="h2 rv">Give your company <span class="grad">a team that never sleeps in</span></h2>
       <p class="lead rv">Download Titan117, sign in, and hand over your first task in minutes.</p>
       <div class="hero-ctas rv">
-        <a class="btn btn-glow" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
+        <a class="btn btn-glow btn-download" href="#pricing"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
         <a class="btn btn-dark" href="#faq">Read the FAQ</a>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
+<!-- @footer -->
   <footer>
     <div class="footer-top">
       <div>
-        <a class="logo" href="#top"><svg class="bot" data-bot="foot" aria-hidden="true"></svg>TITAN117</a>
+        <a class="logo" href="index.html"><svg class="bot" data-bot="foot" aria-hidden="true"></svg>TITAN117</a>
         <p>A local-first AI team for small companies. Your laptop does the work; you stay in charge.</p>
       </div>
-      <div class="footer-col"><h4>Product</h4><a href="#product">Overview</a><a href="#agents">Agents</a><a href="#pricing">Pricing</a><a href="#trust">Security</a></div>
-      <div class="footer-col"><h4>Industries</h4><a href="#industries" data-ind="retail">Retail</a><a href="#industries" data-ind="accounting">Accounting</a><a href="#industries" data-ind="legal">Law firms</a><a href="#industries" data-ind="agencies">Agencies</a></div>
-      <div class="footer-col"><h4>Company</h4><a href="#faq">FAQ</a><a href="#">Terms</a><a href="#">Privacy</a></div>
+      <div class="footer-col"><h4>Product</h4><a href="index.html#product">Overview</a><a href="agents/index.html">Agents</a><a href="pricing/index.html">Pricing</a><a href="index.html#trust">Security</a></div>
+      <div class="footer-col"><h4>Industries</h4><a href="industries/retail/index.html">Retail</a><a href="industries/accounting/index.html">Accounting</a><a href="industries/legal/index.html">Law firms</a><a href="industries/agencies/index.html">Agencies</a><a href="industries/index.html">All industries</a></div>
+      <div class="footer-col"><h4>Help</h4><a href="learn/index.html">Learn</a><a href="faq/index.html">FAQ</a><a href="#">Terms</a><a href="#">Privacy</a></div>
     </div>
     <div class="wordmark" aria-hidden="true"><span>Titan117</span></div>
     <div class="footer-bottom"><span>© 2026 Titan117. All rights reserved.</span><span>Made for small companies, run on your laptop.</span></div>
   </footer>
+<!-- /@footer -->
 </main>
 
 <button class="to-top" id="to-top" aria-label="Back to top"><svg class="icon"><use href="#i-arrow-up"/></svg></button>
 
 <script src="assets/bot.js"></script>
-<script src="app.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/home.js"></script>
 </body>
 </html>

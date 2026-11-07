@@ -12,6 +12,18 @@
         "homepage-grid"
       ],
       "port": 4180
+    },
+    {
+      "name": "desktop-mockup",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4181",
+        "--directory",
+        "desktop-mockup"
+      ],
+      "port": 4181
     }
   ]
 }

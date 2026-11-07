@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install and sign in · Learn Titan117</title>
+  <meta name="description" content="Download Titan117, sign in, and let the setup wizard check your laptop.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Unbounded:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../styles.css">
+  <script>
+    var t = null;
+    try { t = localStorage.getItem("t117-theme"); } catch (e) {}
+    document.documentElement.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  </script>
+</head>
+<body data-page="learn" data-root="../../">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 1.5l1.9 6.2 5.7-3.1-3.1 5.7 6 1.7-6 1.7 3.1 5.7-5.7-3.1L12 22.5l-1.9-6.2-5.7 3.1 3.1-5.7-6-1.7 6-1.7-3.1-5.7 5.7 3.1z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1zM17 9a4 4 0 0 1 0 6M7 15l1 5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17 7h.01"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-updown" viewBox="0 0 24 24"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M10 10h4v4h-4zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></symbol>
+  <symbol id="i-bug" viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="12" rx="5"/><path d="M9 8a3 3 0 0 1 6 0M3 13h4M17 13h4M4 7l3 2M20 7l-3 2M4 19l3-2M20 19l-3-2M12 12v8"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/></symbol>
+  <symbol id="i-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9l1.5-5h13L20 9M4 9h16v2a3 3 0 0 1-5.3 2 3 3 0 0 1-5.4 0A3 3 0 0 1 4 11zM5 13v7h14v-7M10 20v-4h4v4"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M4 8h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6zM17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 2.5c0 1.5 1 1.5 1 3M12 2.5c0 1.5 1 1.5 1 3"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v3M8 18h.01M12 18h.01"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 9.5V20h14V9.5M10 20v-6h4v6"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2 0-1.5-1-2 0-3s2-.5 3.5-.5A3.5 3.5 0 0 0 21 12a9 9 0 0 0-9-9z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></symbol>
+  <symbol id="i-hammer" viewBox="0 0 24 24"><path d="M14 6l4 4M3 21l9.5-9.5M11 5l3-2 7 7-2 3-3-1-2 2-5-5 2-2z"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5zM3 7.5l9 4.5 9-4.5M12 12v9"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14 9l2 2"/></symbol>
+  <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5-2.7M19 13a10 10 0 0 0-2.3-1.6M2 9.3a15 15 0 0 1 4.4-2.8M22 9.3A15 15 0 0 0 11 5.1M12 20h.01"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a3 3 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5"/></symbol>
+  <symbol id="i-git" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="9" r="2.5"/><path d="M6 8.5v7M18 11.5c0 3-4 3-9.5 5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5zM9 9h6M9 13h6M9 17h3"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M5 9h15M4 15h15M10 3L8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-circle4" viewBox="0 0 24 24"><circle cx="7.5" cy="7.5" r="4" fill="currentColor"/><circle cx="16.5" cy="7.5" r="4" fill="currentColor"/><circle cx="7.5" cy="16.5" r="4" fill="currentColor"/><circle cx="16.5" cy="16.5" r="4" fill="currentColor"/></symbol>
+  <symbol id="i-star4" viewBox="0 0 24 24"><path d="M12 2c.7 5.3 4.7 9.3 10 10-5.3.7-9.3 4.7-10 10-.7-5.3-4.7-9.3-10-10 5.3-.7 9.3-4.7 10-10z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-half" viewBox="0 0 24 24"><path d="M11 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/><path d="M14 3.5a9 9 0 0 1 0 17" /></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5"/></symbol>
+  <symbol id="i-time" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></symbol>
+</svg>
+
+<header class="header">
+  <div class="header-inner">
+    <a class="logo" href="../../index.html" aria-label="TITAN117 home"><svg class="bot" data-bot="nav" aria-hidden="true"></svg>TITAN117</a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="../../index.html#product" data-nav="home">Product</a>
+      <div class="nav-item">
+        <a class="nav-trigger" href="../../agents/index.html" data-nav="agents" aria-haspopup="true">Agents<svg class="icon"><use href="#i-down"/></svg></a>
+        <div class="dropdown dd-agents">
+          <a class="dd-feature" href="../../agents/titan/index.html">
+            <span class="dd-feature-mark"><svg data-agent-bot data-color="#ff6347" data-follow="false" aria-hidden="true"></svg></span>
+            <b>Titan</b><small>Your general assistant, and the one who runs the team.</small>
+            <span class="link-more">Meet Titan <svg class="icon"><use href="#i-arrow"/></svg></span>
+          </a>
+          <div class="dd-grid"><a class="dd-item" href="../../agents/folder-agent/index.html"><span class="dd-ic" style="--c:#2f6fed"><svg class="icon"><use href="#i-folder"/></svg></span><span><b>Folder agent</b><small>Your documents</small></span></a><a class="dd-item" href="../../agents/recorder/index.html"><span class="dd-ic" style="--c:#14a37f"><svg class="icon"><use href="#i-record"/></svg></span><span><b>Recorder</b><small>Repeat it for me</small></span></a><a class="dd-item" href="../../agents/web-watcher/index.html"><span class="dd-ic" style="--c:#8b5cf6"><svg class="icon"><use href="#i-eye"/></svg></span><span><b>Web watcher</b><small>Changes that matter</small></span></a><a class="dd-item" href="../../agents/app-builder/index.html"><span class="dd-ic" style="--c:#f6a825"><svg class="icon"><use href="#i-code"/></svg></span><span><b>App builder</b><small>Web, mobile, desktop</small></span></a><a class="dd-item" href="../../agents/code-builder/index.html"><span class="dd-ic" style="--c:#0db5ed"><svg class="icon"><use href="#i-terminal"/></svg></span><span><b>Code builder</b><small>For developers</small></span></a><a class="dd-item" href="../../agents/qa/index.html"><span class="dd-ic" style="--c:#2a9a30"><svg class="icon"><use href="#i-bug"/></svg></span><span><b>QA and tests</b><small>Websites and apps</small></span></a><a class="dd-item" href="../../agents/marketing/index.html"><span class="dd-ic" style="--c:#ec4899"><svg class="icon"><use href="#i-megaphone"/></svg></span><span><b>Marketing</b><small>Posts and campaigns</small></span></a><a class="dd-item" href="../../agents/seo/index.html"><span class="dd-ic" style="--c:#7c3aed"><svg class="icon"><use href="#i-chart"/></svg></span><span><b>SEO agent</b><small>Search visibility</small></span></a><a class="dd-item" href="../../agents/promo-video/index.html"><span class="dd-ic" style="--c:#e24b4a"><svg class="icon"><use href="#i-video"/></svg></span><span><b>Promo video</b><small>Website to video</small></span></a></div>
+          <div class="dd-foot"><span>Grouped in teams: Operations, Build, Growth</span><a class="link-more" href="../../agents/index.html">All agents <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a class="nav-trigger" href="../../industries/index.html" data-nav="industries" aria-haspopup="true">Industries<svg class="icon"><use href="#i-down"/></svg></a>
+        <div class="dropdown dd-industries">
+          <div class="dd-grid"><a class="dd-item" href="../../industries/retail/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-store"/></svg></span><span><b>Retail and e-commerce</b><small>Listings, stock and campaigns</small></span></a><a class="dd-item" href="../../industries/hospitality/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-cup"/></svg></span><span><b>Restaurants and cafés</b><small>Menus, bookings and reviews</small></span></a><a class="dd-item" href="../../industries/accounting/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-calc"/></svg></span><span><b>Accounting and bookkeeping</b><small>Reconciliations and client files</small></span></a><a class="dd-item" href="../../industries/legal/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-scale"/></svg></span><span><b>Law firms</b><small>Contracts with cited answers</small></span></a><a class="dd-item" href="../../industries/realestate/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-home"/></svg></span><span><b>Real estate agencies</b><small>Listings, videos and follow-ups</small></span></a><a class="dd-item" href="../../industries/agencies/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-palette"/></svg></span><span><b>Agencies and studios</b><small>Build, test, rank and report</small></span></a><a class="dd-item" href="../../industries/trades/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-hammer"/></svg></span><span><b>Trades and construction</b><small>Quotes and jobs from your phone</small></span></a><a class="dd-item" href="../../industries/wholesale/index.html"><span class="dd-ic" style="--c:var(--accent)"><svg class="icon"><use href="#i-box"/></svg></span><span><b>Wholesale and manufacturing</b><small>Stock, orders and supplier portals</small></span></a></div>
+          <div class="dd-foot"><span>Workflows ready for eight kinds of small company</span><a class="link-more" href="../../industries/index.html">All industries <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+        </div>
+      </div>
+      <a href="../../pricing/index.html" data-nav="pricing">Pricing</a>
+      <a href="../../learn/index.html" data-nav="learn">Learn</a>
+      <a href="../../faq/index.html" data-nav="faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" id="theme" aria-label="Toggle theme">
+        <svg class="icon theme-icon-light"><use href="#i-moon"/></svg>
+        <svg class="icon theme-icon-dark"><use href="#i-sun"/></svg>
+      </button>
+      <a class="btn btn-glow btn-download" href="../../pricing/index.html"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
+      <button class="icon-btn menu-btn" id="menu" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><svg class="icon"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main id="top" class="frame">
+  <section class="section">
+    <div class="lesson-head pad">
+      <nav class="crumbs rv" aria-label="Breadcrumb"><a href="../../learn/index.html">Learn</a> <span>/</span> <a href="../../learn/index.html">Get started</a> <span>/</span> Install and sign in</nav>
+      <h1 class="h2 rv">Install and sign in</h1>
+      <p class="lead rv">Download Titan117, sign in, and let the setup wizard check your laptop.</p>
+      <div class="lesson-meta rv"><span><svg class="icon"><use href="#i-time"/></svg>4 min</span><span><svg class="icon"><use href="#i-video"/></svg>Video</span><span><svg class="icon"><use href="#i-book"/></svg>4 steps</span><span>Beginner</span></div>
+    </div>
+    <div class="video-stage">
+      <video playsinline preload="none" data-src="../../assets/learn/install.mp4"></video>
+      <button class="video-play" type="button" aria-label="Play the video"><svg class="icon"><use href="#i-play"/></svg></button>
+      <button class="video-close" type="button" aria-label="Close the video"><svg class="icon"><use href="#i-x"/></svg></button>
+      <p class="video-note" role="status">The video for this guide is coming soon.</p>
+    </div>
+  </section>
+  <section class="section">
+    <div class="lesson">
+      <div class="lesson-body pad">
+        <h2 class="h3">Step by step</h2>
+        <ol class="lesson-steps"><li class="rv"><span class="num">1</span><div><h3>Download the installer</h3><p>One signed installer for Windows or macOS. Nothing else to install first.</p></div></li><li class="rv"><span class="num">2</span><div><h3>Sign in</h3><p>Use your Titan117 account. The first sign-in needs internet; after that the session is kept in your OS keychain.</p></div></li><li class="rv"><span class="num">3</span><div><h3>Let it check your laptop</h3><p>The hardware check looks at RAM and GPU and suggests the local models your laptop can run.</p></div></li><li class="rv"><span class="num">4</span><div><h3>Say what you want to do</h3><p>Pick chat, apps, documents or marketing. Titan117 downloads only what those need, with sizes shown first.</p></div></li></ol>
+        <div class="tips rv"><b>Good to know</b><ul><li><svg class="icon"><use href="#i-sparkles"/></svg>Heavy parts like an Android emulator download only when a feature needs them.</li><li><svg class="icon"><use href="#i-sparkles"/></svg>The setup checklist shows what is ready and what is missing.</li></ul></div>
+        <div class="pager"><span></span><a class="pager-link next" href="../../learn/models/index.html"><span><small>Next</small>Pick your models</span><svg class="icon"><use href="#i-right"/></svg></a></div>
+      </div>
+      <aside class="lesson-side pad">
+        <span class="eyebrow">Get started</span>
+        <div class="side-list"><a href="../../learn/install/index.html" aria-current="page"><svg class="icon"><use href="#i-play"/></svg><span>Install and sign in<small>4 min</small></span></a><a href="../../learn/first-task/index.html"><svg class="icon"><use href="#i-play"/></svg><span>Your first task with Titan<small>6 min</small></span></a></div>
+        <a class="link-more" href="../../learn/index.html" style="margin-top:20px">All guides <svg class="icon"><use href="#i-arrow"/></svg></a>
+      </aside>
+    </div>
+  </section>
+  <section class="section">
+    <div class="cta">
+      <h2 class="h2 rv">Give your company <span class="grad">a team that never sleeps in</span></h2>
+      <p class="lead rv">Download Titan117, sign in, and hand over your first task in minutes.</p>
+      <div class="hero-ctas rv">
+        <a class="btn btn-glow btn-download" href="../../pricing/index.html"><svg class="icon" style="width:17px;height:17px"><use href="#i-download"/></svg>Download now</a>
+        <a class="btn btn-dark" href="../../learn/index.html">Learn how it works</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <a class="logo" href="../../index.html"><svg class="bot" data-bot="foot" aria-hidden="true"></svg>TITAN117</a>
+        <p>A local-first AI team for small companies. Your laptop does the work; you stay in charge.</p>
+      </div>
+      <div class="footer-col"><h4>Product</h4><a href="../../index.html#product">Overview</a><a href="../../agents/index.html">Agents</a><a href="../../pricing/index.html">Pricing</a><a href="../../index.html#trust">Security</a></div>
+      <div class="footer-col"><h4>Industries</h4><a href="../../industries/retail/index.html">Retail</a><a href="../../industries/accounting/index.html">Accounting</a><a href="../../industries/legal/index.html">Law firms</a><a href="../../industries/agencies/index.html">Agencies</a><a href="../../industries/index.html">All industries</a></div>
+      <div class="footer-col"><h4>Help</h4><a href="../../learn/index.html">Learn</a><a href="../../faq/index.html">FAQ</a><a href="#">Terms</a><a href="#">Privacy</a></div>
+    </div>
+    <div class="wordmark" aria-hidden="true"><span>Titan117</span></div>
+    <div class="footer-bottom"><span>© 2026 Titan117. All rights reserved.</span><span>Made for small companies, run on your laptop.</span></div>
+  </footer>
+</main>
+
+<button class="to-top" id="to-top" aria-label="Back to top"><svg class="icon"><use href="#i-arrow-up"/></svg></button>
+
+<script src="../../assets/bot.js"></script>
+<script src="../../assets/site.js"></script>
+</body>
+</html>

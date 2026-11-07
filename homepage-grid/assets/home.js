@@ -1,38 +1,5 @@
-// Titan117 homepage: tabs, sliders, reveals. Plain JS, no dependencies.
-
-const $ = (s, el = document) => el.querySelector(s);
-const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const ic = (id, style = "") => `<svg class="icon"${style ? ` style="${style}"` : ""}><use href="#i-${id}"/></svg>`;
-const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/* ---------- theme + menu ---------- */
-$("#theme").addEventListener("click", () => {
-  const root = document.documentElement;
-  root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-  try { localStorage.setItem("t117-theme", root.dataset.theme); } catch (e) {}
-});
-$("#menu").addEventListener("click", (e) => {
-  const open = $("#nav").classList.toggle("open");
-  e.currentTarget.setAttribute("aria-expanded", open);
-});
-$$("#nav a").forEach((a) => a.addEventListener("click", () => $("#nav").classList.remove("open")));
-
-/* Titan's eyes on the logos, from new-mockups: ink at rest, looking around on their own
-   (the engine's idle wander; still under reduced motion), tomato on hover.
-   Logos without a fixed data-ink follow the theme. */
-const bots = [];
-const themeInk = () => (document.documentElement.dataset.theme === "dark" ? "#f2f2f3" : "#141414");
-const hoverInk = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#ff6347";
-if (window.TitanBot) $$("svg[data-bot]").forEach((svg) => {
-  const inkOf = () => svg.dataset.ink || themeInk();
-  const bot = TitanBot.mount(svg, { expression: "colere", color: inkOf(), follow: false, still: reduced });
-  const host = svg.closest("a") || svg;
-  const on = () => bot.setColor(hoverInk), off = () => bot.setColor(inkOf());
-  host.addEventListener("mouseenter", on); host.addEventListener("mouseleave", off);
-  host.addEventListener("focusin", on); host.addEventListener("focusout", off);
-  bots.push(off);
-});
-$("#theme").addEventListener("click", () => bots.forEach((f) => f()));
+// Titan117 homepage only: the product stage, agents, industries and the scroll-lit statement.
+// Shared helpers ($, $$, ic, reduced) come from assets/site.js, which loads first.
 
 /* ---------- product stage ---------- */
 // agents in the sidebar, grouped by team; each has its own eye colour, shown while it works
@@ -53,13 +20,13 @@ const idleInk = "#b4b4bb";
 
 const scenes = [
   {
-    agent: "titan", title: "Titan · Supplier follow-up", model: "Qwen 7B · local",
+    agent: "titan", title: "Titan · Invoice report", model: "Qwen 7B · local",
     work: { titan: "approval", watcher: "working" },
-    prompt: "Find every supplier email about late deliveries this week, draft replies and add the dates to the calendar.",
-    steps: [["done", "Searched Gmail · 14 threads", "4s"], ["done", "Matched 3 suppliers to open orders", "2s"], ["done", "Drafted 3 replies in your tone", "6s"], ["run", "Waiting for your approval", ""]],
-    approve: ["Send 3 emails?", "Ionescu SRL, Delta Parts and NordFood. Calendar holds added for the new dates."],
-    stats: [["Model", "Qwen 7B · local"], ["Cost", "0 credits"]], big: "3 drafts", bar: 75, out: ["mail", "replies-draft.eml × 3"],
-    uses: [["brain", "Memory: suppliers"], ["mail", "Gmail"], ["calendar", "Calendar"]],
+    prompt: "Make an Excel report from this month's invoices folder, flag anything overdue, and send it to me on Telegram.",
+    steps: [["done", "Read 42 invoices in /Invoices/March", "6s"], ["done", "Computed totals and due dates", "2s"], ["done", "Flagged 3 overdue clients", "1s"], ["run", "Waiting for your approval", ""]],
+    approve: ["Send the report on Telegram?", "invoices-march.xlsx to your linked Telegram. Nothing else leaves the laptop."],
+    stats: [["Model", "Qwen 7B · local"], ["Cost", "0 credits"]], big: "42 invoices", bar: 75, out: ["file", "invoices-march.xlsx"],
+    uses: [["brain", "Memory: clients"], ["send", "Telegram"], ["sparkles", "Saved as a skill"]],
   },
   {
     agent: "app", title: "App builder · Booking app", model: "DeepSeek V3 · cloud",
@@ -197,12 +164,12 @@ else $(".tabs").classList.add("paused");
 /* features block window */
 $("#feat-main").innerHTML = `
   <div class="app-top"><div class="app-title">Chat</div></div>
-  <div class="app-prompt"><span>YOU</span>Sort my Downloads folder and make an Excel report from the invoices in it.</div>
+  <div class="app-prompt"><span>YOU</span>Sort my Downloads folder and convert the videos in it to MP4.</div>
   <div class="panel"><h5>Titan</h5>
     <div class="step done" style="animation-delay:.1s"><i>✓</i>Moved 212 files into 6 folders</div>
-    <div class="step done" style="animation-delay:.3s"><i>✓</i>Read 42 invoices</div>
+    <div class="step done" style="animation-delay:.3s"><i>✓</i>Converted 14 videos to MP4</div>
     <div class="step done" style="animation-delay:.5s"><i>✓</i>Saved the method as a skill</div>
-    <div class="out">${ic("file")}invoices-q1.xlsx</div>
+    <div class="out">${ic("file")}Downloads/Videos · 14 MP4 files</div>
   </div>`;
 
 /* feature accordion */
@@ -229,12 +196,13 @@ const agents = [
   ["eye", "Web watcher", "Changes that matter", "Checks sources on a schedule and tells you what changed that matters to your company."],
   ["record", "Recorder", "Repeat it for me", "Record browser steps once and replay them on a schedule, with logins from your keychain."],
 ];
+const agentSlugs = ["titan", "app-builder", "code-builder", "folder-agent", "qa", "promo-video", "seo", "marketing", "web-watcher", "recorder"];
 $("#agent-grid").innerHTML = agents.map(([i, n, tag, d], k) => `
-  <article class="agent${k === 0 ? " lead-agent" : ""} rv">
+  <a class="agent${k === 0 ? " lead-agent" : ""} rv" href="${link(`agents/${agentSlugs[k]}/`)}">
     <div class="agent-top"><span class="agent-ic">${ic(i)}</span>${k === 0 ? "" : `<span class="eyebrow">${String(k).padStart(2, "0")}</span>`}</div>
     <div><span class="eyebrow">${tag}</span><h3>${n}</h3></div>
     <p>${d}</p>
-  </article>`).join("");
+  </a>`).join("");
 
 /* ---------- industries ---------- */
 const industries = [
@@ -314,6 +282,7 @@ function showInd(i, user) {
       <div class="ind-meta">
         <div class="ind-agents">${d.agents.map((a) => `<span>${a}</span>`).join("")}</div>
         <div class="ind-nav">
+          <a class="link-more" href="${link(`industries/${d.id}/`)}">Explore ${ic("arrow")}</a>
           <button class="icon-btn" data-step="-1" aria-label="Previous industry">${ic("left")}</button>
           <button class="icon-btn" data-step="1" aria-label="Next industry">${ic("right")}</button>
         </div>
@@ -324,76 +293,8 @@ function showInd(i, user) {
   if (user) clearInterval(indTimer);
 }
 $$("#ind-tabs .ind-tab, #ind-dots button").forEach((b) => b.addEventListener("click", () => showInd(+b.dataset.i, true)));
-$$("[data-ind]").forEach((a) => a.addEventListener("click", () => showInd(industries.findIndex((d) => d.id === a.dataset.ind), true)));
 showInd(0);
 if (!reduced) indTimer = setInterval(() => showInd(indIndex + 1), 8000);
-
-/* ---------- pricing ---------- */
-const plans = [
-  { name: "Starter", who: "The way in", icon: "circle4", m: 15, y: 150, credits: "700", devices: 2, support: "Email support" },
-  { name: "Pro", who: "One person running a company", icon: "star4", m: 25, y: 250, credits: "1,500", devices: 3, support: "Email support" },
-  { name: "Max", who: "Heavy daily use of cloud models", icon: "half", m: 50, y: 500, credits: "3,500", devices: 5, support: "Priority support" },
-  { name: "Custom", who: "Teams and agencies", icon: "team", m: null, y: null, credits: "A custom pool of", devices: "Custom", support: "Dedicated support" },
-];
-let planIndex = 1, yearly = false;
-function renderPlans() {
-  $("#plans").innerHTML = plans.map((p, k) => {
-    const price = p.m === null ? "Talk to us"
-      : `€${yearly ? p.y : p.m}<small>/${yearly ? "year" : "month"}</small>`;
-    return `<button class="plan" role="radio" aria-checked="${k === planIndex}" data-p="${k}">
-      <span class="plan-ic">${ic(p.icon, "width:20px;height:20px")}</span>
-      <span class="plan-name">${p.name}<small>${p.who}</small></span>
-      <span class="plan-price">${price}</span></button>`;
-  }).join("");
-  $$("#plans .plan").forEach((b) => b.addEventListener("click", () => { planIndex = +b.dataset.p; renderPlans(); }));
-  const p = plans[planIndex];
-  const items = [
-    `${p.credits} credits a month for cloud models`,
-    "Unlimited local models, previews and tests",
-    "All agents and the app builder",
-    "Your own API keys and credit top-ups",
-    "Remote control and chat channels",
-    `${p.devices} devices · ${p.support}`,
-  ];
-  if (p.m === null) items.push("Teams, roles, audit log and SSO", "Agency and white-label");
-  $("#includes").innerHTML = `
-    <span class="eyebrow">Includes</span>
-    <ul>${items.map((t) => `<li>${ic("check")}${t}</li>`).join("")}</ul>
-    <p class="credit-note">1 credit = €0.01 of cloud usage. Credits roll over for a month; top-ups last 12 months. Prices before VAT, also in USD.</p>
-    <a class="btn btn-dark" href="#top">${p.m === null ? "Contact us" : `Choose ${p.name}`}</a>`;
-}
-$$("[data-bill]").forEach((b) => b.addEventListener("click", () => {
-  yearly = b.dataset.bill === "y";
-  $$("[data-bill]").forEach((o) => o.setAttribute("aria-pressed", o === b));
-  renderPlans();
-}));
-renderPlans();
-
-/* ---------- trust carousel ---------- */
-$$("[data-trust]").forEach((b) => b.addEventListener("click", () => {
-  const track = $("#trust-track");
-  track.scrollBy({ left: +b.dataset.trust * track.firstElementChild.offsetWidth, behavior: reduced ? "auto" : "smooth" });
-}));
-
-/* ---------- reveal on scroll ---------- */
-const io = new IntersectionObserver((entries) => entries.forEach((e) => {
-  if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-}), { threshold: 0.12 });
-$$(".rv").forEach((el) => io.observe(el));
-
-/* count-up facts */
-const countIO = new IntersectionObserver((entries) => entries.forEach((e) => {
-  if (!e.isIntersecting) return;
-  countIO.unobserve(e.target);
-  const end = +e.target.dataset.count, t0 = performance.now(), dur = reduced ? 0 : 1200;
-  const tick = (t) => {
-    const p = dur ? Math.min(1, (t - t0) / dur) : 1;
-    e.target.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
-    if (p < 1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}), { threshold: 0.5 });
-$$("[data-count]").forEach((el) => countIO.observe(el));
 
 /* word-by-word statement */
 const reveal = $("#reveal");
@@ -409,16 +310,6 @@ function litWords() {
   words.forEach((w, k) => w.classList.toggle("lit", k < n));
 }
 
-/* nav highlight + back to top */
-const sections = ["product", "agents", "industries", "pricing", "faq"].map((id) => document.getElementById(id));
-function onScroll() {
-  litWords();
-  $("#to-top").classList.toggle("show", scrollY > 900);
-  let cur = "product";
-  sections.forEach((s) => { if (s.getBoundingClientRect().top < 140) cur = s.id; });
-  $$("#nav a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + cur));
-}
-addEventListener("scroll", onScroll, { passive: true });
-onScroll();
+addEventListener("scroll", litWords, { passive: true });
+litWords();
 if (reduced) words.forEach((w) => w.classList.add("lit"));
-$("#to-top").addEventListener("click", () => scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" }));
