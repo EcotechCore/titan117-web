@@ -4,8 +4,8 @@
 
 ## How to use this file
 
-- **Where the code lives:** clone each project into **`C:\Users\dniss\Officials\titan117-references\<area>\<project>`**, outside both product repos, so reference code never ends up in them by accident. The "Folder" column below is the path inside that root.
-- **Pin it:** shallow-clone (`git clone --depth 1`), then write the commit into the project's row (the **Commit** column). Update deliberately, not by habit. **Downloaded 17 Oct 2026:** 53 study repos (about 7 GB); commits and licence checks below. On Windows, clone with `-c core.longpaths=true` (n8n and Twenty need it).
+- **Where the code lives:** clone each project into **`D:\Officials\titan117-references\<area>\<project>`**, next to the three repos but outside them (a local folder, never pushed), so reference code never ends up in them by accident. The "Folder" column below is the path inside that root.
+- **Pin it:** shallow-clone (`git clone --depth 1`), then write the commit into the project's row (the **Commit** column). Update deliberately, not by habit. **Clone per phase, just before it starts**, not everything at once. (The 53 study repos, about 7 GB, downloaded on 17 Oct 2026 are no longer on this machine; the commits and licence checks recorded below are still valid.) On Windows, clone with `-c core.longpaths=true` (n8n and Twenty need it).
 - **Licence first:** open the project's `LICENSE` file and fill in the **Licence checked** column before reading code to copy. Rows marked *to check* below are what we believe, not confirmed.
 - **Reuse rule (decisions §4):** MIT, Apache 2.0, BSD, ISC: copy and adapt, keep notices, add a row to the sources list. **MPL 2.0:** use as a library unchanged; changes to its own files must stay MPL. **GPL, AGPL, fair-code, source-available:** ideas only, or run unchanged as a separate program.
 - **Treat it as untrusted:** read it, don't run it. No `npm install` or install scripts in the reference folder; if a project must be run to understand it, do it in a VM.

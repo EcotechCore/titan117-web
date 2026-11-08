@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 8 Nov 2026 · Open-source references folder moved
+
+The references folder is now `D:\Officials\titan117-references`, next to the three repos (it was `C:\Users\dniss\Officials\...`, which doesn't exist): updated in `open-source-references.md`, `v1-scope.md` and CLAUDE.md, synced to the desktop and portal repos. The note that 53 projects were downloaded on 17 Oct now says they're no longer on this machine; the plan is to clone only what each phase needs, just before it starts. The folder itself isn't created yet. Nothing committed.
+
 ### 7 Nov 2026 · Third repo for the product owner portal; EcotechCore owns the repos
 
 - **Decided** (decisions §6 and a table row): the product owner portal gets its own repo, **`titan117-pop`**: a Next.js app with no backend of its own (admin-only Convex functions stay in this repo; it installs `@titan117/shared` like the desktop app), deployed as its own Vercel project. All three repos belong to the **EcotechCore** GitHub organisation. Also fixed decisions §5 (the default search provider is OpenRouter, not "open").
