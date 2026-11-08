@@ -100,9 +100,10 @@ Web pages, documents, emails, repositories, marketplace items and tool output ar
 - User secrets (API keys, passwords, tokens) live only in the OS keychain, never in SQLite, memory, recordings, artifacts or logs.
 - Logs and error reports redact keys and tokens.
 - **Other vendors' logins stay theirs** (decisions §20): when Titan117 runs a coding tool the user already has (Claude Code, Codex, Cursor, OpenCode, Antigravity), it starts the unmodified program and never reads, copies, stores, forwards or proxies that tool's credentials or session tokens. Sign-in happens only in the vendor's own flow. We never pay for, resell or route their usage.
+- **GitHub as the user** (decisions §25): agents commit with the user's own git setup and act on GitHub with the user's access token from our GitHub App's device flow. The token lives only in the keychain and is never sent to Convex, our servers, logs or error reports. No client secret ships in the app. Pushes and pull requests go through approvals; no force-push, protected-branch push or merge without the user's OK.
 - `.env.example` lists every variable with a placeholder; real `.env` files are git-ignored.
 
-*Enforced by:* secret scanning on every push (for example gitleaks, MIT) and GitHub's secret scanning; a test that logging a key prints it redacted; for external coding tools, the engine's file permissions deny their credential folders (for example `~/.claude`, `~/.codex`) to every agent, a test that proves the adapters only spawn the vendor binary and read its output, and a check that the binary's hash matches the vendor's published release.
+*Enforced by:* secret scanning on every push (for example gitleaks, MIT) and GitHub's secret scanning; a test that logging a key prints it redacted; for GitHub, a test that no Convex function or cloud request carries a GitHub token, a test that pushes and pull requests raise an approval, and a test that force-push is refused; for external coding tools, the engine's file permissions deny their credential folders (for example `~/.claude`, `~/.codex`) to every agent, a test that proves the adapters only spawn the vendor binary and read its output, and a check that the binary's hash matches the vendor's published release.
 
 ## 9. Remote control
 

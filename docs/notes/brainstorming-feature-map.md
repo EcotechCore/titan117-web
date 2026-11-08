@@ -243,7 +243,7 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 | 10.3 | Index found through a GitHub topic | V1 | Stars, licence, last update, installs, ratings; code stays on GitHub |
 | 10.4 | Install pinned to a commit, updates with a changelog | V1 | |
 | 10.5 | Install any open-source project | V1 | The agent reads the repo and proposes setup steps for your OK |
-| 10.6 | Fork and publish back to your GitHub | V1 | GitHub App with limited permissions |
+| 10.6 | Fork and publish back to your GitHub | V1 | As the user: Sign in with GitHub (our GitHub App's device flow, user access token in the keychain); shows as the user's own fork and pull request (decisions §25) |
 | 10.7 | Permissions screen before install | V1 | |
 | 10.8 | Sandbox, dependency scan, agent code summary | V1 | |
 | 10.9 | Licence shown and warned about | V1 | MIT and Apache fine; GPL and AGPL warn; none or non-commercial warn strongly |
@@ -287,7 +287,7 @@ One coding engine runs inside the desktop app and powers every agent that writes
 | 13.4 | Runs commands, tests and the dev server | V1 | Through the sandboxed shell (3.8) |
 | 13.5 | Approvals routed to Titan117's approval screen | V1 | The engine's permission prompts become our approvals (4.5), also from the web and chat channels |
 | 13.6 | Any model: local or OpenRouter | V1 | Same model choice as everywhere else (§2) |
-| 13.7 | Git: branches, commits, pull requests | V1 | GitHub through the GitHub App (10.6) |
+| 13.7 | Git: branches, commits, pull requests | V1 | As the user: their own git setup for commits (with a `Co-authored-by` Titan117 trailer), their GitHub sign-in (10.6) for pull requests; pushes and pull requests need approval (decisions §25) |
 | 13.8 | Project memory | V1 | Conventions and decisions per repo, in the shared memory (3.4) |
 | 13.9 | Sub-agents for big tasks | V1 | Orchestrator splits work: plan, code, test, review |
 | 13.10 | Code review agent | V1 | Reviews a diff or pull request for bugs |

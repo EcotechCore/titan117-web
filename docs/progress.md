@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 8 Nov 2026 · GitHub identity: agents act as the user
+
+The feature map said agents would use git "through the GitHub App", which would have made pull requests appear as a bot of ours. Decided instead (decisions §25) that agents work on GitHub as the user, the way coding tools work on your own repos: commits with the user's own git setup (plus a `Co-authored-by` Titan117 trailer the user can turn off); pull requests, forks and publishing with a user access token from our GitHub App's device flow, which GitHub attributes to the user. The token stays in the laptop's keychain, never in our cloud, and pushes and pull requests need approval. GitHub's token behaviour (8-hour expiry, 6-month refresh, permissions limited to what both user and app have, no client secret for the device flow) was checked against docs.github.com. Updated decisions, feature map (10.6, 13.7), architecture, security.md and guardrails §8 (with its tests); synced to the desktop and portal repos. Nothing committed.
+
 ### 8 Nov 2026 · Open-source references folder moved
 
 The references folder is now `D:\Officials\titan117-references`, next to the three repos (it was `C:\Users\dniss\Officials\...`, which doesn't exist): updated in `open-source-references.md`, `v1-scope.md` and CLAUDE.md, synced to the desktop and portal repos. The note that 53 projects were downloaded on 17 Oct now says they're no longer on this machine; the plan is to clone only what each phase needs, just before it starts. The folder itself isn't created yet. Nothing committed.

@@ -37,6 +37,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 17 Oct 2026 | No free plan and no trial (trial ruled out 18 Oct): the app works only with an active subscription | [13](#13-pricing) |
 | 17 Oct 2026 | Signed licence lease for offline use (14 days, offline mode in V1); the app locks when it expires or the subscription ends | [17](#17-offline-use-and-licence) |
 | 18 Oct 2026 | Logo: an agent avatar (bloub engine) with an angry face; ~~a neon hexagon whose eyes follow the cursor~~ (since 7 Nov: the angry eyes beside TITAN117, ink at rest, tomato on hover); old helmet files, mockups and stand-in media deleted | [9](#9-brand) |
+| 8 Nov 2026 | Agents work on GitHub **as the user**, never as a bot of ours: local git uses the user's own git setup; GitHub actions (pull requests, forks, publishing) use a token the user grants through our GitHub App's device flow, kept in the laptop's keychain only. Pull requests show the user as author | [25](#25-github-identity) |
 | 7 Nov 2026 | Website: the framed-grid homepage (`homepage-grid/`, after the Atomist template) is the one design we keep; tomato accent, Titan's angry eyes with the TITAN117 wordmark; all other mockups removed | [18](#18-website-design) |
 | 7 Nov 2026 | Desktop app follows the current style: tomato `#ff6347` replaces neon green; light-gray sidebar, white workspace, black only for text, done marks and the activity log; agent eyes in their own colours; reference: `mockup/` in the desktop repo, rules in design.md 0.2 | [19](#19-desktop-app-style) |
 | 7 Nov 2026 | Your own coding tools (13.14): the code builder can hand work to Claude Code, Codex, Cursor's agent, OpenCode or Antigravity already installed and signed in on the laptop, run unmodified, under the user's own plan; we never touch their logins | [20](#20-your-own-coding-tools) |
@@ -282,6 +283,20 @@ Decided 17 Oct 2026.
 - **Not allowed:** posting by automating the platforms' websites with the recorder or computer use; their terms forbid it, and so does our rule against bypassing site terms.
 - **After V1:** automatic scheduled publishing through each platform's API (feature 15.4b). Before that: Meta business verification for Ecotechcore and the privacy policy and terms online (they take time and don't need the feature); the app reviews themselves need a working demo, so they're submitted once publishing works.
 - Website and mockups say "ready to post" and "reminders", never "posts go out with the laptop closed".
+
+## 25. GitHub identity
+
+- **8 Nov 2026:** when an agent commits, pushes, opens a pull request, forks or publishes, it does it **as the user**, the way Cursor, VS Code and Claude Code work on your own repos. The user owns and answers for what lands in their repos, and repo owners see a person they know, not an unknown bot. There is **no `titan117[bot]` acting in users' repos**.
+- **Local git:** the user's own git setup on the laptop (name and email, Git Credential Manager or SSH keys). Commits are authored by the user. Each agent commit adds a `Co-authored-by` trailer naming Titan117, so the AI's part is visible in the history; the user can turn it off in settings.
+- **GitHub actions** (open a pull request, fork, create a repo, publish a marketplace item, 10.6 and 13.7): the user clicks **Sign in with GitHub**, approves our GitHub App through GitHub's **device flow**, and picks which repos it may use. The app gets a **user access token**. GitHub's documented behaviour (checked 8 Nov 2026 on docs.github.com):
+  - Actions are attributed to the user: the user's avatar with the app's small badge in the GitHub UI, and the user as the actor in audit logs.
+  - The token has only the permissions both the user and the app have, on only the repos both can reach.
+  - The token expires after 8 hours; its refresh token lasts 6 months.
+  - The device flow needs no client secret, so nothing secret ships in the app.
+- **The GitHub App** is registered under the **EcotechCore** organisation (its install screen reads "by EcotechCore") and asks for the smallest set of permissions the features need, listed in the phase 7 spec. It is used only for user access tokens, never with its own installation identity in users' repos.
+- **Tokens stay on the laptop**, in the OS keychain (guardrails §8). They never go to Convex, our servers, logs or error reports. A coding task started from the web or phone runs on the laptop with the laptop's token.
+- **Approvals:** pushing, opening a pull request, forking and publishing are outward actions and go through the approval screen (4.5) unless the user allows them for that repo. Agents never force-push, push to a protected branch or merge without the user's OK.
+- **Signing out** deletes the token from the keychain; the user can also revoke the app on GitHub at any time.
 
 ## 11. Deleting data
 

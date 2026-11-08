@@ -92,7 +92,7 @@ A background process in TypeScript (Node or Bun). Its parts:
 | Documents index | Watched folders, parsing, OCR, search (§7) | Same store; parsers like Docling or MarkItDown |
 | Scheduler and job queue | Scheduled and long tasks with checkpoints, resume after sleep (1.5, 1.6, 8.1) | SQLite |
 | Tools | Browser (Playwright), sandboxed shell, files, code, MCP client, web search | Each in its own process where possible |
-| Coding engine | All code work: the code builder and the app builder (§13, §6) | OpenCode in headless server mode, as a child process, pinned behind our adapter (decisions §12) |
+| Coding engine | All code work: the code builder and the app builder (§13, §6) | OpenCode in headless server mode, as a child process, pinned behind our adapter (decisions §12). Works on GitHub as the user: their git setup, and a GitHub user access token from our GitHub App's device flow, kept in the keychain (decisions §25) |
 | Your own coding tools | Hands a coding task to a tool the user already has (feature 13.14, decisions §20) | One adapter per tool that starts the vendor's unmodified CLI as a child process through the sandboxed shell, in the task's folder; reads its output stream; maps its permission prompts to our approvals. Never reads, copies or forwards the tool's credentials |
 | Local models | Running models on the laptop | llama.cpp (MIT), built in |
 | Components manager | Downloads, updates and removes heavy parts (1.13) | Our code |
@@ -107,7 +107,7 @@ A background process in TypeScript (Node or Bun). Its parts:
 | Sidebar app data | One database per app (6.12) |
 | Artifacts and their versions | Files plus an index in SQLite |
 | Downloaded models, browsers, emulators, VM images | The components folder, shown with sizes |
-| API keys, passwords, tokens | **The OS keychain only** (Electron `safeStorage` or the system keychain) |
+| API keys, passwords, tokens (including the user's GitHub token, decisions §25) | **The OS keychain only** (Electron `safeStorage` or the system keychain) |
 
 ## 4. The web app and our cloud
 

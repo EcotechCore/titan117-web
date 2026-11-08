@@ -58,6 +58,8 @@ A tricked agent doesn't need to "send" anything; opening a web address with priv
 
 Already in the guardrails, summarised: API keys and passwords only in the OS keychain (§8); other vendors' logins never touched (§8, decisions §20); agents only in allowed folders, shell sandboxed, add-ons sandboxed (§4, §7); memory visible and deletable; error reports opt-in and shown in full (§12); account deletion removes everything we hold.
 
+**GitHub:** agents act as the user, with the user's own git setup and a GitHub token the user grants (device flow, limited to the repos they pick, expires after 8 hours). The token stays in the laptop's keychain and never reaches our cloud; pushes and pull requests need approval (decisions §25).
+
 ---
 
 ## Part B · Protecting us
