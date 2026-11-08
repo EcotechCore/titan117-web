@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** planning is done; the docs now have an external services register checked against vendor docs (8 Nov 2026). **Next step:** phase 0, Setup, when you say so. Before it: push the three repos to EcotechCore and commit; two-factor on every account, the OpenRouter spending cap and the `security@titan117.com` mailbox. During phase 0: the shell-sandbox decision for phase 1. Long-lead items to start now: Apple Developer Program, Windows code signing, trademark check.
+**Now:** planning is done; the docs now have an external services register checked against vendor docs (8 Nov 2026). **Next step:** phase 0, Setup, when you say so. Before it: two-factor on every account, the OpenRouter spending cap and the `security@titan117.com` mailbox. All open decisions are answered (decisions §33). Long-lead items to start now: Apple Developer Program, Windows code signing, an EU trademark filing for TITAN117 after a short lawyer opinion.
 
 ## Phases
 
@@ -31,6 +31,18 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 8 Nov 2026 · Four additions after Hermes Agent
+
+Compared our plan with Hermes Agent; most was covered. Added (decisions §34): remembering how past tasks were solved (3.13, phase 3), schedules in plain words (8.10, phase 13), scripts that call Titan's tools through a local tool API (4.10, phase 3) with speech as a tool (3.14), and running on the user's own servers over SSH or cloud sandboxes on their own account (3.15, phase 7). Also HunyuanVideo after V1, offered only in countries its licence covers, with the model catalogue filtering by country. Roadmap and external services updated. Synced.
+
+### 8 Nov 2026 · Remaining open decisions answered
+
+Decided (decisions §33), closing the feature map's open decisions 1–9: commands with "allow once / always" and a short always-ask list (3.8); a full local model catalogue by hardware, downloadable for offline use (2.1); the best open-source bases compared at each phase start; SEO free-first plus an SEO skill for code (14.4b); video through OpenRouter's video API on credits or Wan 2.2 locally, and our own video studio (15.15) on OpenCut (MIT); other coding tools as a user option like T3 Code, adding Grok CLI and Cursor's SDK (13.14); keep "Titan117 by EcotechCore" (TMview: no "titan117" mark, but "TITAN" is crowded in software, so file our own EU trademark before launch); comprehensive legal pages in phase 2, with a lawyer's review before launch. Synced.
+
+### 8 Nov 2026 · Repos moved to EcotechCore
+
+`titan117-web` and `titan117-desktop` were transferred to the EcotechCore organisation with their full history, and `titan117-pop` was pushed there; all three local folders now point at `github.com/EcotechCore/...`. Fixed the portal's README, which had a line appended in UTF-16 (PowerShell's `echo >>`), so GitHub showed it as a binary file.
 
 ### 8 Nov 2026 · Re-check: local by default, a closed list for our cloud
 
