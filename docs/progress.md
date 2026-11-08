@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 8 Nov 2026 · Re-check: local by default, a closed list for our cloud
+
+Re-checked every doc for slips like the GitHub one (credentials, data in our cloud, anything acting in our name). Found and fixed: the architecture still sent video and image providers through our proxy and called per-user keys "later"; guardrails §11b still had the old resale rule; the app builder's default backend (6.1) didn't say whose Convex account; sync (6.12) and teams (11.6) didn't say they're encrypted; built sites' analytics (15.10) didn't say where data lives. Decided (decisions §32) a closed list of what our cloud may hold, with no user passwords, keys or tokens ever (our own account password is Clerk's, hashed), sync and teams end to end encrypted, users' app data in their own backends. Enforced in guardrails §12 by the data table, a schema-matches-table CI check and a readable-content test. security.md A5 summarises it. Nothing found acting in Titan117's name in users' accounts. Synced.
+
 ### 8 Nov 2026 · Free first
 
 Added feature 1.25 and a line in decisions §31: no paid service is required by default; agents try free options first (local models, open-source tools, free tiers that allow commercial use, or building it themselves), suggest paid services only with a free alternative next to them, and follow the user's "no paid services" instruction per task or as a workspace setting. Synced. Nothing committed.
