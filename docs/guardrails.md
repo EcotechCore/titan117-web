@@ -75,6 +75,7 @@ Web pages, documents, emails, repositories, marketplace items and tool output ar
 - Memory and skills written by an agent show where they came from; the user can see and delete them (3.3).
 - **A prompt injection test suite**: pages, documents and READMEs with planted instructions; agents must not act on them. *Enforced by:* tests in CI, run against the default models; rerun when a default model changes.
 - **Network policy per task** ([security.md](security.md) A3): a task reaches only its site list; after it has read files, memory or a confidential folder, a new site needs the user's OK; requests (addresses, form fields, uploads) carrying passages of what the task has seen are blocked; local-only tasks have no network. *Enforced by:* the network goes through the engine's proxy for every tool; the injection suite includes exfiltration attempts (data in a URL, a hidden image, a form) that must be blocked.
+- **Browser automation on the user's choice** (decisions §29): before running on a site from the "forbids automation" list, the user sees the warning and answers it; the agent stops before publish, post, launch, send or pay; no CAPTCHA solving, no bot-detection evasion (fake fingerprints, hidden automation flags), no automating Discord user accounts. *Enforced by:* tests that a flow on a listed site doesn't start without the stored answer, that a final-step button is never clicked without an approval, and a check that the browser tool ships no stealth or CAPTCHA-solving code.
 
 ## 6. The desktop app itself
 
@@ -140,6 +141,15 @@ Why these rules: remote control lets a task started from the web, a phone or cha
 - **Licence check in CI**: MIT, Apache 2.0, BSD and ISC allowed; GPL, AGPL and unknown licences fail unless listed as a separate program we run unchanged.
 - **Every project we copy code from** gets a row in the sources list (project, licence, what we took, commit), and its notice in the third-party licences file shipped with the app.
 
+## 11b. External services
+
+- **No feature that uses a third-party service is specified or built until its row in [`notes/external-services.md`](notes/external-services.md) answers six questions:** whose account, who it acts as, where the credentials live, which approvals or reviews the vendor requires, what the terms forbid (resale, automation, scraping), and who pays.
+- **Facts come from the vendor's own documentation or terms**, with the date and a link. A blog post or forum answer is a lead, not a source. Anything not checked says "To verify".
+- **Default when in doubt:** the user's own account, acting as the user, credentials in their keychain, the vendor's official API and sign-in flow. Resell through credits only where the vendor allows it in writing.
+- A feature-map note or a spec never names a mechanism ("through the GitHub App", "through credits") without that row.
+
+*Enforced by:* the phase start review: a phase doesn't start while one of its services says "To verify" or an open decision it depends on is unanswered; the pull request checklist (§15); review of every feature-map and spec change.
+
 ## 12. Data and privacy
 
 - Company data stays on the laptop unless the user shares it or sends it to a cloud model they picked.
@@ -147,6 +157,7 @@ Why these rules: remote control lets a task started from the web, a phone or cha
 - Account deletion: a grace period, then a full delete in our cloud and of Clerk and payment data; local data is the user's to delete from the app.
 - Nothing collected that isn't needed; analytics without personal content.
 - **Error reports are opt-in and shown in full** before sending (decisions §22); they never include file contents, prompts, memory, keys, passwords or tokens unless the user ticks a box for that one report, and never anything from "local models only" folders. Kept 90 days. *Enforced by:* a test that builds a report from a session full of fake secrets, prompts and files and checks none of them are in it; the default setting test (always ask); the data table row in decisions §11.
+- **Mail never reaches our servers** (decisions §27): not Convex, not the proxy, not error reports or sync; remotely only end to end encrypted. *Enforced by:* a test that a task reading mail never calls the proxy, a test that error reports and sync payloads drop mail content, and the network policy (security.md A3).
 
 ## 12b. The product owner portal
 
@@ -193,6 +204,7 @@ Copied into every repo's pull request template:
 - [ ] New tables have a row in the data table
 - [ ] New dependencies: licence allowed, no known vulnerabilities, sources list updated if code was copied
 - [ ] Protocol changes are backward compatible and versioned
+- [ ] Third-party services used: their row in `external-services.md` is checked against the vendor's docs (§11b)
 - [ ] `progress.md` and docs updated
 
 ## 16. CI per repo

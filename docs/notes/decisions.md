@@ -8,7 +8,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 15 Oct 2026 | Models: local or OpenRouter; pay with our credits or your own key; subscription first, credits to top up | [3](#3-models-and-payment) |
 | 15 Oct 2026 | No sign-in with Claude, ChatGPT or other chat subscriptions | [3](#3-models-and-payment) |
 | 15 Oct 2026 | Open-source projects are our starting code, reused only as their licence allows | [4](#4-open-source-reuse) |
-| 15 Oct 2026 | Web search: paid API through credits by default, own key optional, free mode opt-in only | [5](#5-web-search) |
+| 15 Oct 2026 | Web search: paid API through credits by default, own key optional, ~~free mode opt-in only~~ (dropped 8 Nov, §30) | [5](#5-web-search) |
 | 15 Oct 2026 | Two repositories, `titan117-web` and `titan117-desktop`, with a shared versioned package (a third, `titan117-pop`, added 7 Nov) | [6](#6-repositories-and-docs) |
 | 15 Oct 2026 | Docs in every repo: shared docs edited in the web repo and copied | [6](#6-repositories-and-docs) |
 | 15 Oct 2026 | App builder: one target per project (web, mobile or desktop); the sidebar is an option | [7](#7-app-builder) |
@@ -37,6 +37,13 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 | 17 Oct 2026 | No free plan and no trial (trial ruled out 18 Oct): the app works only with an active subscription | [13](#13-pricing) |
 | 17 Oct 2026 | Signed licence lease for offline use (14 days, offline mode in V1); the app locks when it expires or the subscription ends | [17](#17-offline-use-and-licence) |
 | 18 Oct 2026 | Logo: an agent avatar (bloub engine) with an angry face; ~~a neon hexagon whose eyes follow the cursor~~ (since 7 Nov: the angry eyes beside TITAN117, ink at rest, tomato on hover); old helmet files, mockups and stand-in media deleted | [9](#9-brand) |
+| 8 Nov 2026 | Paid services: only OpenRouter (models and search) goes through our credits; every other paid service (AI video, SEO data, device farms, hosting, email sending, ads) is the user's own account, which they create and pay for, with our guided setup | [31](#31-paid-services) |
+| 8 Nov 2026 | Search: credits, the user's own key, or the browser on the user's request; free background mode dropped. Published sites go to the user's own hosting account; share links stay ours with a report and takedown process | [30](#30-search-and-hosting) |
+| 8 Nov 2026 | Browser automation is the user's choice on any site, their own apps included: the agent prepares everything, warns where a site's terms forbid automation, never bypasses CAPTCHAs or bot detection, and stops before publish, launch or pay for the user to click. A self-correcting browser agent is a core strength | [29](#29-the-users-choice-browser-automation) |
+| 8 Nov 2026 | Users connect their own accounts, the OpenClaw way: their own chat bots, developer access and providers, with guided setup; our web and phone apps are the exception (ours, end-to-end encrypted) | [28](#28-connect-your-own) |
+| 8 Nov 2026 | Email at no cost: mail stays on the laptop and never passes through our servers; Gmail through Google's free verification (IMAP with an app password if Google asks for the paid assessment); cloud models read mail only directly from the laptop (local, own key, or a per-user capped OpenRouter key) | [27](#27-email-at-no-cost) |
+| 8 Nov 2026 | OpenRouter confirmed our credits model is allowed (one funded account, key only on our server, per-user limits) | [12](#12-tech-stack) |
+| 8 Nov 2026 | Every third-party service gets a row in `external-services.md`, checked against the vendor's own docs, before its feature is specified or built (guardrails §11b) | [26](#26-external-services) |
 | 8 Nov 2026 | Agents work on GitHub **as the user**, never as a bot of ours: local git uses the user's own git setup; GitHub actions (pull requests, forks, publishing) use a token the user grants through our GitHub App's device flow, kept in the laptop's keychain only. Pull requests show the user as author | [25](#25-github-identity) |
 | 7 Nov 2026 | Website: the framed-grid homepage (`homepage-grid/`, after the Atomist template) is the one design we keep; tomato accent, Titan's angry eyes with the TITAN117 wordmark; all other mockups removed | [18](#18-website-design) |
 | 7 Nov 2026 | Desktop app follows the current style: tomato `#ff6347` replaces neon green; light-gray sidebar, white workspace, black only for text, done marks and the activity log; agent eyes in their own colours; reference: `mockup/` in the desktop repo, rules in design.md 0.2 | [19](#19-desktop-app-style) |
@@ -54,7 +61,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 ## 1. Scope
 
 - **V1 is everything in the [feature map](brainstorming-feature-map.md)** (feature map decision 18). No public launch until the whole product works well.
-- **Not doing:** agents hosted around the clock on our servers; sign-in with chat subscriptions; bypassing CAPTCHAs, paywalls or site terms.
+- **Not doing:** agents hosted around the clock on our servers; sign-in with chat subscriptions; bypassing CAPTCHAs, paywalls, logins or bot detection. Our own background features (search, crawling) respect site terms; where the user points an agent at a site, it's their choice, with a warning (§29).
 - The work is split into phases ([§10](#10-build-plan)), not into releases.
 
 ## 2. Local-first
@@ -81,7 +88,7 @@ Every decision taken so far, newest at the bottom of the table. Where this file 
 
 - Default: a paid search API through credits: **OpenRouter's search tool**, through our credit proxy (decided in §14 and §12).
 - Option: the user's own key (Brave, Tavily, Exa, Serper).
-- Free mode, opt-in only, built on ddgs (MIT) or open-webSearch (Apache 2.0), labelled "may be blocked". SearXNG is not used.
+- ~~Free mode, opt-in only, built on ddgs or open-webSearch~~ Dropped 8 Nov 2026: it scraped other search engines in the background. Replaced by **search in the browser on the user's request** (§30).
 
 ## 6. Repositories and docs
 
@@ -134,8 +141,9 @@ Decided 16 Oct 2026.
   - The endpoint is a small **streaming route on Vercel** (long streams don't suit Convex actions); Convex keeps the ledger and the rules.
   - **Prompts pass through but are never stored**; the privacy policy says so. Documents and memory stay on the laptop.
   - **Credits running out mid-request:** a minimum balance is checked before a request starts; a small overdraft is allowed and settled by the next credits.
-  - The same proxy carries every other paid service that has no per-user keys: OpenRouter web search, AI video and image providers (fal.ai or Replicate).
+  - The same proxy carries OpenRouter's web search. ~~AI video and image providers (fal.ai or Replicate)~~ Changed 8 Nov 2026: every paid service other than OpenRouter is the user's own account (§31).
   - **Rate limits and abuse checks** live in the proxy (guardrails §2, §3).
+  - **Confirmed by OpenRouter, 8 Nov 2026:** one funded account whose credits subscribers use through our backend is allowed, with the key kept on our server, caps on the account and per-user limits ([their answer](vendor-answers/openrouter-2026-11-08.md)).
   - **Own keys stay direct:** a user's own OpenRouter, Anthropic, OpenAI or Google key is stored in their OS keychain and the engine calls the provider directly, with no proxy and no credits. They pay us only the subscription (own keys need a paid plan, decisions §13).
   - **Later, optional:** per-user OpenRouter sub-keys with spending limits, if traffic grows enough that carrying every stream becomes costly.
   - **In development:** one OpenRouter key in the local `.env` file (never committed) until the proxy is built in phase 2.
@@ -154,7 +162,7 @@ Decided 16 Oct 2026. Details and numbers: [pricing.md](pricing.md).
 
 Decided 16 Oct 2026.
 
-- **Web search default: OpenRouter search**, billed through our credit proxy like model calls (§12), so there's no extra key or billing. The user's own Brave, Tavily, Exa or Serper key and the free mode stay options (§5).
+- **Web search default: OpenRouter search**, billed through our credit proxy like model calls (§12), so there's no extra key or billing. The user's own Brave, Tavily, Exa or Serper key and the browser on the user's request are the options (§5, §30).
 - **Shared UI: a separate package, `@titan117/ui`**, next to `@titan117/shared`. The engine uses only `@titan117/shared`, so it never pulls in React or styles.
 - **First customer: small companies** (owners and small teams without developers). **Windows and macOS** installers at the same launch.
 - **Chat channels: Telegram first** (free, open bot API, no business verification). WhatsApp, Slack and Discord follow in the same phase (15).
@@ -280,7 +288,7 @@ Decided 17 Oct 2026.
 ## 24. Social posting in V1
 
 - **7 Nov 2026:** V1 doesn't post through the social platforms' APIs, so it needs **no app reviews** (Meta, TikTok, LinkedIn) and no paid X API. The marketing agent still plans, writes and makes everything; the user publishes in a click: each post comes as a ready-to-post package (text, hashtags, images or video sized for the platform); **Copy and open** copies the text and opens the platform's own post screen (LinkedIn and X pre-fill the text); **Time to post** reminders from the content calendar on the laptop and phone, where one tap opens the phone's share sheet with the media attached (Instagram, TikTok, Facebook); export the calendar (.ics) and a CSV for the platforms' own free schedulers such as Meta Business Suite.
-- **Not allowed:** posting by automating the platforms' websites with the recorder or computer use; their terms forbid it, and so does our rule against bypassing site terms.
+- **The user's choice (changed 8 Nov 2026, §29):** a user can also have the agent fill in the platform's own website in their browser. The app warns first that the platform's terms forbid automation and the account risk is theirs, and the agent stops before the final Post button, which the user clicks.
 - **After V1:** automatic scheduled publishing through each platform's API (feature 15.4b). Before that: Meta business verification for Ecotechcore and the privacy policy and terms online (they take time and don't need the feature); the app reviews themselves need a working demo, so they're submitted once publishing works.
 - Website and mockups say "ready to post" and "reminders", never "posts go out with the laptop closed".
 
@@ -297,6 +305,55 @@ Decided 17 Oct 2026.
 - **Tokens stay on the laptop**, in the OS keychain (guardrails §8). They never go to Convex, our servers, logs or error reports. A coding task started from the web or phone runs on the laptop with the laptop's token.
 - **Approvals:** pushing, opening a pull request, forking and publishing are outward actions and go through the approval screen (4.5) unless the user allows them for that repo. Agents never force-push, push to a protected branch or merge without the user's OK.
 - **Signing out** deletes the token from the keychain; the user can also revoke the app on GitHub at any time.
+
+## 26. External services
+
+- **8 Nov 2026:** after the GitHub slip (§25), every third-party service gets a row in [external-services.md](external-services.md) answering whose account, who it acts as, where credentials live, which approvals the vendor requires, what the terms forbid and who pays, checked against the vendor's own documentation with a date and link (guardrails §11b).
+- **Default when in doubt:** the user's own account, acting as the user, credentials in their keychain, the vendor's official API and sign-in flow.
+- The first pass found open points listed in the feature map's open decisions 10–16, the most important being OpenRouter's terms on reselling (needed before phase 2).
+
+## 27. Email at no cost
+
+- **8 Nov 2026:** one inbox for all the user's mail accounts (3.6), built so it costs us nothing.
+- **Mail stays on the laptop.** Fetched, stored, searched and drafted on the laptop only. It never goes to Convex, our proxy, error reports or sync. Remote control can show mail only end to end encrypted (security.md A2). This is what keeps Google's paid yearly assessment from applying: Google ties it to storing or transmitting that data on servers.
+- **Gmail:** sign in with Google through our app, after Google's free verification (privacy policy and verified domain, so after phase 2). Until then, Google's testing mode for us and beta testers. If Google still asks for the paid assessment, Gmail connects through IMAP with an app password instead, and we revisit when revenue covers it.
+- **Outlook and Microsoft 365:** Microsoft's own sign-in; publisher verification (to check in phase 3).
+- **Yahoo, iCloud, company mail:** IMAP and SMTP with the user's app password.
+- **Cloud models never get mail through our proxy.** A task that reads mail uses a local model, the user's own key, or, with credits, a **per-user OpenRouter key** made by our server through OpenRouter's key management API: capped with a limit, kept in the laptop's keychain, calling OpenRouter directly, its usage read back and charged to credits, disabled when the subscription ends. Only for mail tasks; everything else stays on the proxy.
+- **Safety:** mail is untrusted content (4.9); sending always asks (4.5).
+
+## 28. Connect your own
+
+- **8 Nov 2026:** like OpenClaw, users connect their own accounts and services; we make it very easy (a guided card per service with screenshots, a connection test, clear errors, keys in the keychain, as in §15) but we don't run or own their connections. Nothing to approve for us, nothing of theirs on our servers.
+- **Chat channels (9.7):** the user's own bot. Telegram through BotFather, Discord through its developer portal, Slack as an app in their own workspace, WhatsApp through their own Meta account (§15). The laptop connects out to the platform; no Titan117 bot, nothing through our servers. Messages arrive only while the laptop is on, which is true of all our agents anyway.
+- **Our web and phone apps are the exception:** they're our product, run through our servers, and stay end to end encrypted (§23), so we pass along what we can't read.
+- **Ads (15.13):** ready-to-use ads plus a bulk-upload file for Google's and Meta's own import tools by default; optionally the user's own Google Ads developer token or Meta developer app, connected with our guide.
+- **Google Business Profile (14.11):** a guided checklist in the user's own profile by default; optionally their own API access, applied for with our guide.
+- Where it applies, the same choice as everywhere: the easiest default that needs nobody's approval, and "connect your own" for users who want more.
+
+## 29. The user's choice: browser automation
+
+- **8 Nov 2026:** users can point the browser agent (3.10), the recorder (§8) and computer use (8.7, 8.8) at **any site or app they choose**, including their own apps, supplier portals, government forms, and platforms like Meta Ads Manager or LinkedIn. We help them build and run it; the responsibility for using a site is theirs, as with any browser.
+- **Our default stays the safe route:** ready-to-post packages (§24), ads with import files and Business Profile checklists (§28). Browser automation is an extra option, never the default, for platforms whose terms forbid it.
+- **Warned before it runs:** a list of sites known to forbid automation or to restrict accounts for it (Meta, LinkedIn, X, TikTok, Google Ads, Discord, and more as we learn). The card says it plainly: "This site's terms don't allow automation. It may restrict your account. Run it anyway?" The user's answer is remembered per site and can be changed.
+- **The final step is always the user's:** the agent fills in and prepares everything, then stops before **publish, post, launch, send or pay**; the user clicks it or approves it (4.5). Scheduled runs (8.1) that reach such a step pause and notify.
+- **Never, on any site:** bypassing CAPTCHAs, paywalls or logins; hiding that it's automated (no fake fingerprints or bot-detection evasion); sites the user hasn't signed into themselves. Discord user accounts aren't automated at all (its terms ban "self-bots").
+- **A self-correcting browser agent is a core strength:** it reads the page, acts, checks the result, and recovers from changed layouts, pop-ups and slow pages on its own; a recorded flow that breaks gets fixed by the agent with the user's OK (8.4). Measured on a fixed set of real tasks in our own tests (guardrails §1), on our sites and on public ones.
+- **Example, the law watcher (5.5):** a user sets "check Romanian environmental law every Monday"; the watcher reads the official sources (for example the Ministry of Justice's legislative portal), finds what changed since last time, and reports what matters to the company, with links. It runs while the app is open and catches up on the next launch (8.1).
+
+## 30. Search and hosting
+
+- **8 Nov 2026, search:** three sources. (1) **Credits:** OpenRouter's search tool through our proxy, the default (covered by OpenRouter's OK, §12). (2) **The user's own key:** Brave, Tavily, Exa or Serper. (3) **The browser, on the user's request:** the browser agent searches in a visible browser at a human pace, as the user's choice (§29); search engines are on the warning list, and a CAPTCHA stops it and hands over to the user. The old free mode, which scraped search engines in the background on every task, is dropped.
+- **8 Nov 2026, hosting:** sites the app builder publishes (6.15) go to the **user's own Vercel, Netlify or Cloudflare account**, connected as the user with a guided setup; they own the site and pay their host. **Share links** (17.13) stay on our cloud, so we're a hosting service for them under the EU Digital Services Act: a **Report** button on every shared page, a takedown process with a contact point, and our content rules in the terms. Built in phase 4.
+
+## 31. Paid services
+
+- **8 Nov 2026:** **only OpenRouter goes through our credits** (models and web search; confirmed by OpenRouter, §12). **Every other paid service is the user's own account:** they sign up, pay the provider directly, and connect it to Titan117. This settles the contradiction between §12 and §15.
+- Covers, among others: AI video and images beyond OpenRouter (fal.ai, Replicate), SEO data (DataForSEO, SERP APIs), device farms (BrowserStack), hosting (§30), email sending (Brevo, Amazon SES, Mailgun, Postmark), X and WhatsApp (§15), ads and developer access (§28).
+- **We make it easy** (the "connect your own" pattern, §15 and §28): a "you need this first" card (1.17) when a task needs the service, saying what it's for, what it roughly costs and whether there's a free tier; a step-by-step guide with screenshots and direct links; a connection test; keys in the keychain; the provider's limits and costs shown before a task uses them.
+- **Why:** no resale permission to chase per provider, no bills or abuse risk for us, and the user owns their account and data, as with other agent tools and automation platforms (OpenClaw, n8n, Zapier's own-account connections).
+- **Free first, and the user's word wins (8 Nov 2026, feature 1.25):** a paid service is never required by default. Agents reach for free options first (local models, open-source tools, free tiers that allow commercial use, or building it themselves) and suggest a paid service only when it's clearly better, with the free alternative next to it. If the user says "no paid services", for a task or as a workspace setting, agents respect it, like Claude Code follows such an instruction, and say plainly when something can't be done for free. Examples: AI video clips become motion graphics made by the open-source video engine; keyword data becomes Search Console data; device farms become the local emulators; hosting uses a free tier.
+- **Later, optional:** a provider moves into credits only if it allows reselling in writing (saved in `vendor-answers/`) and users ask for it.
 
 ## 11. Deleting data
 
@@ -318,3 +375,4 @@ The full list, each with the phase that needs it and a leaning, is in the [featu
 2. **Shell sandbox** on Windows and macOS, and the risky-command list: decide during phase 0, needed for phase 1.
 3. **Trademark check** on "Titan117", and our own restyle of the eyes logo before beta (§9).
 4. **Legal basics:** privacy policy and terms online with the web app basics (phase 2); GDPR deletion plan (§11); licence audit before launch.
+5. ~~OpenRouter's OK~~ Confirmed 8 Nov (§12). Still open: one resale rule for every other paid service (§26, external-services.md), before phase 2.

@@ -72,7 +72,7 @@ Feature numbers point to the feature map.
 - Network policy per task: site lists, ask before new sites after private data, block requests carrying private content (security.md A3).
 
 ### 4 · Web search and artifacts
-- Search sources (credits, own key, free mode), page and site reading, deep research, trusted sources, cache (§16).
+- Search sources (credits, own key, the browser on the user's request), page and site reading, deep research, trusted sources, cache (§16).
 - Artifact panel, all types, edit, versions, brand kit, downloads in every format, sharing, comments, live data, templates (§17).
 
 ### 5 · Install and setup

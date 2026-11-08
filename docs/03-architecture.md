@@ -94,6 +94,7 @@ A background process in TypeScript (Node or Bun). Its parts:
 | Tools | Browser (Playwright), sandboxed shell, files, code, MCP client, web search | Each in its own process where possible |
 | Coding engine | All code work: the code builder and the app builder (§13, §6) | OpenCode in headless server mode, as a child process, pinned behind our adapter (decisions §12). Works on GitHub as the user: their git setup, and a GitHub user access token from our GitHub App's device flow, kept in the keychain (decisions §25) |
 | Your own coding tools | Hands a coding task to a tool the user already has (feature 13.14, decisions §20) | One adapter per tool that starts the vendor's unmodified CLI as a child process through the sandboxed shell, in the task's folder; reads its output stream; maps its permission prompts to our approvals. Never reads, copies or forwards the tool's credentials |
+| Mail | One inbox for the user's mail accounts (3.6, decisions §27) | Gmail and Outlook through their own sign-in, others over IMAP and SMTP; mail stored and indexed only on the laptop; cloud models reach it only directly (local, own key, or a per-user capped OpenRouter key), never through our proxy |
 | Local models | Running models on the laptop | llama.cpp (MIT), built in |
 | Components manager | Downloads, updates and removes heavy parts (1.13) | Our code |
 | Requirements checker | "You need this first" cards before a task starts (1.16–1.19) | Our code |
@@ -155,7 +156,7 @@ Sign-in for both apps. The desktop app signs in through the system browser and a
 
 ### Payments
 
-Subscriptions first, credits to top up. **Stripe directly or Clerk Billing is open (decision 2).** Ninjathons chose Stripe directly for regional prices, one-time payments and EU VAT; one-time credit purchases are a strong reason to do the same here. Either way, only the payment webhook writes `entitlements` and credit top-ups.
+Subscriptions first, credits to top up. **Stripe directly** (decided 16 Oct 2026, decisions §12): regional prices, one-time credit purchases and EU VAT. Only the payment webhook writes `entitlements` and credit top-ups. Credits pay only for OpenRouter (models and search); every other paid service is the user's own account (decisions §31).
 
 ## 5. How model calls flow
 

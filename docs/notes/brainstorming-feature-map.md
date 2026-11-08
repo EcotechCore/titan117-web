@@ -49,19 +49,20 @@ An AI team for small companies that runs on your own laptop: a general assistant
 | 1.21 | Health check | V1 | Finds what broke (an expired API key, a removed emulator, low disk space, an outdated component) and offers the fix |
 | 1.22 | Offline mode | V1 | Local models, tools and data work without internet; online-only features show "Needs internet" cards; a cloud task can switch to a local model (decisions §17) |
 | 1.23 | Licence lease and lock screen | V1 | Signed offline licence (14 days); warnings before expiry; the app locks to a sign-in and renew screen when it expires or the subscription ends; tasks pause at a checkpoint; "Export my data" stays available |
+| 1.25 | **Free first: the user's instructions on paid services** | V1 | Agents follow what the user says about cost, like any coding agent does: "no paid services" means they use local models, open-source tools, free tiers that allow commercial use, or build it themselves, and say plainly when something truly can't be done for free and what that costs. The default is free first anyway: a paid service is only suggested, with a free alternative next to it, and only connected after the user agrees. A workspace setting ("Avoid paid services") makes it permanent; per task the user can say it in words (decisions §31) |
 | 1.24 | Offline queue | V1 | Usage reports, sync, remote results and notifications wait and send when the connection is back |
 
 ## 2. Models
 
 | # | Feature | Stage | Notes |
 |---|---|---|---|
-| 2.1 | Local models with one-click download | V1 | Ollama or llama.cpp; suggestions from 1.4 |
+| 2.1 | Local models with one-click download | V1 | llama.cpp built in (1.15), no Ollama needed; suggestions from 1.4 |
 | 2.2 | OpenRouter models | V1 | Through our credit proxy or BYOK |
 | 2.3 | Model per agent, override per step | V1 | Sensible defaults for beginners |
 | 2.4 | Smart routing | V1 | Strong model plans, cheaper model does bulk edits |
 | 2.5 | Cost shown before a task runs | V1 | Estimated credits; local runs cost nothing |
 | 2.6 | "Too heavy for this laptop" fallback | V1 | Suggests the OpenRouter model and its cost |
-| 2.7 | Image, voice and video providers | V1 | OpenRouter covers text and some images; video needs a second provider (fal.ai or Replicate, to check) |
+| 2.7 | Image, voice and video providers | V1 | Through OpenRouter and credits where it has them (text, some images); anything else (for example AI video from fal.ai or Replicate) through the user's own account with a guided setup (decisions §31) |
 | 2.8 | Compare models side by side | V1 | Same prompt, several models |
 | 2.9 | Your own key from a model provider | V1 | Anthropic, OpenAI or Google API keys, used directly next to OpenRouter; kept in the OS keychain |
 | 2.10 | No sign-in with chat subscriptions | Decided | Claude Pro or Max, ChatGPT Plus or Pro and similar plans are not used to run our agents (see Not doing). Different from 13.14, where your own installed coding tool runs under its own sign-in |
@@ -75,11 +76,11 @@ An AI team for small companies that runs on your own laptop: a general assistant
 | 3.3 | Memory you can see, edit and delete | V1 | "Forget this"; needed for trust and GDPR |
 | 3.4 | Memory scopes | V1 | Per company, per agent; the QA agent can't read finance notes |
 | 3.5 | Learns how you work: writes its own skills | V1 | After doing a task once, saves how as a skill and reuses it; skills are files you can read, edit and delete |
-| 3.6 | Tools through MCP | V1 | Gmail, Calendar, Slack, Notion, Stripe, GitHub, CRMs and so on |
+| 3.6 | Tools through MCP | V1 | Gmail, Calendar, Slack, Notion, Stripe, GitHub, CRMs and so on, each connected as the user through the service's own sign-in. One inbox for Gmail, Outlook, Yahoo, iCloud and company mail, kept on the laptop and never through our servers, so it costs us nothing (decisions §27) |
 | 3.7 | **General assistant (Titan)** | V1 | The default agent: has every tool below plus shared memory, does one-off tasks without a dedicated agent, and hands big jobs to the specialists (4.6) |
 | 3.8 | Shell and terminal | V1 | Run commands and scripts, install tools, convert files, git; sandboxed, risky commands need your OK |
 | 3.9 | File system | V1 | Read, write, organize, rename and search files, inside the folders you allow |
-| 3.10 | Browser control | V1 | Research, forms, downloads, checking sites; the same tool the QA agent, watcher and recorder use |
+| 3.10 | Browser control | V1 | Research, forms, downloads, checking sites; the same tool the QA agent, watcher and recorder use. **A core strength:** self-correcting (acts, checks, recovers), on any site or app the user chooses, their own apps included; warnings where a site forbids automation; stops before publish, send or pay (decisions §29) |
 | 3.11 | Code execution | V1 | Writes and runs small scripts for one-off jobs (clean data, build an Excel report, edit PDFs) |
 | 3.12 | Strong model for long tasks | V1 | Multi-step work with many tools suggests an OpenRouter model; local models are fine for simple tasks |
 
@@ -103,7 +104,7 @@ Example tasks for Titan: sort the downloads folder; build an Excel report from a
 
 | # | Agent | Stage | How it works |
 |---|---|---|---|
-| 5.1 | **Website → promo video** | V1 | Reads the site (text, logo, colours, screenshots, a screen recording), writes a script, adds a voiceover (local or cloud TTS), assembles with an open-source video engine (Revideo or Motion Canvas, plus FFmpeg); AI video clips optional (local GPU or cloud, credits) |
+| 5.1 | **Website → promo video** | V1 | Reads the site (text, logo, colours, screenshots, a screen recording), writes a script, adds a voiceover (local or cloud TTS), assembles with an open-source video engine (Revideo or Motion Canvas, plus FFmpeg); AI video clips optional (local GPU, or the user's own fal.ai or Replicate account, decisions §31) |
 | 5.2 | **Website or app → QA report and tests** | V1 | Explores with Playwright, writes Playwright tests that then run without AI; accessibility (axe-core) and performance (Lighthouse); fixes broken tests with your OK |
 | 5.3 | **Prompt → app** | V1 | A web, mobile or desktop app, optionally added to the sidebar; see §6 |
 | 5.4 | **Folder agent** | V1 | Questions about your documents, with sources (§7) |
@@ -149,10 +150,10 @@ Example tasks for Titan: sort the downloads folder; build an Excel report from a
 | 6.12 | Local database per app, optional sync | V1 | |
 | 6.13 | Versions and one-click rollback | V1 | |
 | 6.14 | Agents maintain and fix apps | V1 | |
-| 6.15 | Publish web | V1 | One-click deploy, custom domain; hosting costs credits |
-| 6.16 | Publish mobile | V1 | Expo EAS builds and store submission; the user needs their own Apple and Google developer accounts; Android builds can also run locally, iOS builds need a Mac or EAS |
+| 6.15 | Publish web | V1 | One-click deploy and custom domain, to the user's own Vercel, Netlify or Cloudflare account, connected as the user with a guided setup; they own and pay for their hosting (decisions §30) |
+| 6.16 | Publish mobile | V1 | Expo EAS builds in the user's own Expo account, and store submission; the user needs their own Apple and Google developer accounts; Android builds can also run locally, iOS builds need a Mac or EAS |
 | 6.17 | Publish desktop | V1 | Signed installers and auto-update; signing needs the user's Apple developer account and a Windows certificate |
-| 6.18 | Export code to GitHub | V1 | No lock-in |
+| 6.18 | Export code to GitHub | V1 | No lock-in; to the user's own GitHub, as the user (decisions §25) |
 | 6.19 | Built on open-source builders | V1 | Code work by the shared engine (§13); bolt.diy, Dyad, open-lovable and Convex Chef to study for the builder screens, templates and loop; check each licence |
 
 ### Testing on the laptop
@@ -171,7 +172,7 @@ Apps are tested on the user's own machine, in real browsers, emulators and virtu
 | 6.27 | Backend in containers | V1 | Databases and services the app needs, started locally (Docker or Podman) and thrown away after the test |
 | 6.28 | One-click setup | V1 | Titan117 downloads and sets up emulators and tools on first use, after the hardware check (1.4) says the laptop can run them |
 | 6.29 | Test report | V1 | Screenshots per device, failures with steps to repeat them, fixed automatically when you agree |
-| 6.30 | Cloud devices as a fallback | V1 | Real iPhones and other devices through a device farm, through credits, for users whose laptop can't run emulators |
+| 6.30 | Cloud devices as a fallback | V1 | Real iPhones and other devices through a device farm, for users whose laptop can't run emulators; in the user's own device-farm account, since farms' terms forbid reselling access ([external services](external-services.md)) |
 
 ### Models in the builder
 
@@ -228,7 +229,7 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 | 9.4 | Approvals from the web | V1 | |
 | 9.5 | End-to-end encryption of commands and results | V1 | Our servers pass along what they can't read. Device keys made on each device, pairing confirmed by a matching code on the laptop, keys rotated when a device is removed (architecture, security.md A2) |
 | 9.6 | Mobile app on the same mechanism | V1 | |
-| 9.7 | Chat channels: Telegram, WhatsApp, Discord, Slack | V1 | Message Titan from your phone and the laptop does the work while it's on; channels linked to an account, approvals work there too. Telegram first (decisions §14); WhatsApp is bring-your-own through the official Cloud API (decisions §15). Linked with a one-time code; private chats only in V1 |
+| 9.7 | Chat channels: Telegram, WhatsApp, Discord, Slack | V1 | Message Titan from your phone and the laptop does the work while it's on; channels linked to an account, approvals work there too. Telegram first (decisions §14); WhatsApp is bring-your-own through the official Cloud API (decisions §15). Linked with a one-time code; private chats only in V1. The user's own bot, made in a minute with a guided card and connected straight from the laptop; nothing passes through our servers (decisions §28) |
 | 9.8 | **Safe remote control, easily** | V1 | Off by default; switched on per laptop in the desktop app; two-factor required to switch it on (a passkey suggested first, part of the setup checklist); pairing confirmed on the laptop (decisions §23) |
 | 9.9 | Laptop-only approvals | V1 | Deleting, payments, sending files or data out, installing add-ons, changing permissions and pairing are approved on the laptop, or remotely after a second factor if the user chooses |
 | 9.10 | Alerts and revoke all | V1 | A quiet alert on every device when a remote task starts; "Revoke all devices" from the web app, the desktop app or the alert email |
@@ -257,7 +258,7 @@ Like Lovable, the builder uses several models, each for the job it does best; li
 | 11.1 | Sign-in | V1 | Clerk |
 | 11.2 | Subscription plans | V1 | Starter €15, Pro €25, Max €50, Custom; no free plan ([pricing](pricing.md), decisions §13) |
 | 11.3 | Credit ledger and top-ups | V1 | In Convex, atomic deductions |
-| 11.4 | OpenRouter proxy with metering | V1 | A streaming route on Vercel holds our one secret key; Convex keeps the ledger and the rules (decisions §12) |
+| 11.4 | OpenRouter proxy with metering | V1 | A streaming route on Vercel holds our one secret key; Convex keeps the ledger and the rules (decisions §12). OpenRouter confirmed this model is allowed (8 Nov 2026) |
 | 11.5 | BYOK | V1 | Key kept on the device, in the OS keychain |
 | 11.6 | Teams, roles, audit log | V1 | |
 | 11.7 | Agency and white-label plan | V1 | |
@@ -306,17 +307,17 @@ Our advantage: we build the sites (§6), so they come with SEO built in, and the
 | 14.2 | Site audit | V1 | Crawl: broken links, redirects and loops, missing or duplicate meta tags, heading order, thin pages, missing alt text; issues by severity. Ideas from SEOnaut, SiteOne Crawler, LibreCrawl (all MIT) |
 | 14.3 | Speed and Core Web Vitals across the whole site | V1 | Lighthouse on every page, like Unlighthouse (MIT); shared with the QA agent (5.2) |
 | 14.4 | Fix it for me | V1 | On our sites the agent makes the fix through the coding engine (§13); on other repos it opens a pull request |
-| 14.5 | Google Search Console | V1 | Free, official data: queries, clicks, impressions, indexing problems |
-| 14.6 | Rank tracking | V1 | Ideas from SerpBear (MIT); positions from Search Console for free, or a SERP API through credits |
-| 14.7 | Keyword research | V1 | Needs paid data (no open keyword database exists): a provider like DataForSEO through credits |
+| 14.5 | Google Search Console | V1 | Free, official data: queries, clicks, impressions, indexing problems; needs our Google sign-in app verified ([external services](external-services.md)) |
+| 14.6 | Rank tracking | V1 | Ideas from SerpBear (MIT); positions from Search Console for free, or a SERP API on the user's own account (decisions §31) |
+| 14.7 | Keyword research | V1 | Needs paid data (no open keyword database exists): a provider like DataForSEO, on the user's own account with a guided setup (decisions §31) |
 | 14.8 | SEO content writing | V1 | Pages and blog posts from keywords and the brand kit, with internal links; you approve before publishing |
 | 14.9 | Competitor check | V1 | Crawls competitors' public pages: topics, structure, gaps |
 | 14.10 | Several languages | V1 | Romanian and English versions with hreflang |
-| 14.11 | Local SEO | V1 | Google Business Profile, local listings, reviews |
-| 14.12 | AI search visibility | V1 | Whether ChatGPT, Perplexity and Google's AI answers mention the company; llms.txt |
+| 14.11 | Local SEO | V1 | Google Business Profile, local listings, reviews. The Business Profile API is allowlist-only (an application to Google); until approved, a guided checklist ([external services](external-services.md)) |
+| 14.12 | AI search visibility | V1 | Whether ChatGPT, Perplexity and Google's AI answers mention the company, checked through the providers' APIs, never their websites; llms.txt |
 | 14.13 | Scheduled re-audits with a report | V1 | Weekly, through the scheduler (8.1) |
 
-Out of reach with open source: backlink databases, competitors' traffic estimates and ranking history (Ahrefs, Semrush). If needed, they come from a paid API through credits.
+Out of reach with open source: backlink databases, competitors' traffic estimates and ranking history (Ahrefs, Semrush). If needed, they come from a paid API on the user's own account.
 
 ## 15. Marketing
 
@@ -325,9 +326,9 @@ Out of reach with open source: backlink databases, competitors' traffic estimate
 | 15.1 | Brand kit in memory | V1 | Logo, colours, fonts, tone of voice, products, audience; read from the website and edited by you; every marketing agent uses it |
 | 15.2 | Social posts | V1 | Text, images and video for LinkedIn, Facebook, Instagram, X, TikTok, published by the user in a click (15.4); ideas from Postiz (AGPL, so ideas only). No platform posting APIs in V1 (decisions §24) |
 | 15.3 | Content calendar | V1 | A month of posts planned from goals, launches and holidays |
-| 15.4 | **Ready to post** (no platform approvals needed) | V1 | each post comes as a ready-to-post package (text, hashtags, images or video sized for the platform); **Copy and open** copies the text and opens the platform's own post screen (LinkedIn and X pre-fill the text); **Time to post** reminders from the content calendar on the laptop and phone, where one tap opens the phone's share sheet with the media attached (Instagram, TikTok, Facebook); export the calendar (.ics) and a CSV for the platforms' own free schedulers such as Meta Business Suite. Nothing posts automatically, and nothing automates the platforms' websites (their terms forbid it) |
+| 15.4 | **Ready to post** (no platform approvals needed) | V1 | each post comes as a ready-to-post package (text, hashtags, images or video sized for the platform); **Copy and open** copies the text and opens the platform's own post screen (LinkedIn and X pre-fill the text); **Time to post** reminders from the content calendar on the laptop and phone, where one tap opens the phone's share sheet with the media attached (Instagram, TikTok, Facebook); export the calendar (.ics) and a CSV for the platforms' own free schedulers such as Meta Business Suite. Nothing posts automatically. As the user's choice, the agent can also fill in the platform's website after a warning that its terms forbid automation, stopping before Post (decisions §29) |
 | 15.4b | Automatic scheduled publishing through the platforms' APIs | After V1 | Needs each platform's app review (Meta for Facebook and Instagram, TikTok, LinkedIn) and X's paid API; start Meta business verification and the legal pages early (decisions §24) |
-| 15.5 | Newsletters | V1 | Ideas from Listmonk (AGPL, ideas only); sent through the user's email provider (Brevo, Amazon SES, Mailgun, Postmark), which also handles scheduled sends |
+| 15.5 | Newsletters | V1 | Ideas from Listmonk (AGPL, ideas only); sent through the user's own email provider account (Brevo, Amazon SES, Mailgun, Postmark), which also handles scheduled sends; checks SPF, DKIM, DMARC and one-click unsubscribe before the first send (Gmail and Yahoo require them); GDPR consent per list |
 | 15.6 | Email sequences and lead scoring | V1 | Ideas from Mautic (GPL, ideas only) |
 | 15.7 | Landing pages | V1 | Built by the app builder (§6), with SEO (§14) and a form that feeds the CRM |
 | 15.8 | Images for posts and ads | V1 | Image models through OpenRouter or local, on the brand kit |
@@ -335,7 +336,7 @@ Out of reach with open source: backlink databases, competitors' traffic estimate
 | 15.10 | Website analytics | V1 | Privacy-friendly analytics built into sites we generate (ideas from Umami, MIT; Plausible is AGPL); reads Google Analytics for other sites |
 | 15.11 | Campaign reports | V1 | What was posted and sent, and what it brought: clicks, sign-ups, leads |
 | 15.12 | Lead finding | V1 | Web research into a list in the CRM, for example local businesses without a website; respects site terms and privacy law (GDPR) |
-| 15.13 | Ad drafts | V1 | Google and Meta ads written and set up as drafts; you launch them and set the budget |
+| 15.13 | Ad drafts | V1 | Google and Meta ads written, with images and targeting; you launch them and set the budget. Ready-to-use ads plus a bulk-upload file for Google's and Meta's import tools; or the user's own developer access; or, as the user's choice after a warning, the agent fills in Ads Manager and stops before Launch (decisions §28, §29) |
 | 15.14 | Review and mention monitoring | V1 | Through the web watcher (5.5) |
 
 Everything that publishes, sends or spends money needs your approval (4.5). In V1 the user publishes social posts themselves in a click (15.4), so no platform has to approve our app; automatic publishing comes after V1 (decisions §24). WhatsApp, as a chat channel, stays bring-your-own (decisions §15).
@@ -349,7 +350,7 @@ One web search tool that every agent can call during a task. Searching finds lin
 | 16.1 | Search tool for all agents | V1 | The model decides when to search, how often, and what to read next |
 | 16.2 | **Default** search source: a paid search API through our credits | V1 | OpenRouter's web search server tool (native search for some models, Exa for the rest, about 2 cents a search), or Brave Search's API. Its old `:online` suffix and web plugin are deprecated |
 | 16.3 | Search source: the user's own key | V1 | Brave Search, Tavily, Exa, Serper |
-| 16.4 | Search source: free mode, opt-in only | V1 | Built on ddgs (MIT) or open-webSearch (Apache 2.0, to check in its repo), with their code adapted. Labelled "free, may be blocked, uses other engines' results"; never the default. SearXNG (AGPL) is not used |
+| 16.4 | Search in the browser, on the user's request | V1 | Replaces the old free mode (no background scraping of search engines). When the user asks, the browser agent searches in a visible browser at a human pace, like a person would; search engines are on the "forbids automation" warning list; a CAPTCHA stops it and hands over to the user (decisions §29, §30) |
 | 16.5 | Read a page | V1 | Fetch it and turn it into clean text: Mozilla Readability and Trafilatura (both Apache 2.0) for most pages; our browser tool (3.10) for pages that need JavaScript |
 | 16.6 | Read a whole site | V1 | Crawl a site into clean text; ideas and maybe code from Crawl4AI (to check: Apache 2.0); Firecrawl is AGPL, so ideas only |
 | 16.7 | Answers with sources | V1 | Every fact from the web shows its link |
@@ -379,7 +380,7 @@ Like Claude's artifacts: when an agent produces something to look at, use or sha
 | 17.10 | Versions | V1 | Every change is a version; compare and restore |
 | 17.11 | Brand kit applied | V1 | Logo, colours and fonts from 15.1 on documents, slides and pages |
 | 17.12 | Templates | V1 | Offer, invoice, monthly report, meeting notes, project plan; shareable in the marketplace (§10) |
-| 17.13 | Share with a link | V1 | Optional: publish to our cloud as a private link, then share with chosen people or anyone with the link; storage counts towards the plan; off by default, everything stays local until you share |
+| 17.13 | Share with a link | V1 | Optional: publish to our cloud as a private link (we host it, so an abuse report button and a takedown process, as the EU Digital Services Act expects), then share with chosen people or anyone with the link; storage counts towards the plan; off by default, everything stays local until you share |
 | 17.14 | Comments | V1 | People you share with can comment; an agent can answer or apply a comment |
 | 17.15 | Live data | V1 | An artifact can read from a sidebar app or the documents index (with your permission), so a dashboard stays up to date |
 | 17.16 | Turn an artifact into an app | V1 | A useful tool or dashboard becomes a real project in the app builder (§6), optionally in the sidebar |
@@ -447,14 +448,14 @@ When something breaks, the user can send us a report in one click, and we see it
 ## Not doing
 
 - Hosted agents that keep running when the laptop is closed. A paid cloud runner could come much later, but it isn't the product.
-- Bypassing CAPTCHAs, paywalls or site terms in the web watcher and the recorder.
+- Bypassing CAPTCHAs, paywalls, logins or bot detection anywhere. Where a site's terms forbid automation, the user decides after a warning (decisions §29).
 - Agents changing the app's own code or core settings on the user's computer (18.8). The app grows through add-ons; the core changes only through our signed updates.
 - Hidden telemetry. Error reports are opt-in and shown in full before sending (§19).
 - Signing in with chat subscriptions (Claude Pro or Max, ChatGPT Plus or Pro, Gemini plans) to run our agents. Anthropic's terms have banned this outside its own apps since February 2026 and it blocks such tools, and users' accounts can be banned. OpenAI's position is unclear. Users bring an API key instead (2.9). Revisit only if a provider officially allows it for third-party apps. This is not the same as 13.14: there, Titan117 starts the vendor's own unmodified tool that you installed and signed into yourself, and never sees your login.
 
 ## Open decisions
 
-Settled decisions live in [decisions.md](decisions.md) (Electron, Node, Stripe directly, OpenCode, our credit proxy, OpenRouter search, prices, small companies first on Windows and macOS, Telegram first, all of this map in V1, two repos, shared docs). Still open, with the phase that needs the answer:
+Settled decisions live in [decisions.md](decisions.md) (Electron, Node, Stripe directly, OpenCode, our credit proxy, OpenRouter search, prices, small companies first on Windows and macOS, Telegram first, all of this map in V1, three repos, shared docs, GitHub as the user). Still open, with the phase that needs the answer:
 
 | # | Open decision | Needed by | Leaning |
 |---|---|---|---|
@@ -462,11 +463,18 @@ Settled decisions live in [decisions.md](decisions.md) (Electron, Node, Stripe d
 | 2 | Which local models ship as defaults, by laptop tier (2.1, 1.4) | Phase 1 | A small model for search and embeddings built in; a 7–8B instruct model suggested on 16 GB laptops |
 | 3 | ~~GitHub owner~~ | Decided | The EcotechCore organisation owns `titan117-web`, `titan117-desktop` and `titan117-pop` (decisions §6) |
 | 4 | Open-source base for the app builder, the QA agent and browser control, after a licence check (6.19) | Phases 7–8 | OpenCode plus Playwright; bolt.diy, Dyad and open-lovable for ideas |
-| 5 | Paid data provider for SEO keywords and positions, and its price in credits (14.6, 14.7) | Phase 12 | DataForSEO |
+| 5 | Paid data provider for SEO keywords and positions to recommend in the setup guide (14.6, 14.7) | Phase 12 | DataForSEO, on the user's own account |
 | 6 | Video provider for AI clips (2.7, 5.1) | Phase 14 | fal.ai or Replicate |
 | 7 | Terms of OpenAI, Cursor, Google and xAI for running their coding tools (13.14) | Phase 7 | Check each; experimental with an API-key mode until clear (decisions §20) |
 | 8 | Trademark check on "Titan117" and our own restyle of the eyes logo | Before beta | Check the name now; restyle in phase 18 |
 | 9 | Legal basics: privacy policy, terms, GDPR deletion plan, open-source licence audit | Phase 2 (pages online), phase 18 (audit) | Privacy policy and terms online with the web app basics |
+| 10 | ~~OpenRouter's OK for our credits~~ | Decided | Confirmed by OpenRouter on 8 Nov 2026 (decisions §12) |
+| 11 | ~~One resale rule~~ | Decided | Only OpenRouter goes through credits; every other paid service is the user's own account, with a guided setup (decisions §31) |
+| 12 | ~~Chat channels: whose bot~~ | Decided | The user's own bot with a guided setup, connected straight from the laptop (decisions §28) |
+| 13 | ~~Gmail and the yearly security assessment~~ | Decided | Mail stays on the laptop; IMAP fallback (decisions §27) |
+| 14 | ~~Ads as drafts~~ | Decided | Import files by default; the user's own developer access as an option (decisions §28) |
+| 15 | ~~Free web search mode~~ | Decided | Dropped; search through credits, the user's own key, or the browser on the user's request (decisions §30) |
+| 16 | ~~Whose hosting for published sites~~ | Decided | The user's own hosting account; share links stay ours with a report button and takedown process (decisions §30) |
 
 ---
 
@@ -567,7 +575,7 @@ Settled decisions live in [decisions.md](decisions.md) (Electron, Node, Stripe d
 **14. SEO**
 - SEO built into every site we generate
 - Site audit and speed checks on every page; fixes made for you
-- Google Search Console, rank tracking, keyword research (paid data through credits)
+- Google Search Console, rank tracking, keyword research (paid data on your own account)
 - SEO content writing, competitor checks, several languages
 - Local SEO, AI search visibility, weekly re-audits
 
@@ -580,8 +588,8 @@ Settled decisions live in [decisions.md](decisions.md) (Electron, Node, Stripe d
 
 **16. Web search**
 - One search tool for every agent
-- Default: a paid search API through credits (OpenRouter or Brave); your own key as an option
-- Free mode as an opt-in only (ddgs or open-webSearch)
+- Default: OpenRouter's search through credits; your own key, or the browser on your request, as options
+- No background scraping of search engines (the old free mode is dropped)
 - Reads pages and whole sites into clean text; answers with sources
 - Deep research mode, trusted source lists, results in your language, a cache, costs within the task budget
 

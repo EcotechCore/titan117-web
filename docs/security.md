@@ -54,6 +54,8 @@ A tricked agent doesn't need to "send" anything; opening a web address with priv
 - Laptop-only approvals (A1) stay laptop-only in chat.
 - The app shows linked channels with "Unlink", and unlinks them with "Revoke all devices".
 
+- **The user's own bot** (decisions §28): bot tokens live in the laptop's keychain and the laptop connects to the platform directly; chat messages never pass through our servers. The platform itself (Telegram, Discord, Slack, Meta) can read them, which the setup card says.
+
 ### A5. The user's secrets and data
 
 Already in the guardrails, summarised: API keys and passwords only in the OS keychain (§8); other vendors' logins never touched (§8, decisions §20); agents only in allowed folders, shell sandboxed, add-ons sandboxed (§4, §7); memory visible and deletable; error reports opt-in and shown in full (§12); account deletion removes everything we hold.

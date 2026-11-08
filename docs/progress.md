@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** planning is done and the docs are cleaned up and in sync with the desktop repo (7 Nov 2026). **Next step:** phase 0, Setup, when you say so. Before it: two-factor on every account, the OpenRouter spending cap and the `security@titan117.com` mailbox, and the GitHub organisation decision; during it: the shell-sandbox decision for phase 1. Long-lead items to start now: Apple Developer Program, Windows code signing, trademark check.
+**Now:** planning is done; the docs now have an external services register checked against vendor docs (8 Nov 2026). **Next step:** phase 0, Setup, when you say so. Before it: push the three repos to EcotechCore and commit; two-factor on every account, the OpenRouter spending cap and the `security@titan117.com` mailbox. During phase 0: the shell-sandbox decision for phase 1. Long-lead items to start now: Apple Developer Program, Windows code signing, trademark check.
 
 ## Phases
 
@@ -31,6 +31,34 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 8 Nov 2026 · Free first
+
+Added feature 1.25 and a line in decisions §31: no paid service is required by default; agents try free options first (local models, open-source tools, free tiers that allow commercial use, or building it themselves), suggest paid services only with a free alternative next to them, and follow the user's "no paid services" instruction per task or as a workspace setting. Synced. Nothing committed.
+
+### 8 Nov 2026 · Paid services: only OpenRouter through credits
+
+Decided (decisions §31): only OpenRouter (models and search) goes through our credits; every other paid service (AI video and images, SEO data, device farms, hosting, email sending, ads) is the user's own account, which they create and pay for, with our guided setup and a "you need this first" card. Settles the contradiction between decisions §12 and §15 (open decision 11). Feature map 2.7, 5.1, 14.6, 14.7 and summaries, external services, architecture (also fixed a stale "Stripe or Clerk Billing is open" line) and the roadmap's phase 4 line ("free mode") updated. All open decisions from the services check are now closed. Synced. Nothing committed.
+
+### 8 Nov 2026 · Search sources and hosting decided
+
+Decided (decisions §30): search comes from credits (OpenRouter's search), the user's own key, or the browser on the user's request (visible, human pace, warning list, no CAPTCHA bypass); the background free mode is dropped. Published sites go to the user's own Vercel, Netlify or Cloudflare account; share links stay ours with a Report button and a takedown process (EU Digital Services Act), in phase 4. Feature map 6.15, 16.4 and open decisions 15–16 closed; external services and decisions §5 updated. Open decision 11 (the resale rule) still open. Synced. Nothing committed.
+
+### 8 Nov 2026 · Browser automation is the user's choice
+
+Decided (decisions §29): users can point the browser agent, recorder and computer use at any site or app they choose, their own apps included. Our safe routes stay the default (ready-to-post packages, ad import files, checklists); on sites whose terms forbid automation the app warns first and the user decides; the agent always stops before publish, launch, send or pay; never CAPTCHA bypassing or bot-detection evasion; no automating Discord user accounts. A self-correcting browser agent is now named a core strength, measured on real tasks. Changed §24's "not allowed" rule and the "Not doing" lines to match; feature map 3.10, 15.4, 15.13; guardrails §5 with tests. Synced. Nothing committed.
+
+### 8 Nov 2026 · Connect your own, the OpenClaw way
+
+Decided (decisions §28) that users connect their own accounts and services with our guided setup, as in OpenClaw: chat channels use the user's own bot (Telegram, Discord, Slack, WhatsApp), connected straight from the laptop, so nothing passes through our servers and no platform has to approve us; ads come as ready-to-use ads with import files, or through the user's own developer access; Google Business Profile as a guided checklist, or the user's own API access. Our web and phone apps stay ours, end to end encrypted. Updated decisions, feature map (9.7, open decisions 12 and 14), external services and security.md A4. Free search mode (open decision 15) still open. Synced. Nothing committed.
+
+### 8 Nov 2026 · OpenRouter confirmed; email at no cost
+
+OpenRouter confirmed that our credits model is allowed (one funded account, key only on our server, per-user limits); their answer is saved in `docs/notes/vendor-answers/openrouter-2026-11-08.md` and our design already follows their advice. Decided email at no cost (decisions §27): one inbox for Gmail, Outlook, Yahoo, iCloud and company mail, kept on the laptop and never passed through our servers, so Google's paid yearly assessment shouldn't apply (Google ties it to servers); Gmail through Google's free verification, IMAP with an app password as the fallback; cloud models read mail only directly from the laptop, with a per-user capped OpenRouter key for credit users (OpenRouter's key management API checked). Updated decisions, feature map (3.6, 11.4, open decisions 10 and 13), external services, architecture and guardrails §12 with its tests. Synced. Nothing committed.
+
+### 8 Nov 2026 · External services register
+
+To stop mistakes like the GitHub one, every third-party service now has a row in `docs/notes/external-services.md` (whose account, who it acts as, where credentials live, approvals, terms, cost), checked against the vendor's own docs; guardrails §11b makes it a rule with a phase-start check and a pull request checklist item; decisions §26; CLAUDE.md points to it. The first pass through the feature map found: OpenRouter's terms forbid "reselling API access to Models" (written OK needed before phase 2); decisions §12 and §15 contradict each other on reselling; Google sign-in needs verification and Gmail reading likely a yearly security assessment; Google Business Profile API is allowlist-only; Google and Meta ads APIs need approvals; chat channels never said whose bot; free search mode scrapes other engines; hosting for published sites was unspecified; device farms forbid resale; 2.1 still said Ollama. Factual fixes made in the feature map; the rest are open decisions 10–16 there, each with a leaning. Synced. Nothing committed.
 
 ### 8 Nov 2026 · GitHub identity: agents act as the user
 

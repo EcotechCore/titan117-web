@@ -15,6 +15,7 @@ After finishing any piece of work, update `docs/progress.md` in the same commit:
 - **Architecture:** `docs/03-architecture.md`. The engine's permission and approval layer is the only way to touch files, shell, network or the browser. Every Convex function uses the guardrail wrappers.
 - **Open source:** before building a phase, read its references in `docs/notes/open-source-references.md` (code in `D:\Officials\titan117-references`, cloned per phase, never pushed). Copy code only from MIT, Apache 2.0, BSD or ISC projects, and add it to the sources list. GPL, AGPL and fair-code are ideas only (decisions §4).
 - **Secrets:** never in code, logs, memory or fixtures (guardrails §8).
+- **Third-party services:** before specifying or building anything that uses one, its row in `docs/notes/external-services.md` must be checked against the vendor's own docs (guardrails §11b). Default: the user's own account, acting as the user.
 - **New Convex tables** get a row in the data table in decisions §11.
 
 # Shared docs
