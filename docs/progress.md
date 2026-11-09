@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 9 Nov 2026 · Paths for both machines
+
+Work now happens on two machines. The repos and the references folder sit in `D:\Officials\` on the desktop PC and in `C:\Users\dniss\Officials\` on the laptop; CLAUDE.md, `open-source-references.md` and `v1-scope.md` now name both. On the laptop the references folder already holds 56 cloned projects. The laptop has Node 24, pnpm 12.14 and git; Python 3.13 and the GitHub CLI (2.103) were installed with winget. Synced to the desktop and portal repos. Nothing committed.
+
 ### 8 Nov 2026 · Four additions after Hermes Agent
 
 Compared our plan with Hermes Agent; most was covered. Added (decisions §34): remembering how past tasks were solved (3.13, phase 3), schedules in plain words (8.10, phase 13), scripts that call Titan's tools through a local tool API (4.10, phase 3) with speech as a tool (3.14), and running on the user's own servers over SSH or cloud sandboxes on their own account (3.15, phase 7). Also HunyuanVideo after V1, offered only in countries its licence covers, with the model catalogue filtering by country. Roadmap and external services updated. Synced.
