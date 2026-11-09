@@ -1,0 +1,43 @@
+# Publishes @titan117/shared to GitHub Packages (architecture §2) when a tag
+# like shared-v0.1.0 is pushed. GitHub Packages needs the npm scope to match
+# the owner, so it is published as @ecotechcore/titan117-shared; the desktop
+# and portal repos install it under the name @titan117/shared with an alias:
+#   "@titan117/shared": "npm:@ecotechcore/titan117-shared@0.1.0"
+name: Publish @titan117/shared
+
+on:
+  push:
+    tags: ["shared-v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: "@ecotechcore"
+      - run: pnpm install --frozen-lockfile
+      - name: Check the tag matches the package version
+        working-directory: packages/shared
+        run: test "shared-v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+      - name: Build and test
+        working-directory: packages/shared
+        run: pnpm build && pnpm test
+      - name: Publish
+        working-directory: packages/shared
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm pkg set name=@ecotechcore/titan117-shared
+          npm publish

@@ -1,0 +1,13 @@
+{
+  // Type-checks the Node-side files (checks, configs). convex/ has its own tsconfig.
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["checks/**/*.ts", "vitest.config.ts"]
+}

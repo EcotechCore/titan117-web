@@ -1,14 +1,16 @@
 {
   "name": "titan117-web",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
+  "description": "Titan117 web app, Convex backend and @titan117/shared.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "check": "pnpm build && pnpm typecheck && pnpm lint && pnpm test",
+    "check:licenses": "node scripts/check-licenses.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
@@ -16,6 +18,5 @@
       "onFail": "download"
     }
   },
-  "packageManager": "pnpm@12.14.0",
-  "type": "module"
+  "packageManager": "pnpm@12.14.0"
 }

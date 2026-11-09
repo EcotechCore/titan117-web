@@ -1,0 +1,28 @@
+{
+  "name": "@titan117/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "codegen": "convex codegen",
+    "typecheck": "tsc -p convex && tsc -p .",
+    "lint": "eslint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@titan117/shared": "workspace:*",
+    "convex": "^1.49.0",
+    "convex-helpers": "^0.1.134"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/node": "^26.6.6",
+    "convex-test": "^0.0.67",
+    "eslint": "^9.39.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}
