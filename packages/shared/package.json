@@ -30,7 +30,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.1.0"
