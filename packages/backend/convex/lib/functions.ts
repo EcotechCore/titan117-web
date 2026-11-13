@@ -84,6 +84,20 @@ export async function requireAdmin(ctx: Ctx) {
 /** Anyone. Only for data that is truly public (marketplace listings, shared artifacts by link). */
 export const publicQuery = query;
 
+/**
+ * Signed in with Clerk, whether or not the `users` row exists yet. Adds
+ * `ctx.identity`. Only for creating that row (users.ensureUser); everything
+ * else uses userQuery / userMutation.
+ */
+export const identityMutation = customMutation(
+  mutation,
+  customCtx(async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) fail("UNAUTHENTICATED");
+    return { identity };
+  }),
+);
+
 /** A signed-in user. Adds `ctx.user`. */
 export const userQuery = customQuery(query, customCtx(async (ctx) => ({ user: await requireUser(ctx) })));
 export const userMutation = customMutation(
