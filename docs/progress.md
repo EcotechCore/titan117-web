@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 0 in progress (13 Nov 2026): code done, CI green, Convex accepts Clerk tokens. **Next step:** the webhook signing secret in Convex and a real sign-in check; the portal on Vercel behind invite-only staff sign-in (decisions §37); branch protection; first publish of `@titan117/shared`.
+**Now:** phase 0 nearly done (13 Nov 2026): CI green, sign-in works, the shared package is published, `main` is protected. **Next step:** the portal on Vercel behind staff sign-in, checked on the deployed address; then phase 0 is done and phase 1 (engine core) starts. From now on every change goes through a pull request.
 
 ## Phases
 
