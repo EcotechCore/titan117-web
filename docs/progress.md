@@ -2,13 +2,12 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 0 nearly done (13 Nov 2026): CI green, sign-in works, the shared package is published, `main` is protected. **Next step:** the portal on Vercel behind staff sign-in, checked on the deployed address; then phase 0 is done and phase 1 (engine core) starts. From now on every change goes through a pull request.
-
+**Now:** phase 0, Setup, is done (14 Nov 2026). **Next step:** phase 1, Engine core, when you say so. Before it: read the phase 1 open-source references, decide the shell sandbox (open decision 2), and an OpenRouter development key in the desktop repo's local `.env`.
 ## Phases
 
 | # | Phase | Status | Started | Finished |
 |---|---|---|---|---|
-| 0 | Setup | In progress | 9 Nov 2026 | |
+| 0 | Setup | Done | 9 Nov 2026 | 14 Nov 2026 |
 | 1 | Engine core | Not started | | |
 | 2 | Accounts and money | Not started | | |
 | 3 | Titan and memory | Not started | | |
@@ -31,6 +30,15 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 14 Nov 2026 · Phase 0 done
+
+Phase 0's check is met: every repo builds in CI; the empty desktop app builds and runs on Windows; the portal's empty app is deployed at `titan117-pop.vercel.app` behind staff sign-in (decisions §37).
+
+- **Portal checked on the deployed address:** signed out, every page (including paths like `/pico` and `/xjs`) redirects to sign-in and back; it uses the TITAN117 Staff Clerk application, whose sign-up is invite-only; the owner signed in with the staff account. The first Vercel project had been connected to a copy of the repo in a personal account, so it served the old portal without sign-in; it was deleted and recreated from `EcotechCore/titan117-pop`.
+- A CI step now checks the repository settings on every run (`scripts/check-repo-settings.mjs`): `main` protected, rules applying to admins, every CI job a required check. The pull request rule isn't visible to that check and is confirmed by hand when settings change.
+- **Carried forward, each with its phase:** the shell sandbox decision (phase 1); read access to `@ecotechcore/titan117-shared` for the desktop and portal repos (when they first install it); Clerk Pro, required staff two-factor and the removal of `PORTAL_TWO_FACTOR` (before phase 5); Clerk production instances on our own domain (before launch); whether the repos stay public (open).
+- **Not checked:** macOS; Clerk's own delivery log for the webhook; a customer account being refused by the portal.
 
 ### 9 Nov 2026 · Paths for both machines
 
