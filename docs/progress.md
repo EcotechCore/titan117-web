@@ -2,13 +2,14 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 0, Setup, is done (14 Nov 2026). **Next step:** phase 1, Engine core, when you say so. Before it: read the phase 1 open-source references, decide the shell sandbox (open decision 2), and an OpenRouter development key in the desktop repo's local `.env`.
+**Now:** phase 1, Engine core, is done (14 Nov 2026). **Next step:** phase 2, Accounts and money, when you say so. Before it: commit phase 1 through pull requests in the desktop and web repos.
+
 ## Phases
 
 | # | Phase | Status | Started | Finished |
 |---|---|---|---|---|
 | 0 | Setup | Done | 9 Nov 2026 | 14 Nov 2026 |
-| 1 | Engine core | Not started | | |
+| 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
 | 2 | Accounts and money | Not started | | |
 | 3 | Titan and memory | Not started | | |
 | 4 | Web search and artifacts | Not started | | |
@@ -30,6 +31,24 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 14 Nov 2026 · Phase 1 done
+
+Phase 1's check is met, seen in the real app on Windows (details in the desktop repo's log): a chat with a local model (Qwen2.5 1.5B, and Qwen3 4B using a tool) and with an OpenRouter model (Claude Haiku 5.5); a file write waited for Approve and was written only after it; the denial tests pass (110 tests).
+
+- The owner updated the laptop's Visual C++ runtime, added the OpenRouter development key and allowed the model downloads. Decisions §38 now records that the OpenRouter client is confirmed and how each other choice compares with common practice; Qwen3 4B joined the local catalogue.
+- **Not checked:** the folder dialog (a native dialog; the test folder was set straight in the local database), macOS.
+- **Carried forward:** phase 5: ship the Visual C++ runtime with the app, slim the packaged llama.cpp binaries; before the public beta: revisit Node's built-in SQLite against better-sqlite3 (§38).
+- Nothing committed.
+
+### 14 Nov 2026 · Phase 1 started: engine core built, two checks waiting
+
+Built in `titan117-desktop` on the branch `phase-1-engine-core` (details in that repo's log). The engine runs as its own process behind a local API; the permission and approval layer, budgets, the activity timeline, error capture, the model router with local models and OpenRouter, and the window (design.md 0.2) are in place, with 110 tests passing, the denial tests among them.
+
+- **Phase 1 is not done.** Its check needs a chat with a local model and with an OpenRouter model seen in the real app, and neither could run on the laptop yet: there is no OpenRouter development key in the desktop repo's `.env`, and local models can't start because the laptop's Microsoft Visual C++ runtime (14.36) is older than llama.cpp's binaries need (14.40).
+- **Shared docs:** decisions §38 (the choices made while building, **to be confirmed**), a Hugging Face row in `external-services.md` (where model files come from), notes in `open-source-references.md`, and the shell sandbox decision moved to phase 3, where the shell tool is built. Synced to the desktop and portal repos.
+- **Carried forward to phase 5:** ship the Visual C++ runtime with the app; packaging of llama.cpp's binaries (the unpacked build is 1.1 GB with every Windows graphics back end).
+- Nothing committed.
 
 ### 14 Nov 2026 · Phase 0 done
 
