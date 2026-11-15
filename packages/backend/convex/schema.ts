@@ -187,4 +187,46 @@ export default defineSchema({
   })
     .index("by_publicId", ["publicId"])
     .index("by_handledAt", ["handledAt"]),
+
+  /**
+   * Error reports the user chose to send (§32: reports the user sends;
+   * decisions §22, §45): versions, OS, the feature, the error and stack, the
+   * last redacted log lines and the user's note. Never files, prompts,
+   * memory, keys or tokens. Kept 90 days; deleted with the account.
+   */
+  errorReports: defineTable({
+    userId: v.id("users"),
+    groupId: v.id("errorGroups"),
+    // What the user is shown, e.g. T117-4F2A9C.
+    ref: v.string(),
+    appVersion: v.string(),
+    os: v.string(),
+    feature: v.string(),
+    message: v.string(),
+    stack: v.string(),
+    logLines: v.array(v.string()),
+    note: v.string(),
+    at: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_group", ["groupId", "at"])
+    .index("by_at", ["at"])
+    .index("by_ref", ["ref"]),
+
+  /** Reports grouped by signature (decisions §22): counts and versions, no user link. */
+  errorGroups: defineTable({
+    signature: v.string(),
+    feature: v.string(),
+    title: v.string(),
+    count: v.number(),
+    firstSeen: v.number(),
+    lastSeen: v.number(),
+    versions: v.array(v.string()),
+    os: v.array(v.string()),
+    // Set by staff when a release fixes it (19.5): the app then says "Fixed in 1.4".
+    fixedIn: v.optional(v.string()),
+    issueUrl: v.optional(v.string()),
+  })
+    .index("by_signature", ["signature"])
+    .index("by_lastSeen", ["lastSeen"]),
 });

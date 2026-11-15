@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 4, Web search and artifacts, is built and waiting for the owner's checks (15 Nov 2026). **Next step:** the owner confirms decisions §44, signs in on the desktop app and runs one real research task to the share link; then phase 4 is closed.
+**Now:** phase 4 is built and waiting for the owner's checks; phase 5 has started early at the owner's request, with error reports (15 Nov 2026). **Next step:** more of phase 5 (installer, setup, offline); the owner works through `docs/owner-checklist.md` at the end.
 
 ## Phases
 
@@ -13,7 +13,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 4 | Web search and artifacts | In progress | 15 Nov 2026 | |
-| 5 | Install and setup | Not started | | |
+| 5 | Install and setup | In progress | 15 Nov 2026 | |
 | 6 | Folder agent | Not started | | |
 | 7 | Coding engine and code builder | Not started | | |
 | 8 | App builder: web | Not started | | |
@@ -31,6 +31,15 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 5: error reports (Convex and web app)
+
+Started at the owner's request before phase 4's check is run (on the owner checklist). Built on `phase-5-error-reports`, branched from `phase-4`. Decisions §45, **to be confirmed**.
+
+- **Convex** `errorReports.ts` with the `errorReports` and `errorGroups` tables (the data table rows are no longer "planned"): `submitForDevice` (any signed-in device, 20 a day, keys and tokens scrubbed again, grouped by signature, a `T117-XXXXXX` reference), `fixedForDevice` (19.5), and for staff `groups`, `groupReports` (never the user's id) and `markFixed`; a daily run deletes reports after 90 days; account deletion deletes the user's reports.
+- **Web app:** `POST /api/v1/error-reports` and `/api/v1/error-reports/fixed` with the device token.
+- **Tests:** 13 new (denials, the daily limit, staff only, another user's reference, grouping across laptops and versions, scrubbing, 90 days, the signature); 120 in all. Pushed to the development Convex deployment; the web app builds.
+- **Not built yet in phase 5:** the portal's error screens (wait for Clerk Pro and two-factor), the installer and setup wizard, the hardware check, components, offline mode and the 14-day offline test, auto-update.
 
 ### 15 Nov 2026 · The owner checklist
 
