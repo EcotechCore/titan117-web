@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Phase 5: the Windows installer (shared docs)
+
+Decisions §49 and three lines on the owner checklist (confirm §49, OK to fetch Microsoft's runtime installer, a code signing certificate). Built in `titan117-desktop` on `phase-5-installer`; nothing changed in this repo's code.
+
 ### 15 Nov 2026 · Phase 5: keep awake, checkpoints and notifications (shared docs)
 
 Decisions §48 and its line on the owner checklist. Built in `titan117-desktop` on `phase-5-awake`; nothing changed in this repo's code.
