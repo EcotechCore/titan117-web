@@ -37,11 +37,38 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_nextGrantAt", ["nextGrantAt"]),
 
+  /**
+   * A user's signed-in desktop apps (§32: devices). The device token itself is
+   * only on the laptop, in the OS keychain; we keep its SHA-256.
+   */
   devices: defineTable({
     userId: v.id("users"),
     name: v.string(),
     revokedAt: v.optional(v.number()),
-  }).index("by_user", ["userId"]),
+    tokenHash: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    lastSeenAt: v.optional(v.number()),
+    appVersion: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_tokenHash", ["tokenHash"]),
+
+  /**
+   * Desktop sign-ins in progress: a one-time code (stored hashed) the web
+   * page hands to the app on this laptop, bound to the app's PKCE challenge.
+   * Lives five minutes.
+   */
+  deviceSignIns: defineTable({
+    userId: v.id("users"),
+    codeHash: v.string(),
+    challenge: v.string(),
+    name: v.string(),
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+  })
+    .index("by_codeHash", ["codeHash"])
+    .index("by_expiresAt", ["expiresAt"])
+    .index("by_user", ["userId"]),
 
   // The Stripe customer behind a user, created at their first Checkout.
   stripeCustomers: defineTable({

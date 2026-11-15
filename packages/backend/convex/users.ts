@@ -65,6 +65,16 @@ export const deleteFromClerk = internalMutation({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
     for (const row of devices) await ctx.db.delete(row._id);
+    const signIns = await ctx.db
+      .query("deviceSignIns")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const row of signIns) await ctx.db.delete(row._id);
+    const calls = await ctx.db
+      .query("proxyCalls")
+      .withIndex("by_user_open", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const row of calls) await ctx.db.delete(row._id);
     await ctx.db.delete(user._id);
   },
 });

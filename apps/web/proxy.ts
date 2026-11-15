@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Sends signed-out visitors to sign-in on account pages. User experience
 // only: data is protected by the Convex wrappers (guardrails §2), never here.
-const isAccountRoute = createRouteMatcher(["/account(.*)"]);
+const isAccountRoute = createRouteMatcher(["/account(.*)", "/desktop(.*)"]);
 
 export default clerkMiddleware(
   async (auth, req) => {
