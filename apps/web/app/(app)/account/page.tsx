@@ -44,6 +44,9 @@ function Account() {
   const summary = useQuery(api.billing.summary, ready ? {} : "skip");
   const devices = useQuery(api.devices.list, ready ? {} : "skip");
   const revoke = useMutation(api.devices.revoke);
+  const deletion = useQuery(api.account.deletionStatus, ready ? {} : "skip");
+  const requestDeletion = useAction(api.account.requestDeletion);
+  const cancelDeletion = useAction(api.account.cancelDeletion);
 
   const checkout = useAction(api.billing.checkout);
   const topUp = useAction(api.billing.topUp);
@@ -57,7 +60,9 @@ function Account() {
     setBusy(key);
     setError(null);
     try {
-      window.location.assign((await start()).url);
+      const { url } = await start();
+      if (url) window.location.assign(url);
+      else setBusy(null);
     } catch (e) {
       setError(errorText(e));
       setBusy(null);
@@ -219,7 +224,7 @@ function Account() {
         )}
       </section>
 
-      <section className="px-4 py-12 sm:px-10">
+      <section className="border-b border-[#e6e6e6] px-4 py-12 sm:px-10 dark:border-[#262626]">
         <h2 className="text-2xl font-medium">Credit history</h2>
         {summary.history.length === 0 ? (
           <p className="mt-4 text-[#6b6b6b]">Nothing yet.</p>
@@ -238,6 +243,43 @@ function Account() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="px-4 py-12 sm:px-10">
+        <h2 className="text-2xl font-medium">Delete account</h2>
+        {deletion?.deleteAfter ? (
+          <>
+            <p className="mt-4 rounded-lg bg-[#ffece8] px-4 py-3 text-[#c2361f] dark:bg-[#2e1310]">
+              Your account will be deleted on {date(deletion.deleteAfter)}, with its plan, credits and devices. Your plan
+              won&apos;t renew; it works until the end of the period you paid for. Invoices stay with Stripe, as the law
+              requires. Your files on your computers are never touched.
+            </p>
+            <button
+              className="mt-4 h-11 rounded-[10px] bg-[#ff6347] px-4 font-medium text-white hover:bg-[#c2361f] disabled:opacity-60"
+              disabled={busy !== null}
+              onClick={() => go("cancel-deletion", async () => (await cancelDeletion({}), { url: "" }))}
+            >
+              {busy === "cancel-deletion" ? "Cancelling…" : "Keep my account"}
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 max-w-2xl text-sm text-[#6b6b6b]">
+              Deletes your account 30 days after you ask, so you can change your mind. Your plan stops renewing at once;
+              unused credits are lost and nothing is refunded. Your files on your computers are never touched.
+            </p>
+            <button
+              className="mt-4 h-11 rounded-[10px] border border-[#e6e6e6] px-4 hover:border-[#ff6347] disabled:opacity-60 dark:border-[#262626]"
+              disabled={busy !== null}
+              onClick={() => {
+                if (window.confirm("Delete your Titan117 account in 30 days? Your plan stops renewing now."))
+                  void go("delete", async () => (await requestDeletion({}), { url: "" }));
+              }}
+            >
+              {busy === "delete" ? "Scheduling…" : "Delete my account"}
+            </button>
+          </>
         )}
       </section>
     </main>

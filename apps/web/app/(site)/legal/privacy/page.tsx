@@ -159,8 +159,9 @@ export default function PrivacyPage() {
               <p>
                 You can ask to see, correct, delete or take a copy of your personal data, to restrict or object to how we
                 use it, and to withdraw consent. Most of it you can manage yourself: your account page shows your plan,
-                credits and devices, and lets you delete your account; the app&apos;s lock screen and settings let you
-                export your data. For anything else, write to <Mail to="privacy" />; we answer within one month.
+                credits and devices, and lets you delete your account; everything the app keeps is already on your own
+                computer. For anything else, including a copy of what our servers hold, write to <Mail to="privacy" />;
+                we answer within one month.
               </p>
               <p>
                 You can also complain to a data protection authority, in Romania the{" "}
