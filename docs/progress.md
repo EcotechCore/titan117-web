@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 1, Engine core, is done (14 Nov 2026). **Next step:** phase 2, Accounts and money, when you say so. Before it: commit phase 1 through pull requests in the desktop and web repos.
+**Now:** phase 1, Engine core, is done (14 Nov 2026). **Next step:** phase 2, Accounts and money. Its service checks and references are done (15 Nov 2026). Before it starts: the owner sets up Stripe test mode and keys; before live payments: Stripe's written OK for our credits.
 
 ## Phases
 
@@ -31,6 +31,14 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Ready for phase 2: services checked, references cloned
+
+- **Housekeeping:** all three repos back on an up-to-date `main`; the merged phase 1 branches deleted locally.
+- **Services checked against the vendors' own docs** (`external-services.md`): Stripe now has its own row (Romanian fees, Stripe Tax, webhooks, Checkout terms checkbox, customer portal), and the own-model-keys row covers OpenAI, Anthropic, Google and OpenRouter.
+- **Found:** Stripe's restricted list includes "virtual credits"; our credits are spent only inside Titan117, which Stripe's own billing-credit rules allow, but we ask Stripe support to confirm in writing before live mode. Google lets apps for users in the EEA, Switzerland and the UK use only paid Gemini (billing on), and neither Google nor OpenAI allows use by minors, so our terms say 18 and over. OpenAI forbids transferring API keys to a third party; ours never leave the laptop. OpenRouter has a sign-in flow that gives the app a user's key without pasting one. With Stripe Tax we still register for VAT (OSS) and file ourselves.
+- **References:** seven repos cloned into `titan117-references/money/` with licences checked (MIT and Apache 2.0); Convex's Clerk template has no licence, so ideas only. Ninjathons' Stripe webhook and billing code are the main code source.
+- Nothing committed.
 
 ### 14 Nov 2026 · Phase 1 done
 
