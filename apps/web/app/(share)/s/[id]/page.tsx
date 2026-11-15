@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
+import { Comments } from "./comments";
 import { ReportButton } from "./report";
 
 // Every share is a private link fetched on request.
@@ -20,6 +21,14 @@ async function load(id: string) {
     return await fetchQuery(api.shares.view, { publicId: id });
   } catch {
     return null;
+  }
+}
+
+async function loadComments(id: string) {
+  try {
+    return await fetchQuery(api.shares.comments, { publicId: id });
+  } catch {
+    return [];
   }
 }
 
@@ -52,6 +61,7 @@ async function Shared({ params }: { params: PageProps<"/s/[id]">["params"] }) {
         <span className="by">
           Made with <a href="https://titan117.com">Titan117</a>
         </span>
+        <Comments id={id} comments={await loadComments(id)} />
         <ReportButton id={id} />
       </header>
       {/* The artifact runs in an opaque origin: no cookies, no access to this page. */}

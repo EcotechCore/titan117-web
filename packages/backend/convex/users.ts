@@ -16,6 +16,7 @@ import { internalMutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { removeBilling } from "./lib/billing";
 import { identityMutation, userQuery } from "./lib/functions";
+import { removeComments } from "./shares";
 
 async function findByClerkId(ctx: MutationCtx, clerkId: string) {
   return await ctx.db
@@ -91,6 +92,7 @@ export const deleteFromClerk = internalMutation({
       .collect();
     for (const row of shares) {
       if (row.storageId) await ctx.storage.delete(row.storageId).catch(() => {});
+      await removeComments(ctx, row.publicId);
       await ctx.db.delete(row._id);
     }
     await ctx.db.delete(user._id);

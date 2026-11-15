@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api, internal } from "./_generated/api";
 import { addMonths } from "./lib/credits";
-import { MAX_SHARES_PER_DAY } from "./shares";
+import { MAX_COMMENTS_PER_DAY, MAX_SHARES_PER_DAY } from "./shares";
 import { identity, setup } from "./test.setup";
 
 type T = ReturnType<typeof setup>;
@@ -194,3 +194,55 @@ describe("sharing", () => {
   });
 });
 
+describe("comments on shared pages (17.14)", () => {
+  it("anyone with the link comments; the owner replies and hides; others can't", async () => {
+    const t = setup();
+    await userWithPlan(t, "user_1");
+    await userWithPlan(t, "user_2");
+    const { publicId } = await share(t, "hash_user_1");
+    await t.mutation(api.shares.comment, { proxySecret: SECRET, publicId, name: "Ana", text: "Page 2 has the old price." });
+    await t.mutation(api.shares.replyForDevice, { proxySecret: SECRET, tokenHash: "hash_user_1", publicId, text: "Fixed, thanks." });
+    expect((await t.query(api.shares.comments, { publicId })).map((c) => `${c.name}: ${c.text}`)).toEqual([
+      "Ana: Page 2 has the old price.",
+      "The author: Fixed, thanks.",
+    ]);
+
+    const all = await t.mutation(api.shares.commentsForDevice, { proxySecret: SECRET, tokenHash: "hash_user_1", publicId });
+    await expect(
+      t.mutation(api.shares.commentsForDevice, { proxySecret: SECRET, tokenHash: "hash_user_2", publicId }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await expect(
+      t.mutation(api.shares.replyForDevice, { proxySecret: SECRET, tokenHash: "hash_user_2", publicId, text: "x" }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await expect(
+      t.mutation(api.shares.hideForDevice, { proxySecret: SECRET, tokenHash: "hash_user_2", publicId, commentId: all[0].id, hidden: true }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await expect(t.mutation(api.shares.comment, { proxySecret: "x".repeat(48), publicId, name: "", text: "x" })).rejects.toThrowError(
+      "FORBIDDEN",
+    );
+
+    await t.mutation(api.shares.hideForDevice, { proxySecret: SECRET, tokenHash: "hash_user_1", publicId, commentId: all[0].id, hidden: true });
+    expect(await t.query(api.shares.comments, { publicId })).toHaveLength(1);
+    // Unsharing deletes the comments with the page.
+    await t.mutation(api.shares.removeForDevice, { proxySecret: SECRET, tokenHash: "hash_user_1", publicId });
+    expect(await t.run((ctx) => ctx.db.query("shareComments").collect())).toEqual([]);
+  });
+
+  it("refuses empty comments, unknown pages and more than the daily limit", async () => {
+    const t = setup();
+    await userWithPlan(t, "user_1");
+    const { publicId } = await share(t, "hash_user_1");
+    await expect(t.mutation(api.shares.comment, { proxySecret: SECRET, publicId, name: "", text: "   " })).rejects.toThrowError(
+      "FORBIDDEN",
+    );
+    await expect(
+      t.mutation(api.shares.comment, { proxySecret: SECRET, publicId: "c".repeat(22), name: "", text: "x" }),
+    ).rejects.toThrowError("NOT_FOUND");
+    for (let i = 0; i < MAX_COMMENTS_PER_DAY; i++)
+      await t.mutation(api.shares.comment, { proxySecret: SECRET, publicId, name: "", text: `n${i}` });
+    await expect(t.mutation(api.shares.comment, { proxySecret: SECRET, publicId, name: "", text: "one more" })).rejects.toThrowError(
+      "RATE_LIMITED",
+    );
+    expect((await t.query(api.shares.comments, { publicId }))[0].name).toBe("Someone");
+  });
+});

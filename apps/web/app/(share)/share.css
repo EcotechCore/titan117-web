@@ -45,3 +45,14 @@ dialog select, dialog textarea, dialog input { width: 100%; font: inherit; color
 dialog textarea { min-height: 90px; resize: vertical; }
 dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 .ok { color: var(--accent-deep); }
+
+.comments { position: fixed; top: 52px; right: 12px; bottom: 12px; width: min(380px, calc(100vw - 24px)); overflow: auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: 0 12px 32px rgb(0 0 0 / .15); z-index: 5; }
+.comments ol { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.comments li { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.comments li.own strong { color: var(--accent-deep); }
+.comments li p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.comments form label { display: block; font-size: 13px; margin: 8px 0 4px; }
+.comments form input, .comments form textarea { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+.comments form textarea { min-height: 80px; resize: vertical; }
+.comments form .btn { margin-top: 8px; }
+.muted { color: var(--muted-fg); font-size: 13px; }

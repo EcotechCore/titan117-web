@@ -229,4 +229,18 @@ export default defineSchema({
   })
     .index("by_signature", ["signature"])
     .index("by_lastSeen", ["lastSeen"]),
+
+  /**
+   * Comments on shared pages (17.14; §32: what the user shares): written by
+   * anyone with the link, or the owner's replies. Deleted with the page.
+   */
+  shareComments: defineTable({
+    publicId: v.string(),
+    name: v.string(),
+    text: v.string(),
+    fromOwner: v.boolean(),
+    at: v.number(),
+    // The owner hid it from the page.
+    hiddenAt: v.optional(v.number()),
+  }).index("by_publicId", ["publicId", "at"]),
 });

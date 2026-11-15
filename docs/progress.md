@@ -32,6 +32,15 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Phase 4 leftovers: comments on shared pages; the owner list rewritten
+
+Built on `phase-4-leftovers`. Decisions §50, **to be confirmed**.
+
+- **Comments (17.14):** the `shareComments` table (row in the data table); `shares.comments` (public, hidden ones left out), `shares.comment` from the page's own route (100 a day per page), and for the owner's app `commentsForDevice`, `replyForDevice` and `hideForDevice`; comments go with the page on unshare, takedown and account deletion. The shared page has a Comments panel. Routes: `POST /api/v1/shares/<id>/comments` and `/comments/owner`.
+- **Tests:** 2 new (the owner replies and hides, others can't, unsharing deletes them; empty, unknown and over-the-limit comments refused); 123 in all. Pushed to the development Convex deployment; the web app builds.
+- **Not checked:** the Comments panel with a live share in a browser (needs a real share: the owner's step 3).
+- **The owner checklist is rewritten** as one ordered list (push, decisions, try it, accounts, legal, vendors, before the beta).
+
 ### 15 Nov 2026 · Owner checklist: Microsoft's runtime fetched, signing needed sooner
 
 The owner allowed fetching Microsoft's Visual C++ redistributable (done in `titan117-desktop`); Smart App Control blocked the unsigned installer, so code signing moves up on the checklist. Nothing changed in this repo's code.

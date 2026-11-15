@@ -103,8 +103,18 @@ export const finishForDevice = proxyServerMutation({
   },
 });
 
+/** A page's comments go with it (unshare, takedown, account deletion). */
+export async function removeComments(ctx: MutationCtx, publicId: string) {
+  const rows = await ctx.db
+    .query("shareComments")
+    .withIndex("by_publicId", (q) => q.eq("publicId", publicId))
+    .collect();
+  for (const row of rows) await ctx.db.delete(row._id);
+}
+
 async function removeShare(ctx: MutationCtx, share: Doc<"sharedArtifacts">) {
   if (share.storageId) await ctx.storage.delete(share.storageId).catch(() => {});
+  await removeComments(ctx, share.publicId);
   await ctx.db.delete(share._id);
 }
 
@@ -216,12 +226,119 @@ export const decide = adminMutation({
     if (decision === "removed" && share.takenDownAt === undefined) {
       if (share.storageId) await ctx.storage.delete(share.storageId).catch(() => {});
       await ctx.db.patch(share._id, { storageId: undefined, takenDownAt: now, takedownReason: clean(reason, 2000) });
+      await removeComments(ctx, publicId);
     }
     const reports = await ctx.db
       .query("shareReports")
       .withIndex("by_publicId", (q) => q.eq("publicId", publicId))
       .collect();
     for (const r of reports) if (r.handledAt === undefined) await ctx.db.patch(r._id, { handledAt: now, decision });
+    return { ok: true };
+  },
+});
+
+// ---------------------------------------------------------------- comments (17.14)
+
+/** Comments one page may collect in a day (an open form must not become a spam bin). */
+export const MAX_COMMENTS_PER_DAY = 100;
+
+async function liveShare(ctx: QueryCtx, publicId: string) {
+  const share = await byPublicId(ctx, publicId);
+  if (!share || share.takenDownAt !== undefined || !share.storageId) fail("NOT_FOUND");
+  return share;
+}
+
+async function ownShare(ctx: QueryCtx, tokenHash: string, publicId: string) {
+  const device = await deviceByTokenHash(ctx, tokenHash);
+  if (!device) fail("UNAUTHENTICATED");
+  const share = await byPublicId(ctx, publicId);
+  // Another user's page looks the same as one that doesn't exist.
+  if (!share || share.userId !== device.userId) fail("NOT_FOUND");
+  return share;
+}
+
+/** Anyone with the link: the comments the owner hasn't hidden, oldest first. */
+export const comments = publicQuery({
+  args: { publicId: v.string() },
+  handler: async (ctx, { publicId }) => {
+    const share = await byPublicId(ctx, publicId);
+    if (!share || share.takenDownAt !== undefined) return [];
+    const rows = await ctx.db
+      .query("shareComments")
+      .withIndex("by_publicId", (q) => q.eq("publicId", publicId))
+      .collect();
+    return rows
+      .filter((r) => r.hiddenAt === undefined)
+      .map((r) => ({ name: r.name, text: r.text, fromOwner: r.fromOwner, at: r.at }));
+  },
+});
+
+/** A comment from someone with the link, through our server's route. */
+export const comment = proxyServerMutation({
+  args: { publicId: v.string(), name: v.string(), text: v.string() },
+  handler: async (ctx, { publicId, name, text }) => {
+    await liveShare(ctx, publicId);
+    const body = clean(text, 2000);
+    if (!body) fail("FORBIDDEN");
+    const since = Date.now() - DAY;
+    const today = (
+      await ctx.db
+        .query("shareComments")
+        .withIndex("by_publicId", (q) => q.eq("publicId", publicId).gt("at", since))
+        .collect()
+    ).length;
+    if (today >= MAX_COMMENTS_PER_DAY) fail("RATE_LIMITED");
+    await ctx.db.insert("shareComments", {
+      publicId,
+      name: clean(name, 60) || "Someone",
+      text: body,
+      fromOwner: false,
+      at: Date.now(),
+    });
+    return { ok: true };
+  },
+});
+
+/** The owner, from the app: every comment, hidden ones too. */
+export const commentsForDevice = proxyServerMutation({
+  args: { tokenHash: v.string(), publicId: v.string() },
+  handler: async (ctx, { tokenHash, publicId }) => {
+    await ownShare(ctx, tokenHash, publicId);
+    const rows = await ctx.db
+      .query("shareComments")
+      .withIndex("by_publicId", (q) => q.eq("publicId", publicId))
+      .collect();
+    return rows.map((r) => ({
+      id: r._id,
+      name: r.name,
+      text: r.text,
+      fromOwner: r.fromOwner,
+      at: r.at,
+      hidden: r.hiddenAt !== undefined,
+    }));
+  },
+});
+
+/** The owner replies on the page. */
+export const replyForDevice = proxyServerMutation({
+  args: { tokenHash: v.string(), publicId: v.string(), text: v.string() },
+  handler: async (ctx, { tokenHash, publicId, text }) => {
+    await ownShare(ctx, tokenHash, publicId);
+    const body = clean(text, 2000);
+    if (!body) fail("FORBIDDEN");
+    await ctx.db.insert("shareComments", { publicId, name: "The author", text: body, fromOwner: true, at: Date.now() });
+    return { ok: true };
+  },
+});
+
+/** The owner hides a comment from the page (or shows it again). */
+export const hideForDevice = proxyServerMutation({
+  args: { tokenHash: v.string(), publicId: v.string(), commentId: v.id("shareComments"), hidden: v.boolean() },
+  handler: async (ctx, { tokenHash, publicId, commentId, hidden }) => {
+    await ownShare(ctx, tokenHash, publicId);
+    const row = await ctx.db.get(commentId);
+    if (!row || row.publicId !== publicId) fail("NOT_FOUND");
+    await ctx.db.patch(commentId, { hiddenAt: hidden ? Date.now() : undefined });
     return { ok: true };
   },
 });
