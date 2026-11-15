@@ -16,6 +16,7 @@ import type * as lib_billing from "../lib/billing.js";
 import type * as lib_credits from "../lib/credits.js";
 import type * as lib_functions from "../lib/functions.js";
 import type * as lib_stripe from "../lib/stripe.js";
+import type * as proxy from "../proxy.js";
 import type * as users from "../users.js";
 
 import type {
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   "lib/credits": typeof lib_credits;
   "lib/functions": typeof lib_functions;
   "lib/stripe": typeof lib_stripe;
+  proxy: typeof proxy;
   users: typeof users;
 }>;
 

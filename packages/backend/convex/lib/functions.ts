@@ -156,3 +156,37 @@ export const deviceMutation = customMutation(mutation, {
  */
 export const adminQuery = customQuery(query, customCtx(requireAdmin));
 export const adminMutation = customMutation(mutation, customCtx(requireAdmin));
+
+/**
+ * Only our own server (the credits proxy on Vercel) knows PROXY_SECRET, kept
+ * in both deployments' environments (guardrails §8). Compared in constant time.
+ */
+export function isProxySecret(given: string) {
+  const expected = process.env.PROXY_SECRET ?? "";
+  if (expected.length < 32 || given.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < given.length; i++) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * Called by the credits proxy on behalf of a signed-in user: needs both the
+ * user's own token (Convex checks it) and our server's secret, so neither a
+ * user alone nor a leaked secret alone can open a call. Adds `ctx.user`.
+ */
+export const proxyMutation = customMutation(mutation, {
+  args: { proxySecret: v.string() },
+  input: async (ctx, { proxySecret }) => {
+    if (!isProxySecret(proxySecret)) fail("FORBIDDEN");
+    return { ctx: { user: await requireUser(ctx) }, args: {} };
+  },
+});
+
+/** Called by the credits proxy alone, to close a call it opened. Needs our server's secret. */
+export const proxyServerMutation = customMutation(mutation, {
+  args: { proxySecret: v.string() },
+  input: async (_ctx, { proxySecret }) => {
+    if (!isProxySecret(proxySecret)) fail("FORBIDDEN");
+    return { ctx: {}, args: {} };
+  },
+});
