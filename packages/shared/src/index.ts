@@ -21,7 +21,53 @@ export const ERROR_CODES = [
   "FORBIDDEN",
   "NOT_FOUND",
   "RATE_LIMITED",
+  // Not enough credits for a cloud call (pricing.md).
+  "INSUFFICIENT_CREDITS",
+  // A second subscription while one is active; changes go through the billing portal.
+  "ALREADY_SUBSCRIBED",
 ] as const;
+
+/**
+ * The plans and credit packs (docs/notes/pricing.md). Prices live in Stripe,
+ * found by these lookup keys; what each plan includes lives here, so the web
+ * app, Convex and the desktop app agree.
+ */
+export const PLAN_IDS = ["starter", "pro", "max"] as const;
+export type PlanId = (typeof PLAN_IDS)[number];
+/** "custom" plans are set up by hand for teams (phase 17). */
+export type AnyPlanId = PlanId | "custom";
+
+export const PLANS: Record<PlanId, { name: string; monthlyCredits: number; devices: number }> = {
+  starter: { name: "Starter", monthlyCredits: 700, devices: 2 },
+  pro: { name: "Pro", monthlyCredits: 1_500, devices: 3 },
+  max: { name: "Max", monthlyCredits: 3_500, devices: 5 },
+};
+
+export const BILLING_INTERVALS = ["month", "year"] as const;
+export type BillingInterval = (typeof BILLING_INTERVALS)[number];
+
+/** Stripe price lookup key for a plan, e.g. `titan117_pro_month`. */
+export function planLookupKey(plan: PlanId, interval: BillingInterval) {
+  return `titan117_${plan}_${interval}`;
+}
+
+export const TOPUPS = [
+  { id: "topup_1000", credits: 1_000 },
+  { id: "topup_2750", credits: 2_750 },
+  { id: "topup_6000", credits: 6_000 },
+] as const;
+export type TopupId = (typeof TOPUPS)[number]["id"];
+
+export function topupLookupKey(id: TopupId) {
+  return `titan117_${id}`;
+}
+
+/** 1 credit = 0.01 of cloud usage at our price: provider cost × 1.25, rounded up (pricing.md). */
+export const CREDIT_MARKUP = 1.25;
+export function creditsForCost(providerCostUsd: number) {
+  if (!(providerCostUsd > 0)) return 0;
+  return Math.ceil(Math.round(providerCostUsd * CREDIT_MARKUP * 100 * 1e6) / 1e6);
+}
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
 

@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 1, Engine core, is done (14 Nov 2026). **Next step:** phase 2, Accounts and money. Its service checks and references are done (15 Nov 2026). Before it starts: the owner sets up Stripe test mode and keys; before live payments: Stripe's written OK for our credits.
+**Now:** phase 2, Accounts and money, started 15 Nov 2026. **Next step:** the credits proxy to OpenRouter, then desktop sign-in, the licence lease and lock screen, own API keys, the website and legal pages, and account deletion.
 
 ## Phases
 
@@ -10,7 +10,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 |---|---|---|---|---|
 | 0 | Setup | Done | 9 Nov 2026 | 14 Nov 2026 |
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
-| 2 | Accounts and money | Not started | | |
+| 2 | Accounts and money | Started | 15 Nov 2026 | |
 | 3 | Titan and memory | Not started | | |
 | 4 | Web search and artifacts | Not started | | |
 | 5 | Install and setup | Not started | | |
@@ -31,6 +31,19 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2 started: plans, credits and Stripe
+
+Built in `packages/backend` and `apps/web` on `phase-2-money-core`. Seen working in the real app (Stripe sandbox): choosing Starter at Checkout gave the plan and 700 credits; a 1,000-credit top-up arrived; a 750-credit charge took this month's 700 first, then 50 from the top-up.
+
+- **Credits** (`lib/credits.ts`, pricing.md): one row per grant (monthly, rolled over, top-up) plus a history. Monthly credits arrive each month of a paid period (a yearly plan gets one month at a time from a daily cron), roll over one month capped at one allowance; top-ups last 12 months and wait while there's no plan; spending order monthly → rollover → top-ups oldest first; upgrades add the prorated difference at once, downgrades wait; a charge is counted once per request id and records a shortfall rather than going below zero.
+- **Stripe** (`billing.ts`, `lib/stripe.ts`, adapted from Ninjathons): Checkout for plans and top-ups (EU VAT numbers collected for reverse charge), the billing portal, and the webhook at `<CONVEX_SITE_URL>/stripe`, verified, handled once per event, reading the subscription back from Stripe. Only the webhook writes plans and paid credits; a test checks no other file does. Stripe Tax (`STRIPE_AUTOMATIC_TAX`) and the terms checkbox with the 14-day waiver (`STRIPE_REQUIRE_TERMS`) are switches, off until Stripe Tax is set up and the terms page is online. The Stripe customer holds only our user id; Checkout asks for the email.
+- **Shared:** plans, credit packs and the credit price (provider cost × 1.25) in `@titan117/shared`, version 0.2.0 (tag `shared-v0.2.0` after merge, when the desktop needs it). New error codes `INSUFFICIENT_CREDITS`, `ALREADY_SUBSCRIBED`.
+- **Account page** (`/account`): plan, credits by kind, history, plan choice by month or year, top-ups, billing portal.
+- **Stripe test account:** products and prices made by `scripts/stripe-setup.mjs` (found by lookup keys, safe to rerun, refuses live keys); the test webhook registered by the same script with its secret set straight into Convex. Convex dev has `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `SITE_URL` (`http://localhost:3100`).
+- Tables `stripeCustomers`, `stripeEvents`, `creditBuckets`, `creditLedger` added to the data table (decisions §11). 66 tests pass.
+- **No refunds** (decisions §33.8); `pricing.md` said top-ups could be refunded within 14 days, now corrected. Our own billing mistakes are fixed by hand.
+- **Open:** Stripe's written OK for our credits before live mode; the terms checkbox with the 14-day waiver (`STRIPE_REQUIRE_TERMS`) goes on once the owner sets the terms address `https://titan117.com/legal/terms` in Stripe's public details (after activating the account) and the terms page and the confirmation email are built.
 
 ### 15 Nov 2026 · Ready for phase 2: services checked, references cloned
 
