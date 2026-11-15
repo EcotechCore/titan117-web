@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money, started 15 Nov 2026; all four parts of its check are met. **Next step:** the website and legal pages, then account deletion, which finish phase 2's build list.
+**Now:** phase 2, Accounts and money, started 15 Nov 2026; all four parts of its check are met. **Next step:** account deletion with a grace period, the last item on phase 2's build list.
 
 ## Phases
 
@@ -31,6 +31,16 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2: the website and legal pages in the web app
+
+Built on `phase-2-website` (decisions §41). Checked on the local web app: all 46 pages load (unknown agents and lessons give 404s), none scrolls sideways at phone width, Titan's eyes and the page scripts run on every page, pricing fills in its plans and switches to yearly, the FAQ search filters, and the build prerenders every website page as static HTML.
+
+- **The website** (`app/(site)`): home, agents (index and 10), industries (index and 8), pricing, FAQ, Learn (index and 12 lessons), from typed content in `apps/web/content/site.ts`; React server components ported from `build.py`; the hand-written home converted to JSX; the stylesheet and scripts moved over (`site.css`, `public/assets/`). Fonts self-hosted. `security.txt` at `/.well-known/security.txt`.
+- **The signed-in app** moved to `app/(app)` with its own layout (account, sign-in, desktop sign-in); paths unchanged.
+- **Legal pages:** terms, privacy and cookies, written to decisions §33.8 and §32, marked draft until our lawyer's review. The pricing page no longer says top-ups are refundable; the footer links to the legal pages; the copyright line names Ecotechcore.
+- **The 14-day waiver's confirmation** goes on every invoice when `STRIPE_REQUIRE_TERMS` is on; a test keeps the checkbox, the invoice footer and the terms in step. 86 backend tests.
+- **For the owner before launch:** fill in the company's registered name, registration number, VAT number and address (`apps/web/content/legal.ts`); create the `support@`, `privacy@` and `abuse@titan117.com` mailboxes (or change them there); in Stripe, set the terms address in public details and turn on "Successful payments" customer emails; then switch on `STRIPE_REQUIRE_TERMS`. Videos for the home page and Learn are still to come.
 
 ### 15 Nov 2026 · Phase 2: an ended plan locks the app; your own API keys
 

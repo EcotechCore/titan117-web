@@ -314,3 +314,18 @@ describe("Stripe webhook", () => {
     expect(await t.run(async (ctx) => (await ctx.db.query("stripeEvents").collect()).length)).toBe(0);
   });
 });
+
+describe("the 14-day waiver (decisions §33.8)", () => {
+  it("the checkbox, the invoice footer and the terms page say the same thing", async () => {
+    const { TERMS_TEXT, WAIVER_FOOTER } = await import("./billing");
+    const terms = readFileSync(join(__dirname, "..", "..", "..", "apps", "web", "app", "(site)", "legal", "terms", "page.tsx"), "utf8");
+    expect(TERMS_TEXT).toContain("https://titan117.com/legal/terms");
+    expect(TERMS_TEXT).toMatch(/lose my 14-day right of withdrawal once it has started/);
+    expect(WAIVER_FOOTER).toContain("https://titan117.com/legal/terms#payments");
+    expect(WAIVER_FOOTER).toMatch(/lose your 14-day right of withdrawal once it has started/);
+    // The section the links point to, and the same promise in it.
+    expect(terms).toContain('id: "payments"');
+    expect(terms).toMatch(/lose this right once it has started/);
+    expect(terms).toMatch(/We confirm this in the email/);
+  });
+});
