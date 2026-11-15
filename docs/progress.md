@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Decision: the system voices, no Kokoro
+
+Read aloud keeps the operating system's own voices (decisions §43.10). The owner decided against Kokoro: its pronunciation step needs eSpeak NG (GPL-3.0), and Titan117 is a paid product that ships no GPL software, not even as a separate program. A natural voice is revisited later, through credits or a local model with no GPL inside.
+
 ### 15 Nov 2026 · Decision: commands on Windows run without an OS sandbox
 
 The owner chose option A for Windows (decisions §43.1): commands run with approvals, the always-ask list and a scrubbed environment, without an OS sandbox, as Claude Code does on Windows. A restricted Windows user (Codex's way) is not planned before the beta.
