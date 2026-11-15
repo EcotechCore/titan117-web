@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money, started 15 Nov 2026; all four parts of its check are met. **Next step:** account deletion with a grace period, the last item on phase 2's build list.
+**Now:** phase 2, Accounts and money: its check is met and everything on its build list is built (15 Nov 2026). **Next step:** the owner confirms phase 2 is done, then phase 3, Titan and memory. Open from phase 2, for the owner before launch: company details on the legal pages, the support, privacy and abuse mailboxes, Stripe's terms address and receipt emails, then `STRIPE_REQUIRE_TERMS`; the lawyer's review of the legal pages; Stripe's written OK for our credits.
 
 ## Phases
 
@@ -31,6 +31,16 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2: deleting an account
+
+Built on `phase-2-account-deletion` (decisions §42). **Checked against the real test services:** asking to delete set the date 30 days out and Stripe stopped the plan renewing (the webhook recorded it); cancelling cleared the date and renewal came back. The final deletion wasn't run for real, as it would delete the owner's test account; it's covered by tests against fake Clerk and Stripe.
+
+- **Account page:** Delete my account (30 days, cancellable; the plan stops renewing at once, nothing refunded) and Keep my account while one is pending.
+- **Convex** `account.ts`: `requestDeletion`, `cancelDeletion` (renewal back only if asking had stopped it), and a daily run that deletes the Clerk user, then every row through `users.deleteFromClerk`, which now also deletes the Stripe customer, however the account was deleted.
+- **Tests:** the whole deletion across every user table, other users untouched, nothing before the 30 days, and a check that fails if a new table with a user id isn't deleted. 93 tests.
+- The privacy page no longer promises an in-app data export that doesn't exist yet; a copy of what our servers hold is by email.
+- **Phase 2's build list is complete;** all four parts of its check were met earlier today.
 
 ### 15 Nov 2026 · Phase 2: the website and legal pages in the web app
 

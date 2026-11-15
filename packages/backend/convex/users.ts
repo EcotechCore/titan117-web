@@ -11,6 +11,7 @@
  */
 import { v } from "convex/values";
 
+import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { removeBilling } from "./lib/billing";
@@ -58,8 +59,10 @@ export const deleteFromClerk = internalMutation({
   handler: async (ctx, { clerkId }) => {
     const user = await findByClerkId(ctx, clerkId);
     if (!user) return;
-    // Billing rows and credits; the Stripe customer itself goes with account deletion (phase 2).
-    await removeBilling(ctx, user._id);
+    // Billing rows and credits; then the Stripe customer itself, so nothing keeps charging,
+    // however the account was deleted (here, or from Clerk's own profile screen).
+    const customers = await removeBilling(ctx, user._id);
+    if (customers.length) await ctx.scheduler.runAfter(0, internal.account.deleteStripeCustomers, { customerIds: customers });
     const devices = await ctx.db
       .query("devices")
       .withIndex("by_user", (q) => q.eq("userId", user._id))

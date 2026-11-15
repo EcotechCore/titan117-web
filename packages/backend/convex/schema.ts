@@ -12,7 +12,12 @@ export default defineSchema({
     clerkId: v.string(),
     // Set only from the Convex CLI (guardrails §12b), never from a screen.
     role: v.optional(v.literal("admin")),
-  }).index("by_clerkId", ["clerkId"]),
+    // Account deletion (account.ts): when it happens, and whether asking for it stopped the plan renewing.
+    deleteAfter: v.optional(v.number()),
+    deletionStoppedRenewal: v.optional(v.boolean()),
+  })
+    .index("by_clerkId", ["clerkId"])
+    .index("by_deleteAfter", ["deleteAfter"]),
 
   // Written only by the payment webhook and the credit grants it starts (guardrails §3).
   entitlements: defineTable({
