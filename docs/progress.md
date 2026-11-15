@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money, started 15 Nov 2026. **Next step:** the credits proxy to OpenRouter, then desktop sign-in, the licence lease and lock screen, own API keys, the website and legal pages, and account deletion.
+**Now:** phase 2, Accounts and money, started 15 Nov 2026. **Next step:** desktop sign-in, the licence lease and lock screen, own API keys, the website and legal pages, and account deletion.
 
 ## Phases
 
@@ -31,6 +31,15 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2: the credits proxy
+
+Built on `phase-2-credits-proxy`. Seen working on the local web app with a real OpenRouter call (Llama 3.1 8B): a normal and a streamed answer came back through the proxy; a call cancelled mid-stream was still charged its real cost; a missing or forged sign-in token got 401. The account page showed the four calls as five credits of cloud usage.
+
+- **The proxy** (`apps/web/app/api/v1/chat/completions`): OpenAI-compatible, so the engine's OpenRouter client points at it unchanged. The engine sends the user's own Clerk session token; the route opens the call in Convex (`proxy.begin`: plan active, credits left, at most 4 calls at once), forwards it to OpenRouter with our one server key, streams the answer through untouched, and closes the call (`proxy.settle`) with OpenRouter's `usage.cost` × 1.25. A cancelled call's cost is looked up by its generation id for about 30 seconds (OpenRouter takes 8–15 to record it); if it can't be found, 0.01 USD is charged. Prompts and answers are never stored or logged.
+- **Two keys to open a call:** `begin` needs the user's own token and our server's `PROXY_SECRET` (in the web app's environment and Convex's); `settle` needs the secret. A user alone can't charge or skip a charge; a leaked secret alone can't spend anyone's credits.
+- Table `proxyCalls` (user, model, times, credits; never content) in the data table. 71 tests pass.
+- **Next for the proxy:** the desktop engine uses it once desktop sign-in is built; `PROXY_SECRET` and `OPENROUTER_API_KEY` go into Vercel's environment when the web app is deployed.
 
 ### 15 Nov 2026 · Phase 2 started: plans, credits and Stripe
 

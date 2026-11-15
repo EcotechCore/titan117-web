@@ -78,6 +78,21 @@ export default defineSchema({
     .index("by_source", ["source"])
     .index("by_expiresAt", ["expiresAt"]),
 
+  /**
+   * Cloud calls through the credits proxy (§32: usage counts): who, which
+   * model, when, and what it cost. Never the prompt or the answer. Open rows
+   * limit how many calls a user runs at once.
+   */
+  proxyCalls: defineTable({
+    userId: v.id("users"),
+    model: v.string(),
+    startedAt: v.number(),
+    settledAt: v.optional(v.number()),
+    credits: v.optional(v.number()),
+  })
+    .index("by_user_open", ["userId", "settledAt"])
+    .index("by_startedAt", ["startedAt"]),
+
   /** Every change to a user's credits, for the credits page. Amounts are signed. */
   creditLedger: defineTable({
     userId: v.id("users"),
