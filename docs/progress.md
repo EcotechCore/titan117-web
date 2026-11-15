@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 3, Titan and memory, is done (15 Nov 2026). **Next step:** phase 4, Web search and artifacts, when you say so.
+**Now:** phase 4, Web search and artifacts, is built and waiting for the owner's checks (15 Nov 2026). **Next step:** the owner confirms decisions §44, signs in on the desktop app and runs one real research task to the share link; then phase 4 is closed.
 
 ## Phases
 
@@ -12,7 +12,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
 | 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
-| 4 | Web search and artifacts | Not started | | |
+| 4 | Web search and artifacts | In progress | 15 Nov 2026 | |
 | 5 | Install and setup | Not started | | |
 | 6 | Folder agent | Not started | | |
 | 7 | Coding engine and code builder | Not started | | |
@@ -31,6 +31,17 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 4: web search and artifacts (web app, Convex, shared docs)
+
+Built on `phase-4` here and in `titan117-desktop` (details in that repo's log). Decisions §44, **to be confirmed by the owner**.
+
+- **Share links (17.13):** Convex `shares.ts` with two new tables, `sharedArtifacts` and `shareReports` (rows in the data table): the desktop uploads a self-contained snapshot through `POST /api/v1/shares` with its device token (only the hash reaches Convex), an active plan required, at most 5 MB, 100 shares and 30 a day; `DELETE /api/v1/shares/<id>` unshares and deletes the file. The public page `/s/<id>` (its own layout, no sign-in code, `noindex`) frames `/s/<id>/raw`, served with a `sandbox` content policy and no network, so a shared page can't reach our cookies or pages. A **Report** button posts to `/api/v1/shares/<id>/report`; staff see open reports and decide (`openReports`, `decide`: removed or kept, with the reason kept as the statement of reasons). Account deletion now deletes shares and their files.
+- **Tests:** 11 new (denials for every gated function, limits, a refused upload keeps nothing, another user can't unshare, takedown keeps the record, the account deletion covers `sharedArtifacts`), plus the guardrail checks for the two new tables. 107 in all.
+- **Checked on the local web app:** the "doesn't lead anywhere" page, the raw route's 404, phone width and dark mode; the build lists the new routes. Pushed to the development Convex deployment.
+- **Docs:** decisions §44 (search sources, Serper dropped, reading and robots.txt, cache, site lists, deep research, artifacts, downloads, sharing, licences); external-services rows for Brave, Tavily and Exa (checked on their docs) and our share-link hosting; OpenRouter's search tool checked on its docs **and with one real call** (`usage.cost` includes the search); open-source references for Readability, linkedom, marked, docx, ExcelJS, PptxGenJS and Mermaid. `Zlib` joins the allowed licences in all three repos' licence check.
+- **Not checked:** a live share with real data (needs the owner's signed-in desktop app and plan): the shared page with an artifact in its frame, the Report dialog sending, a takedown. The admin screens for reports belong to the product owner portal (phase 5).
+- **For the owner:** confirm §44; set up `abuse@titan117.com` as the Digital Services Act contact point and add it, with our content rules for shared pages, to the terms (the lawyer's review); a separate domain for shared pages before launch.
 
 ### 15 Nov 2026 · Phase 3 done
 

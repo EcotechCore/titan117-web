@@ -20,6 +20,7 @@ import type * as lib_functions from "../lib/functions.js";
 import type * as lib_stripe from "../lib/stripe.js";
 import type * as lib_tokens from "../lib/tokens.js";
 import type * as proxy from "../proxy.js";
+import type * as shares from "../shares.js";
 import type * as users from "../users.js";
 
 import type {
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   "lib/stripe": typeof lib_stripe;
   "lib/tokens": typeof lib_tokens;
   proxy: typeof proxy;
+  shares: typeof shares;
   users: typeof users;
 }>;
 

@@ -144,4 +144,47 @@ export default defineSchema({
   })
     .index("by_user_at", ["userId", "at"])
     .index("by_ref", ["ref"]),
+
+  /**
+   * Artifacts a user chose to share by link (§32: what the user shares;
+   * decisions §44). The snapshot is a self-contained HTML page in Convex file
+   * storage; anyone with the random public id can view it until the owner
+   * unshares it or staff take it down.
+   */
+  sharedArtifacts: defineTable({
+    userId: v.id("users"),
+    publicId: v.string(),
+    title: v.string(),
+    kind: v.string(),
+    bytes: v.number(),
+    storageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+    // Set by staff (shares.takeDown); the snapshot is deleted, the row stays as the record.
+    takenDownAt: v.optional(v.number()),
+    takedownReason: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_publicId", ["publicId"]),
+
+  /**
+   * Reports about shared pages (§32: our own records; the Digital Services
+   * Act's notice and action). No user link: the reporter may be anyone.
+   */
+  shareReports: defineTable({
+    publicId: v.string(),
+    reason: v.union(
+      v.literal("illegal"),
+      v.literal("privacy"),
+      v.literal("copyright"),
+      v.literal("abuse"),
+      v.literal("other"),
+    ),
+    note: v.string(),
+    email: v.optional(v.string()),
+    at: v.number(),
+    handledAt: v.optional(v.number()),
+    decision: v.optional(v.union(v.literal("removed"), v.literal("kept"))),
+  })
+    .index("by_publicId", ["publicId"])
+    .index("by_handledAt", ["handledAt"]),
 });

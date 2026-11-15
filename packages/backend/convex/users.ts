@@ -78,6 +78,15 @@ export const deleteFromClerk = internalMutation({
       .withIndex("by_user_open", (q) => q.eq("userId", user._id))
       .collect();
     for (const row of calls) await ctx.db.delete(row._id);
+    // Shared pages and their snapshots (decisions §44).
+    const shares = await ctx.db
+      .query("sharedArtifacts")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const row of shares) {
+      if (row.storageId) await ctx.storage.delete(row.storageId).catch(() => {});
+      await ctx.db.delete(row._id);
+    }
     await ctx.db.delete(user._id);
   },
 });

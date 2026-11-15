@@ -20,6 +20,7 @@ const ALLOWED = new Set([
   "CC0-1.0",
   "Unlicense",
   "Python-2.0",
+  "Zlib",
 ]);
 
 // package name → reason. Only for licences that aren't in ALLOWED.

@@ -1,0 +1,47 @@
+/* A shared artifact: a thin bar with the title, who made it with what, and Report (homepage-grid/design.md colours). */
+:root {
+  --bg: #ffffff;
+  --fg: #0a0a0a;
+  --muted-fg: #6b6b6b;
+  --border: #e6e6e6;
+  --card: #ffffff;
+  --accent: #ff6347;
+  --accent-deep: #c2361f;
+  --accent-soft: #ffece8;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #0b0b0b;
+  --fg: #f4f4f4;
+  --muted-fg: #9a9a9a;
+  --border: #262626;
+  --card: #111111;
+  --accent-soft: #2e1310;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--font); display: flex; flex-direction: column; }
+.bar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.bar h1 { font-size: 15px; font-weight: 600; margin: 0; flex: 1 1 200px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar .by { color: var(--muted-fg); font-size: 13px; }
+.bar .by a { color: inherit; }
+.frame { flex: 1; width: 100%; border: 0; background: #fff; min-height: 70vh; }
+.btn { border: 1px solid var(--border); background: var(--card); color: var(--fg); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+.btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-deep); color: #fff; }
+.btn:disabled { opacity: .6; cursor: default; }
+.notice { margin: 15vh auto; max-width: 520px; padding: 0 16px; text-align: center; }
+.notice h1 { font-size: 22px; }
+.notice p { color: var(--muted-fg); }
+dialog { border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--fg); padding: 20px; width: min(460px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgb(0 0 0 / .4); }
+dialog h2 { margin: 0 0 6px; font-size: 17px; }
+dialog p { margin: 0 0 12px; color: var(--muted-fg); font-size: 13px; }
+dialog label { display: block; font-size: 13px; margin: 10px 0 4px; }
+dialog select, dialog textarea, dialog input { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+dialog textarea { min-height: 90px; resize: vertical; }
+dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.ok { color: var(--accent-deep); }

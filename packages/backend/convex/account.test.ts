@@ -55,6 +55,8 @@ async function userWithEverything(t: T, clerkId: string, cancelAtPeriodEnd = fal
     await ctx.db.insert("devices", { userId, name: "laptop", tokenHash: `h_${clerkId}` });
     await ctx.db.insert("deviceSignIns", { userId, codeHash: `c_${clerkId}`, challenge: "x", name: "laptop", expiresAt: T0 });
     await ctx.db.insert("proxyCalls", { userId, model: "m", startedAt: T0 });
+    const storageId = await ctx.storage.store(new Blob(["<p>shared</p>"]));
+    await ctx.db.insert("sharedArtifacts", { userId, publicId: `p_${clerkId}`, title: "t", kind: "document", bytes: 13, storageId, createdAt: T0 });
   });
   return userId;
 }
@@ -67,6 +69,7 @@ const USER_TABLES = [
   "devices",
   "deviceSignIns",
   "proxyCalls",
+  "sharedArtifacts",
 ] as const;
 
 async function rowsOf(t: T, userId: Id<"users">) {
