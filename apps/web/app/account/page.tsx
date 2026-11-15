@@ -42,6 +42,8 @@ function Account() {
     if (isAuthenticated) ensureUser().then(() => setReady(true));
   }, [isAuthenticated, ensureUser]);
   const summary = useQuery(api.billing.summary, ready ? {} : "skip");
+  const devices = useQuery(api.devices.list, ready ? {} : "skip");
+  const revoke = useMutation(api.devices.revoke);
 
   const checkout = useAction(api.billing.checkout);
   const topUp = useAction(api.billing.topUp);
@@ -181,6 +183,41 @@ function Account() {
           </div>
         </section>
       )}
+
+      <section className="border-b border-[#e6e6e6] px-4 py-12 sm:px-10 dark:border-[#262626]">
+        <h2 className="text-2xl font-medium">Devices</h2>
+        <p className="mt-2 text-sm text-[#6b6b6b]">
+          Computers signed in to the Titan117 app
+          {summary.plan && PLANS[summary.plan as PlanId] ? ` (your plan allows ${PLANS[summary.plan as PlanId].devices})` : ""}.
+          Signing one out locks the app there the next time it checks in.
+        </p>
+        {!devices || devices.length === 0 ? (
+          <p className="mt-4 text-[#6b6b6b]">No devices yet. Download the app and sign in.</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-[#e6e6e6] dark:divide-[#262626]">
+            {devices.map((d) => (
+              <li key={d.id} className="flex items-center justify-between gap-4 py-3 text-sm">
+                <span>
+                  {d.name}
+                  <span className="ml-2 text-[#6b6b6b]">
+                    signed in {date(d.createdAt)}
+                    {d.lastSeenAt ? ` · last seen ${date(d.lastSeenAt)}` : ""}
+                  </span>
+                </span>
+                <button
+                  className="underline decoration-[#ff6347] underline-offset-4"
+                  onClick={() => {
+                    if (window.confirm(`Sign out ${d.name}? The app there locks until someone signs in again.`))
+                      void revoke({ deviceId: d.id });
+                  }}
+                >
+                  Sign out
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="px-4 py-12 sm:px-10">
         <h2 className="text-2xl font-medium">Credit history</h2>

@@ -1,7 +1,7 @@
 /**
  * The credits proxy (decisions §12, architecture §5): an OpenAI-compatible
  * chat completions endpoint the desktop engine calls with the user's own
- * session token. It checks the plan and credits in Convex, forwards the call
+ * device token (or a web sign-in token). It checks the plan and credits in Convex, forwards the call
  * to OpenRouter with our one server-side key, streams the answer back, and
  * charges OpenRouter's cost × 1.25 in credits when the call ends.
  *
@@ -14,6 +14,7 @@ import { api } from "@titan117/backend/api";
 import type { Id } from "@titan117/backend/dataModel";
 import { isErrorCode } from "@titan117/shared";
 import { ConvexHttpClient } from "convex/browser";
+import { createHash } from "node:crypto";
 import { ConvexError } from "convex/values";
 import { after } from "next/server";
 
@@ -81,12 +82,23 @@ export async function POST(request: Request) {
   }
   if (typeof body.model !== "string" || !body.model) return error(400, "BAD_REQUEST", "No model given.");
 
-  // Open the call in Convex as the user (their token) and as our server (the secret).
-  const asUser = new ConvexHttpClient(cfg.convexUrl);
-  asUser.setAuth(token);
+  // Open the call in Convex: the desktop app signs with its device token (we
+  // send only its SHA-256); the web signs with the user's Clerk token. Either
+  // way our server's secret goes too.
   let callId: Id<"proxyCalls">;
   try {
-    ({ callId } = await asUser.mutation(api.proxy.begin, { proxySecret: cfg.proxySecret, model: body.model }));
+    if (token.startsWith("t117d_")) {
+      const tokenHash = createHash("sha256").update(token).digest("hex");
+      ({ callId } = await new ConvexHttpClient(cfg.convexUrl).mutation(api.proxy.beginForDevice, {
+        proxySecret: cfg.proxySecret,
+        tokenHash,
+        model: body.model,
+      }));
+    } else {
+      const asUser = new ConvexHttpClient(cfg.convexUrl);
+      asUser.setAuth(token);
+      ({ callId } = await asUser.mutation(api.proxy.begin, { proxySecret: cfg.proxySecret, model: body.model }));
+    }
   } catch (e) {
     const code = e instanceof ConvexError && isErrorCode(e.data) ? e.data : null;
     if (code && STATUS[code]) return error(STATUS[code], code, code);

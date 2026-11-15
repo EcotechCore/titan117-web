@@ -25,6 +25,8 @@ export const ERROR_CODES = [
   "INSUFFICIENT_CREDITS",
   // A second subscription while one is active; changes go through the billing portal.
   "ALREADY_SUBSCRIBED",
+  // Signing in one more device than the plan allows; the user removes one on the account page.
+  "DEVICE_LIMIT",
 ] as const;
 
 /**
@@ -74,3 +76,26 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 export function isErrorCode(value: unknown): value is ErrorCode {
   return typeof value === "string" && (ERROR_CODES as readonly string[]).includes(value);
 }
+
+/**
+ * The licence lease (decisions §17): what our server signs for one device.
+ * The desktop app checks the signature with the public key built into it and
+ * locks when `exp` has passed or `plan` is null.
+ */
+export interface LeasePayload {
+  v: 1;
+  /** Our user id. */
+  sub: string;
+  /** The device this lease is for. */
+  dev: string;
+  /** null: no active plan, so the app locks at once. */
+  plan: AnyPlanId | null;
+  devices: number;
+  /** Server time when signed, ms; the app never accepts a clock earlier than this. */
+  iat: number;
+  /** Expiry, ms: 14 days from signing while the plan renews, never past a plan that ends. */
+  exp: number;
+}
+
+/** Days the app keeps working offline on one lease (decisions §17). */
+export const LEASE_OFFLINE_DAYS = 14;

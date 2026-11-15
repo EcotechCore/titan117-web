@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money, started 15 Nov 2026. **Next step:** desktop sign-in, the licence lease and lock screen, own API keys, the website and legal pages, and account deletion.
+**Now:** phase 2, Accounts and money, started 15 Nov 2026. **Next step:** your own API keys in the keychain, then an ended subscription shown locking the app, the website and legal pages, and account deletion.
 
 ## Phases
 
@@ -31,6 +31,14 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2: desktop sign-in, the licence lease and the lock screen
+
+Built in `titan117-web` and `titan117-desktop` on `phase-2-desktop-sign-in` (decisions §39). **Seen working in the real app on Windows:** the app opened on the lock screen, signed in through the browser, unlocked on the Starter plan, and a task with a cloud model (three model steps and three file tools) was charged 1 credit per step through the proxy with the device token. Before that, a stand-in for the app ran the whole flow against the dev servers: the lease verified with the app's built-in public key, a reused code was refused, renewal worked, and signing the device out on the account page stopped it.
+
+- **Web and Convex:** `/desktop/sign-in` (the user confirms; the one-time code goes back to `127.0.0.1` only), `devices.ts` (codes kept hashed, five minutes, used once, PKCE S256; the plan's device limit; list and sign-out for the account page), `/desktop/exchange` and `/desktop/lease` in `http.ts`, the lease signed with ECDSA P-256 (`LEASE_PRIVATE_KEY` only in Convex), and the credits proxy accepting device tokens (`proxy.beginForDevice`, sent only the token's hash). Account page: a Devices section with Sign out. Table `deviceSignIns`; `devices` gains the token hash, times and app version (decisions §11). 85 tests.
+- **Desktop:** see that repo's log.
+- **Phase 2's check:** a test purchase adds credits ✓ (Stripe sandbox), a task deducts them ✓ (real app). Still to show: an API key in the keychain works (own keys, next), and an ended subscription locks the app.
 
 ### 15 Nov 2026 · Phase 2: the credits proxy
 
