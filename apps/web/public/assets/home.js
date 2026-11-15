@@ -1,0 +1,316 @@
+/* Titan117 home page behaviour. Ours. */
+// Titan117 homepage only: the product stage, agents, industries and the scroll-lit statement.
+// Shared helpers ($, $$, ic, reduced) come from assets/site.js, which loads first.
+
+/* ---------- product stage ---------- */
+// agents in the sidebar, grouped by team; each has its own eye colour, shown while it works
+const agentDefs = {
+  titan: ["Titan", "sparkles", "#ff6347"],
+  folder: ["Folder agent", "folder", "#2f6fed"],
+  recorder: ["Recorder", "record", "#14a37f"],
+  watcher: ["Web watcher", "eye", "#8b5cf6"],
+  app: ["App builder", "code", "#f6a825"],
+  code: ["Code builder", "terminal", "#0db5ed"],
+  qa: ["QA and tests", "bug", "#2a9a30"],
+  marketing: ["Marketing", "megaphone", "#ec4899"],
+  seo: ["SEO agent", "chart", "#7c3aed"],
+  video: ["Promo video", "video", "#e24b4a"],
+};
+const teams = [["Operations", ["folder", "recorder", "watcher"]], ["Build", ["app", "code", "qa"]], ["Growth", ["marketing", "seo", "video"]]];
+const idleInk = "#b4b4bb";
+
+const scenes = [
+  {
+    agent: "titan", title: "Titan · Invoice report", model: "Qwen 7B · local",
+    work: { titan: "approval", watcher: "working" },
+    prompt: "Make an Excel report from this month's invoices folder, flag anything overdue, and send it to me on Telegram.",
+    steps: [["done", "Read 42 invoices in /Invoices/March", "6s"], ["done", "Computed totals and due dates", "2s"], ["done", "Flagged 3 overdue clients", "1s"], ["run", "Waiting for your approval", ""]],
+    approve: ["Send the report on Telegram?", "invoices-march.xlsx to your linked Telegram. Nothing else leaves the laptop."],
+    stats: [["Model", "Qwen 7B · local"], ["Cost", "0 credits"]], big: "42 invoices", bar: 75, out: ["file", "invoices-march.xlsx"],
+    uses: [["brain", "Memory: clients"], ["send", "Telegram"], ["sparkles", "Saved as a skill"]],
+  },
+  {
+    agent: "app", title: "App builder · Booking app", model: "DeepSeek V3 · cloud",
+    work: { app: "approval", qa: "working", seo: "working" },
+    prompt: "Build a booking web app for my salon: services, staff, time slots and a reminder email.",
+    steps: [["done", "Plan approved · 6 pages, 4 tables", "1m"], ["done", "Coder wrote 38 files", "4m"], ["done", "QA: tests pass in 3 browsers", "52s"], ["run", "Publish to salon-booking.app?", ""]],
+    approve: ["Publish the web app?", "Version 3 is ready, SEO built in. Hosting costs about 40 credits a month."],
+    stats: [["Planner", "Strong cloud model"], ["Coder", "DeepSeek · 212 credits"]], big: "v3 ready", bar: 90, out: ["globe", "Preview on localhost:5173"],
+    uses: [["layers", "Booking template"], ["palette", "Brand kit"], ["git", "Export to GitHub"]],
+  },
+  {
+    agent: "folder", title: "Folder agent · Contracts", model: "Qwen 7B · local",
+    work: { folder: "working" },
+    prompt: "Which supplier contracts renew automatically before March, and what is the notice period?",
+    steps: [["done", "Indexed /Contracts · 214 files", "38s"], ["done", "OCR on 31 scanned PDFs", "1m"], ["done", "Found 7 matching clauses", "3s"], ["done", "Answer with file and page", ""]],
+    approve: null,
+    stats: [["Folder", "Local models only"], ["Cost", "0 credits"]], big: "7 contracts", bar: 100, out: ["file", "Nord_supply_2024.pdf · p. 4, §9.2"],
+    uses: [["lock", "Never leaves the laptop"], ["brain", "Memory scope: legal"], ["file", "OCR"]],
+  },
+  {
+    agent: "recorder", title: "Recorder · Weekly stock export", model: "Qwen 7B · local",
+    work: { recorder: "working", watcher: "working" },
+    prompt: "Every Monday at 8:00, log in to the supplier portal, export stock levels and update the inventory sheet.",
+    steps: [["done", "Recorded 9 browser steps", ""], ["done", "Login from OS keychain", "1s"], ["done", "Paused for your 2FA code", ""], ["run", "Next run · Monday 08:00", ""]],
+    approve: null,
+    stats: [["Schedule", "Every Monday"], ["Last run", "Succeeded"]], big: "9 steps", bar: 60, out: ["calendar", "stock-levels.xlsx updated"],
+    uses: [["clock", "Scheduler"], ["key", "Keychain login"], ["sparkles", "Saved as a skill"]],
+  },
+  {
+    agent: "marketing", title: "Marketing · March calendar", model: "Cloud · auto",
+    work: { marketing: "approval", video: "working", seo: "working" },
+    prompt: "Plan a month of posts for LinkedIn and Instagram from our brand kit, around the spring launch.",
+    steps: [["done", "Read brand kit from memory", "1s"], ["done", "Planned 18 posts around 3 dates", "22s"], ["done", "Promo video: 30s cut from the site", "2m"], ["run", "Schedule 18 posts?", ""]],
+    approve: ["Add 18 posting reminders?", "LinkedIn × 8, Instagram × 10, ready to post. Each reminder copies the post and opens the platform."],
+    stats: [["Model", "Cloud · 96 credits"], ["Brand kit", "Applied"]], big: "18 posts", bar: 85, out: ["calendar", "March content calendar"],
+    uses: [["palette", "Brand kit"], ["video", "Promo video"], ["calendar", "Posting reminders"]],
+  },
+  {
+    agent: "code", title: "Code builder · Checkout fix", model: "Qwen Coder · cloud",
+    work: { code: "approval", qa: "working" },
+    prompt: "Fix the wrong total on the checkout page, add a test for it, and open a pull request.",
+    steps: [["done", "Read the repo · 214 files", "9s"], ["done", "Plan: 3 files to change", "4s"], ["done", "QA: 48 of 48 tests pass", "41s"], ["run", "Open the pull request?", ""]],
+    approve: ["Open a pull request?", "fix/checkout-total into main · 3 files, +46 −12. The QA agent added 2 tests."],
+    stats: [["Model", "Qwen Coder · cloud"], ["Cost", "38 credits"]], big: "+46 −12", bar: 90, out: ["git", "Diff ready for review"],
+    uses: [["git", "GitHub"], ["terminal", "Sandboxed shell"], ["brain", "Project memory"]],
+  },
+];
+
+// sidebar: Titan, then each team; the eyes are mounted once and only change state per tab
+const agentBots = {};
+$("#app-agents").innerHTML =
+  `<div class="ag" data-ag="titan"><svg class="bot" aria-hidden="true"></svg>Titan<span class="ag-st"></span></div>` +
+  teams.map(([team, ids]) => `<div class="team-label">${team}<span>${ids.length}</span></div>` +
+    ids.map((id) => `<div class="ag" data-ag="${id}"><svg class="bot" aria-hidden="true"></svg>${agentDefs[id][0]}<span class="ag-st"></span></div>`).join("")).join("");
+if (window.TitanBot) $$("#app-agents .ag").forEach((row) => {
+  agentBots[row.dataset.ag] = TitanBot.mount($("svg", row), { expression: "colere", color: idleInk, follow: false, still: reduced });
+});
+
+function updateSide(s) {
+  $$("#app-agents .ag").forEach((row) => {
+    const id = row.dataset.ag, w = s.work[id], st = $(".ag-st", row), bot = agentBots[id];
+    row.classList.toggle("on", id === s.agent);
+    st.className = "ag-st" + (w ? " " + w : "");
+    st.textContent = w === "working" ? "Working" : w === "approval" ? "Needs you" : "";
+    if (bot) {
+      bot.setColor(w ? agentDefs[id][2] : idleInk);
+      bot.setState(w === "working" ? "thinking" : w === "approval" ? "notify" : "idle");
+    }
+  });
+  $("#app-approvals").textContent = Object.values(s.work).filter((w) => w === "approval").length || "";
+  $("#app-approvals").style.display = $("#app-approvals").textContent ? "" : "none";
+}
+
+// the black activity log in the inspector: one line per step, the running one in tomato
+function logHTML(s) {
+  return s.steps.map(([st, t], k) =>
+    `<div><em>09:${String(12 + k * 2).padStart(2, "0")}</em> ${st === "done" ? "✓" : "<b>●</b>"} ${t.toLowerCase()}</div>`).join("");
+}
+
+function sceneHTML(s) {
+  const [agent, task] = s.title.split(" · ");
+  const helpers = Object.keys(s.work).filter((id) => id !== s.agent).map((id) => agentDefs[id][0]);
+  const steps = s.steps.map(([st, t, time], k) =>
+    `<div class="step ${st}" style="animation-delay:${k * 0.18}s"><i>${st === "done" ? "✓" : "•"}</i>${t}<small>${time}</small></div>`).join("");
+  const approve = s.approve
+    ? `<div class="approve"><b>${s.approve[0]}</b><p>${s.approve[1]}</p><div class="approve-row"><span>Approve</span><span>Review</span><span>Deny</span></div></div>`
+    : `<div class="out">${ic(s.out[0])}${s.out[1]}</div>`;
+  return `
+    <div class="app-top"><div class="app-title">${task}<small>${agent}${helpers.length ? " with " + helpers.join(" and ") : ""} · started just now</small></div>
+      <div class="app-chips"><span class="chip${s.model.includes("local") ? " on" : ""}">Local</span><span class="chip${s.model.includes("local") ? "" : " on"}">Cloud</span></div></div>
+    <div class="app-prompt">${s.prompt}</div>
+    <div class="app-grid">
+      <div class="panel"><h5>${ic(agentDefs[s.agent][1], "width:13px;height:13px")}${agent}</h5>${steps}${approve}</div>
+      <div class="panel soft"><h5>Task</h5>
+        <div class="big">${s.big}</div>
+        <div class="bar"><div style="width:${s.bar}%"></div></div>
+        ${s.stats.map(([k, v]) => `<div class="kv">${k}<b>${v}</b></div>`).join("")}
+        <div class="uses">${s.uses.map(([i, t]) => `<span>${ic(i)}${t}</span>`).join("")}</div>
+        ${s.approve ? `<div class="out">${ic(s.out[0])}${s.out[1]}</div>` : ""}
+        <div class="term">${logHTML(s)}</div>
+      </div>
+    </div>
+    <div class="composer">Ask Titan anything…<span class="chip on">${s.model}</span><span class="send">${ic("arrow-up")}</span></div>`;
+}
+
+const tabs = $$(".tab");
+let tabIndex = 0, tabTimer;
+function showTab(i, user) {
+  tabIndex = i;
+  tabs.forEach((t, k) => {
+    t.setAttribute("aria-selected", k === i);
+    t.tabIndex = k === i ? 0 : -1;
+  });
+  // restart the progress bar
+  const sel = tabs[i]; sel.style.animation = "none"; void sel.offsetWidth; sel.style.animation = "";
+  updateSide(scenes[i]);
+  const main = $("#app-main");
+  main.innerHTML = sceneHTML(scenes[i]);
+  $("#app-tab").innerHTML = `${ic(agentDefs[scenes[i].agent][1])}${scenes[i].title.split(" · ")[1]}`;
+  main.classList.remove("fade-swap"); void main.offsetWidth; main.classList.add("fade-swap");
+  if (user) { $(".tabs").classList.add("paused"); clearInterval(tabTimer); }
+}
+tabs.forEach((t, k) => {
+  t.addEventListener("click", () => showTab(k, true));
+  t.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const n = (k + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+    showTab(n, true); tabs[n].focus();
+  });
+});
+showTab(0);
+if (!reduced) tabTimer = setInterval(() => showTab((tabIndex + 1) % tabs.length), 6000);
+else $(".tabs").classList.add("paused");
+
+/* features block window */
+$("#feat-main").innerHTML = `
+  <div class="app-top"><div class="app-title">Chat</div></div>
+  <div class="app-prompt"><span>YOU</span>Sort my Downloads folder and convert the videos in it to MP4.</div>
+  <div class="panel"><h5>Titan</h5>
+    <div class="step done" style="animation-delay:.1s"><i>✓</i>Moved 212 files into 6 folders</div>
+    <div class="step done" style="animation-delay:.3s"><i>✓</i>Converted 14 videos to MP4</div>
+    <div class="step done" style="animation-delay:.5s"><i>✓</i>Saved the method as a skill</div>
+    <div class="out">${ic("file")}Downloads/Videos · 14 MP4 files</div>
+  </div>`;
+
+/* feature accordion */
+$$("#feat-list .feat-item").forEach((item) => {
+  $("button", item).addEventListener("click", () => {
+    $$("#feat-list .feat-item").forEach((o) => {
+      const on = o === item;
+      o.classList.toggle("open", on);
+      $("button", o).setAttribute("aria-expanded", on);
+    });
+  });
+});
+
+/* ---------- agents ---------- */
+const agents = [
+  ["sparkles", "Titan", "General assistant", "The default agent. Files, a sandboxed shell, the browser, scripts and your tools through MCP. Does one-off tasks itself and hands big jobs to the specialists."],
+  ["code", "App builder", "Web, mobile, desktop", "Turns a prompt into a web, mobile or desktop app. Plans, builds, tests and previews it on your laptop, then publishes."],
+  ["terminal", "Code builder", "For developers", "Works in any repo on your laptop: plans, edits as diffs, runs tests, commits and opens pull requests."],
+  ["folder", "Folder agent", "Your documents", "Answers questions about your PDFs, Word, Excel and email, citing the file, page and passage."],
+  ["bug", "QA and tests", "Websites and apps", "Explores your site, writes tests that run without AI, and checks accessibility and speed."],
+  ["video", "Promo video", "Website to video", "Reads your website and makes a promo video with a script, voiceover and your brand colours."],
+  ["chart", "SEO agent", "Search visibility", "Audits your site, fixes what it can, tracks rankings and writes content you approve."],
+  ["megaphone", "Marketing", "Posts and campaigns", "Social posts, newsletters and a content calendar, all from your brand kit."],
+  ["eye", "Web watcher", "Changes that matter", "Checks sources on a schedule and tells you what changed that matters to your company."],
+  ["record", "Recorder", "Repeat it for me", "Record browser steps once and replay them on a schedule, with logins from your keychain."],
+];
+const agentSlugs = ["titan", "app-builder", "code-builder", "folder-agent", "qa", "promo-video", "seo", "marketing", "web-watcher", "recorder"];
+$("#agent-grid").innerHTML = agents.map(([i, n, tag, d], k) => `
+  <a class="agent${k === 0 ? " lead-agent" : ""} rv" href="${link(`agents/${agentSlugs[k]}/`)}">
+    <div class="agent-top"><span class="agent-ic">${ic(i)}</span>${k === 0 ? "" : `<span class="eyebrow">${String(k).padStart(2, "0")}</span>`}</div>
+    <div><span class="eyebrow">${tag}</span><h3>${n}</h3></div>
+    <p>${d}</p>
+  </a>`).join("");
+
+/* ---------- industries ---------- */
+const industries = [
+  { id: "retail", icon: "store", name: "Retail and e-commerce",
+    ask: "“Write product descriptions for the 60 new items, update the shop, and plan the posts for the spring sale.”",
+    pitch: "Run the shop, the listings and the marketing without hiring a team.",
+    flow: ["Reads the supplier price list", "Writes descriptions and photos alt text", "Updates the shop after your OK"],
+    uses: ["Product descriptions and SEO", "Stock and order reports", "A month of social posts", "Promo video from your site"],
+    agents: ["Titan", "Marketing", "SEO agent"] },
+  { id: "hospitality", icon: "cup", name: "Restaurants and cafés",
+    ask: "“Update the menu on the website, post the weekend special, and reply to this week's reviews.”",
+    pitch: "Menus, bookings and reviews handled between services.",
+    flow: ["Reads the new menu photo", "Updates the site and Google profile", "Drafts review replies for approval"],
+    uses: ["Booking app for your site", "Review replies in your voice", "Supplier orders and costs", "Local SEO and Google profile"],
+    agents: ["App builder", "Marketing", "SEO agent"] },
+  { id: "accounting", icon: "calc", name: "Accounting and bookkeeping",
+    ask: "“Match this month's bank statement to the invoices folder and list what's missing per client.”",
+    pitch: "Real calculations on your spreadsheets, never guesses, and client files that never leave the office.",
+    flow: ["Reads statements and invoices locally", "Computes matches in the spreadsheet", "Lists gaps per client with sources"],
+    uses: ["Reconcile statements", "Client document requests", "Tax law change alerts", "Excel reports from PDFs"],
+    agents: ["Folder agent", "Web watcher", "Titan"] },
+  { id: "legal", icon: "scale", name: "Law firms",
+    ask: "“Which of our supplier contracts renew automatically before March, and what's the notice period?”",
+    pitch: "Search every contract and file with answers that cite the page, on local models for confidential folders.",
+    flow: ["Indexes the matter folder with OCR", "Finds clauses across documents", "Answers with file, page and passage"],
+    uses: ["Clause search across contracts", "New legislation summaries", "First drafts from templates", "Deadline tracking"],
+    agents: ["Folder agent", "Web watcher", "Titan"] },
+  { id: "realestate", icon: "home", name: "Real estate agencies",
+    ask: "“Turn these 12 listing photos and notes into listings, a video tour and posts for this week.”",
+    pitch: "Listings, videos and follow-ups out the door the same day.",
+    flow: ["Reads photos and agent notes", "Writes listings and a short video", "Gets posts ready, with reminders"],
+    uses: ["Listing descriptions", "Property promo videos", "Lead follow-up emails", "Portal uploads, recorded once"],
+    agents: ["Promo video", "Marketing", "Recorder"] },
+  { id: "agencies", icon: "palette", name: "Agencies and studios",
+    ask: "“Audit the client's site, fix the SEO issues on our build, and send me the report for Monday.”",
+    pitch: "More client work with the same people: build, test, rank and report.",
+    flow: ["Crawls the client site", "Fixes issues through the code builder", "Writes a client-ready report"],
+    uses: ["Client sites and apps", "SEO audits and fixes", "QA reports and tests", "Campaign content"],
+    agents: ["App builder", "SEO agent", "QA and tests"] },
+  { id: "trades", icon: "hammer", name: "Trades and construction",
+    ask: "“Make a quote from these site notes and photos, and remind the client on Friday if they haven't replied.”",
+    pitch: "Quotes, schedules and paperwork done from your phone, between jobs.",
+    flow: ["Reads notes and photos from chat", "Builds the quote from your price list", "Sends after your OK, then follows up"],
+    uses: ["Quotes from site notes", "Job scheduling", "Permit and regulation alerts", "A simple jobs app"],
+    agents: ["Titan", "App builder", "Web watcher"] },
+  { id: "wholesale", icon: "box", name: "Wholesale and manufacturing",
+    ask: "“Every Monday, export stock from the supplier portal and flag anything below two weeks of cover.”",
+    pitch: "Stock, orders and supplier portals on autopilot, with you approving what matters.",
+    flow: ["Logs in with keychain credentials", "Exports and merges stock data", "Flags low stock and drafts orders"],
+    uses: ["Supplier portal exports", "Inventory and CRM apps", "Order confirmations", "Price list updates"],
+    agents: ["Recorder", "App builder", "Titan"] },
+];
+
+let indIndex = 0, indTimer;
+$("#ind-tabs").innerHTML = industries.map((d, k) =>
+  `<button class="ind-tab" role="tab" aria-selected="${k === 0}" data-i="${k}">${ic(d.icon)}${d.name}</button>`).join("");
+$("#ind-dots").innerHTML = industries.map((d, k) =>
+  `<button aria-label="${d.name}" data-i="${k}"></button>`).join("");
+
+function showInd(i, user) {
+  indIndex = (i + industries.length) % industries.length;
+  const d = industries[indIndex];
+  $$("#ind-tabs .ind-tab").forEach((t, k) => t.setAttribute("aria-selected", k === indIndex));
+  $$("#ind-dots button").forEach((t, k) => t.setAttribute("aria-current", k === indIndex));
+  const slide = $("#ind-slide");
+  slide.innerHTML = `
+    <div class="ind-vis">
+      <div class="ind-card">
+        <div class="ind-card-top"><span class="ind-card-ic">${ic(d.icon, "width:22px;height:22px")}</span><div><b>${d.name}</b><small>Example workflow</small></div></div>
+        <div class="ind-flow">${d.flow.map((f, k) => `<div style="animation-delay:${k * 0.2}s"><span>${k + 1}</span>${f}</div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="ind-text">
+      <p class="ind-quote">${d.ask}</p>
+      <p>${d.pitch}</p>
+      <ul class="ind-uses">${d.uses.map((u) => `<li>${ic("check")}${u}</li>`).join("")}</ul>
+      <div class="ind-meta">
+        <div class="ind-agents">${d.agents.map((a) => `<span>${a}</span>`).join("")}</div>
+        <div class="ind-nav">
+          <a class="link-more" href="${link(`industries/${d.id}/`)}">Explore ${ic("arrow")}</a>
+          <button class="icon-btn" data-step="-1" aria-label="Previous industry">${ic("left")}</button>
+          <button class="icon-btn" data-step="1" aria-label="Next industry">${ic("right")}</button>
+        </div>
+      </div>
+    </div>`;
+  slide.classList.remove("fade-swap"); void slide.offsetWidth; slide.classList.add("fade-swap");
+  $$("[data-step]", slide).forEach((b) => b.addEventListener("click", () => showInd(indIndex + +b.dataset.step, true)));
+  if (user) clearInterval(indTimer);
+}
+$$("#ind-tabs .ind-tab, #ind-dots button").forEach((b) => b.addEventListener("click", () => showInd(+b.dataset.i, true)));
+showInd(0);
+if (!reduced) indTimer = setInterval(() => showInd(indIndex + 1), 8000);
+
+/* word-by-word statement */
+const reveal = $("#reveal");
+const highlight = new Set(["whole", "team", "own", "laptop,", "asks"]);
+reveal.innerHTML = reveal.textContent.trim().split(/\s+/)
+  .map((w) => `<span class="w${highlight.has(w) ? " hl" : ""}">${w}</span>`).join(" ");
+const words = $$(".w", reveal);
+function litWords() {
+  if (reduced) return;
+  const r = reveal.getBoundingClientRect();
+  const p = Math.min(1, Math.max(0, (innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.35)));
+  const n = Math.round(p * words.length);
+  words.forEach((w, k) => w.classList.toggle("lit", k < n));
+}
+
+addEventListener("scroll", litWords, { passive: true });
+litWords();
+if (reduced) words.forEach((w) => w.classList.add("lit"));

@@ -1,4 +1,6 @@
-# Titan117 website
+# Titan117 website (reference copy)
+
+> **Moved, 15 Nov 2026 (decisions §41):** the website now lives in the web app, in `apps/web/app/(site)`, with its content in `apps/web/content/site.ts`. Edit it there. This folder stays as a reference copy, and **[design.md](design.md) is still the website's design rules**. Nothing here is built or served any more.
 
 The Titan117 website: home, agents, industries, pricing, FAQ and Learn. The layout follows the Atomist Next.js/shadcn template (https://atomist-nextjs-shadcn.vercel.app/), filled with Titan117's own product content. This is the one website design we keep (decisions §18); the earlier mockups were removed on 7 Nov 2026 and stay in git history. Original code and copy; no template assets copied.
 

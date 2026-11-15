@@ -47,6 +47,17 @@ function siteUrl() {
   return (process.env.SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
+/**
+ * The confirmation of that waiver, which EU law requires on a durable medium:
+ * printed on every invoice, which Stripe attaches as a PDF to the receipt email
+ * ("Successful payments" emails on in Stripe's settings). Customer default
+ * footer for plan invoices; the invoice's own footer for top-ups.
+ */
+export const WAIVER_FOOTER =
+  "At checkout you asked for the Titan117 service to start at once and confirmed that you lose your 14-day right " +
+  "of withdrawal once it has started. Plans and credits are not refunded (Terms of Service, section 6: " +
+  "https://titan117.com/legal/terms#payments). Ecotechcore, titan117.com.";
+
 function flag(name: string) {
   return process.env[name] === "on";
 }
@@ -128,8 +139,13 @@ async function ensureCustomer(
   userId: Id<"users">,
   existing: string | null,
 ): Promise<string> {
-  if (existing) return existing;
-  const customer = await stripe<{ id: string }>("POST", "/customers", { metadata: { userId } });
+  // With the waiver on, every invoice of this customer carries its confirmation.
+  const invoiceSettings = flag("STRIPE_REQUIRE_TERMS") ? { invoice_settings: { footer: WAIVER_FOOTER } } : {};
+  if (existing) {
+    if (flag("STRIPE_REQUIRE_TERMS")) await stripe("POST", `/customers/${existing}`, invoiceSettings);
+    return existing;
+  }
+  const customer = await stripe<{ id: string }>("POST", "/customers", { metadata: { userId }, ...invoiceSettings });
   return await ctx.runMutation(internal.billing.linkCustomer, { userId, customerId: customer.id });
 }
 
@@ -183,7 +199,10 @@ export const topUp = userAction({
       client_reference_id: ctx.userId,
       line_items: [{ price: await priceFor(topupLookupKey(pack as TopupId)), quantity: 1 }],
       metadata: { userId: ctx.userId, topup: pack },
-      invoice_creation: { enabled: true },
+      invoice_creation: {
+        enabled: true,
+        ...(flag("STRIPE_REQUIRE_TERMS") ? { invoice_data: { footer: WAIVER_FOOTER } } : {}),
+      },
       success_url: `${siteUrl()}/account?topup=success`,
       cancel_url: `${siteUrl()}/account?topup=cancelled`,
       ...checkoutExtras(),
