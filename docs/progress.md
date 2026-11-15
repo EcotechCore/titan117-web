@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Decision: commands on Windows run without an OS sandbox
+
+The owner chose option A for Windows (decisions §43.1): commands run with approvals, the always-ask list and a scrubbed environment, without an OS sandbox, as Claude Code does on Windows. A restricted Windows user (Codex's way) is not planned before the beta.
+
 ### 15 Nov 2026 · Phase 3: Titan and memory (shared docs)
 
 Phase 3 is built in `titan117-desktop` on `phase-3-titan` and its check is met there (details in that repo's log): 13 of 13 with two real models, the injection suite passing in CI. Shared docs on `phase-3-docs`, synced to the desktop and portal repos:
