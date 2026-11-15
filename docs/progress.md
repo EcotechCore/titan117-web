@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Phase 5: setup and health (shared docs)
+
+Decisions §46 (the first-launch wizard, the checklist, the health check, disk thresholds) and its line on the owner checklist. Built in `titan117-desktop` on `phase-5-setup`; nothing changed in this repo's code.
+
 ### 15 Nov 2026 · Phase 5: error reports (Convex and web app)
 
 Started at the owner's request before phase 4's check is run (on the owner checklist). Built on `phase-5-error-reports`, branched from `phase-4`. Decisions §45, **to be confirmed**.
