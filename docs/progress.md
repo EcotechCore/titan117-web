@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money, started 15 Nov 2026. **Next step:** your own API keys in the keychain, then an ended subscription shown locking the app, the website and legal pages, and account deletion.
+**Now:** phase 2, Accounts and money, started 15 Nov 2026; all four parts of its check are met. **Next step:** the website and legal pages, then account deletion, which finish phase 2's build list.
 
 ## Phases
 
@@ -31,6 +31,12 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2: an ended plan locks the app; your own API keys
+
+- **An ended subscription locks the app ✓**, seen on Windows: the owner cancelled the sandbox subscription at once; Stripe's `customer.subscription.deleted` reached Convex, and the desktop app's next lease came back with no plan and locked. The running app now renews its lease every 30 minutes and on focus, not every 6 hours (decisions §40).
+- **Your own API keys** (desktop repo, decisions §40): OpenRouter, Anthropic, OpenAI and Google keys in the OS keychain, checked before saving; calls go straight to each provider. **Seen working:** with the owner's own OpenRouter key saved, a task with `openai/gpt-6-luna` ran three model steps and the credits proxy recorded no calls. Each model step now says how it was paid.
+- **Phase 2's check:** test purchase adds credits ✓, a task deducts them ✓, an API key in the keychain works ✓, an ended subscription locks the app ✓. Still in phase 2: the website and legal pages, and account deletion.
 
 ### 15 Nov 2026 · Phase 2: desktop sign-in, the licence lease and the lock screen
 
