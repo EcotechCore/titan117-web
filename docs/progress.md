@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Phase 5: keep awake, checkpoints and notifications (shared docs)
+
+Decisions §48 and its line on the owner checklist. Built in `titan117-desktop` on `phase-5-awake`; nothing changed in this repo's code.
+
 ### 15 Nov 2026 · Phase 5: offline (shared docs)
 
 Decisions §47 (how the app notices it's offline, cloud tasks stopping cleanly, what waits) and two lines on the owner checklist. Built in `titan117-desktop` on `phase-5-offline`; nothing changed in this repo's code.
