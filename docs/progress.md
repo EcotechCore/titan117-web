@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money, is done (15 Nov 2026). **Next step:** phase 3, Titan and memory, when you say so.
+**Now:** phase 3, Titan and memory, is built and its check is met (15 Nov 2026), on `phase-3-titan` (desktop) and `phase-3-docs` (web), waiting for the owner's review. **Next step:** the owner confirms decisions §43, tries the microphone and a real connector, and merges; then phase 4, Web search and artifacts.
 
 ## Phases
 
@@ -11,7 +11,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 0 | Setup | Done | 9 Nov 2026 | 14 Nov 2026 |
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
 | 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
-| 3 | Titan and memory | Not started | | |
+| 3 | Titan and memory | Check met, owner's review | 15 Nov 2026 | |
 | 4 | Web search and artifacts | Not started | | |
 | 5 | Install and setup | Not started | | |
 | 6 | Folder agent | Not started | | |
@@ -31,6 +31,14 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 3: Titan and memory (shared docs)
+
+Phase 3 is built in `titan117-desktop` on `phase-3-titan` and its check is met there (details in that repo's log): 13 of 13 with two real models, the injection suite passing in CI. Shared docs on `phase-3-docs`, synced to the desktop and portal repos:
+
+- **Decisions §43** (to be confirmed): the shell sandbox (Seatbelt on macOS; approvals and a scrubbed environment on Windows, revisited before the beta) closes open decision 2; which commands ask; scripts and the local tool API; the browser on the laptop's Edge or Chrome; the network policy with fingerprints of private passages; memory scopes; skills as files; records of past tasks; MCP connectors; speech with Whisper and the system's voices (Kokoro's phonemizer is GPL, so not yet).
+- `external-services.md`: rows for MCP connectors and the user's own browser; the Whisper model under Hugging Face. `open-source-references.md`: Playwright, the MCP SDK, transformers.js, Kokoro (not used) and what was taken from Codex. `v1-scope.md`: the shell sandbox is decided.
+- Nothing changed in the web app or Convex.
 
 ### 15 Nov 2026 · Phase 2 done
 
