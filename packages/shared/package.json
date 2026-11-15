@@ -1,6 +1,6 @@
 {
   "name": "@titan117/shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Titan117's command protocol, shared types and validation schemas (architecture §2).",
   "type": "module",
   "main": "./dist/index.js",

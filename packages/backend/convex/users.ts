@@ -13,6 +13,7 @@ import { v } from "convex/values";
 
 import { internalMutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import { removeBilling } from "./lib/billing";
 import { identityMutation, userQuery } from "./lib/functions";
 
 async function findByClerkId(ctx: MutationCtx, clerkId: string) {
@@ -57,17 +58,13 @@ export const deleteFromClerk = internalMutation({
   handler: async (ctx, { clerkId }) => {
     const user = await findByClerkId(ctx, clerkId);
     if (!user) return;
-    const owned = [
-      ...(await ctx.db
-        .query("entitlements")
-        .withIndex("by_user", (q) => q.eq("userId", user._id))
-        .collect()),
-      ...(await ctx.db
-        .query("devices")
-        .withIndex("by_user", (q) => q.eq("userId", user._id))
-        .collect()),
-    ];
-    for (const row of owned) await ctx.db.delete(row._id);
+    // Billing rows and credits; the Stripe customer itself goes with account deletion (phase 2).
+    await removeBilling(ctx, user._id);
+    const devices = await ctx.db
+      .query("devices")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    for (const row of devices) await ctx.db.delete(row._id);
     await ctx.db.delete(user._id);
   },
 });

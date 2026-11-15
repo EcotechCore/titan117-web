@@ -13,13 +13,15 @@
 import type { ErrorCode } from "@titan117/shared";
 import { ConvexError, v } from "convex/values";
 import {
+  customAction,
   customCtx,
   customMutation,
   customQuery,
 } from "convex-helpers/server/customFunctions";
 
 import type { Id } from "../_generated/dataModel";
-import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
+import { internal } from "../_generated/api";
+import { action, internalQuery, mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -103,6 +105,30 @@ export const userQuery = customQuery(query, customCtx(async (ctx) => ({ user: aw
 export const userMutation = customMutation(
   mutation,
   customCtx(async (ctx) => ({ user: await requireUser(ctx) })),
+);
+
+/** For userAction: actions can't read the database, so they ask through this. */
+export const userIdByClerkId = internalQuery({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) =>
+    (
+      await ctx.db
+        .query("users")
+        .withIndex("by_clerkId", (q) => q.eq("clerkId", clerkId))
+        .unique()
+    )?._id ?? null,
+});
+
+/** A signed-in user, in an action (for calls to Stripe). Adds `ctx.userId`. */
+export const userAction = customAction(
+  action,
+  customCtx(async (ctx): Promise<{ userId: Id<"users"> }> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) fail("UNAUTHENTICATED");
+    const userId: Id<"users"> | null = await ctx.runQuery(internal.lib.functions.userIdByClerkId, { clerkId: identity.subject });
+    if (!userId) fail("UNAUTHENTICATED");
+    return { userId };
+  }),
 );
 
 /** A user with an active plan. Adds `ctx.user` and `ctx.entitlement`. */
