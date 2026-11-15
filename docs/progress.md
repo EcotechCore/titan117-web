@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 2, Accounts and money: its check is met and everything on its build list is built (15 Nov 2026). **Next step:** the owner confirms phase 2 is done, then phase 3, Titan and memory. Open from phase 2, for the owner before launch: company details on the legal pages, the support, privacy and abuse mailboxes, Stripe's terms address and receipt emails, then `STRIPE_REQUIRE_TERMS`; the lawyer's review of the legal pages; Stripe's written OK for our credits.
+**Now:** phase 2, Accounts and money, is done (15 Nov 2026). **Next step:** phase 3, Titan and memory, when you say so.
 
 ## Phases
 
@@ -10,7 +10,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 |---|---|---|---|---|
 | 0 | Setup | Done | 9 Nov 2026 | 14 Nov 2026 |
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
-| 2 | Accounts and money | Started | 15 Nov 2026 | |
+| 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 3 | Titan and memory | Not started | | |
 | 4 | Web search and artifacts | Not started | | |
 | 5 | Install and setup | Not started | | |
@@ -31,6 +31,13 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 2 done
+
+Phase 2's check is met, seen in the real app on Windows and in Stripe's sandbox: a test purchase added credits; a task deducted them through the credits proxy; the owner's own OpenRouter key worked from the keychain with no credits charged; cancelling the subscription locked the desktop app. Everything on its build list is merged: plans, credits and Stripe; the credits proxy; desktop sign-in, the licence lease and the lock screen; your own API keys; the website and legal pages; account deletion. Closed by the owner the same day.
+
+- **Not checked:** macOS; the final account deletion against the real services (covered by tests); dark mode on the new website pages.
+- **Carried forward, for the owner before launch:** company details on the legal pages; the support, privacy and abuse mailboxes; Stripe's terms address and "Successful payments" emails, then `STRIPE_REQUIRE_TERMS`; the lawyer's review of the legal pages; Stripe's written OK for our credits; production addresses and the production lease key in the desktop build (phase 18).
 
 ### 15 Nov 2026 · Phase 2: deleting an account
 
