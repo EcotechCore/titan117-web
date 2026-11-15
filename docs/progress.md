@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 3, Titan and memory, is built and its check is met (15 Nov 2026), on `phase-3-titan` (desktop) and `phase-3-docs` (web), waiting for the owner's review. **Next step:** the owner confirms decisions §43, tries the microphone and a real connector, and merges; then phase 4, Web search and artifacts.
+**Now:** phase 3, Titan and memory, is done (15 Nov 2026). **Next step:** phase 4, Web search and artifacts, when you say so.
 
 ## Phases
 
@@ -11,7 +11,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 0 | Setup | Done | 9 Nov 2026 | 14 Nov 2026 |
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
 | 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
-| 3 | Titan and memory | Check met, owner's review | 15 Nov 2026 | |
+| 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 4 | Web search and artifacts | Not started | | |
 | 5 | Install and setup | Not started | | |
 | 6 | Folder agent | Not started | | |
@@ -31,6 +31,17 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 3 done
+
+Phase 3's check is met (details in the desktop repo's log): 13 of 13 with two real models and the injection suite in CI. The owner confirmed decisions §43, choosing commands on Windows without an OS sandbox and the system voices (no Kokoro, GPL inside), and closed the phase the same day.
+
+- **Not checked:** macOS; a connector to a real service; Python scripts; the owner's own microphone.
+- **Carried forward:** the one inbox for Gmail, Outlook and IMAP (3.6, waiting on Google's verification and Microsoft's publisher check); SSH and cloud sandboxes (3.15, phase 7); browser downloads (phase 4); a natural voice later, through credits or a local model with no GPL inside; a licence check that looks inside packages, not only at their declared licence.
+
+### 15 Nov 2026 · Decision: the system voices, no Kokoro
+
+Read aloud keeps the operating system's own voices (decisions §43.10). The owner decided against Kokoro: its pronunciation step needs eSpeak NG (GPL-3.0), and Titan117 is a paid product that ships no GPL software, not even as a separate program. A natural voice is revisited later, through credits or a local model with no GPL inside.
 
 ### 15 Nov 2026 · Decision: commands on Windows run without an OS sandbox
 
