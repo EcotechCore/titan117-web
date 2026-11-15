@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 15 Nov 2026 · Owner checklist: Microsoft's runtime fetched, signing needed sooner
+
+The owner allowed fetching Microsoft's Visual C++ redistributable (done in `titan117-desktop`); Smart App Control blocked the unsigned installer, so code signing moves up on the checklist. Nothing changed in this repo's code.
+
 ### 15 Nov 2026 · Phase 5: the Windows installer (shared docs)
 
 Decisions §49 and three lines on the owner checklist (confirm §49, OK to fetch Microsoft's runtime installer, a code signing certificate). Built in `titan117-desktop` on `phase-5-installer`; nothing changed in this repo's code.
