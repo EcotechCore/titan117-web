@@ -13,4 +13,7 @@ crons.daily("sign-in codes", { hourUTC: 3, minuteUTC: 30 }, internal.devices.pru
 // Accounts whose 30 days after asking for deletion are over (account.ts).
 crons.daily("account deletion", { hourUTC: 4, minuteUTC: 0 }, internal.account.purgeDue, {});
 
+// Error reports older than 90 days (errorReports.ts, decisions §22).
+crons.daily("error reports", { hourUTC: 4, minuteUTC: 30 }, internal.errorReports.prune, {});
+
 export default crons;

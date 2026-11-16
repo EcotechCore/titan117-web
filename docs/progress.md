@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 3, Titan and memory, is done (15 Nov 2026). **Next step:** phase 4, Web search and artifacts, when you say so.
+**Now:** phase 4 is built and waiting for the owner's checks; phase 5 has started early at the owner's request, with error reports (15 Nov 2026). **Next step:** more of phase 5 (installer, setup, offline); the owner works through `docs/owner-checklist.md` at the end.
 
 ## Phases
 
@@ -12,8 +12,8 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
 | 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
-| 4 | Web search and artifacts | Not started | | |
-| 5 | Install and setup | Not started | | |
+| 4 | Web search and artifacts | In progress | 15 Nov 2026 | |
+| 5 | Install and setup | In progress | 15 Nov 2026 | |
 | 6 | Folder agent | Not started | | |
 | 7 | Coding engine and code builder | Not started | | |
 | 8 | App builder: web | Not started | | |
@@ -31,6 +31,59 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 15 Nov 2026 · Phase 4 leftovers: comments on shared pages; the owner list rewritten
+
+Built on `phase-4-leftovers`. Decisions §50, **to be confirmed**.
+
+- **Comments (17.14):** the `shareComments` table (row in the data table); `shares.comments` (public, hidden ones left out), `shares.comment` from the page's own route (100 a day per page), and for the owner's app `commentsForDevice`, `replyForDevice` and `hideForDevice`; comments go with the page on unshare, takedown and account deletion. The shared page has a Comments panel. Routes: `POST /api/v1/shares/<id>/comments` and `/comments/owner`.
+- **Tests:** 2 new (the owner replies and hides, others can't, unsharing deletes them; empty, unknown and over-the-limit comments refused); 123 in all. Pushed to the development Convex deployment; the web app builds.
+- **Not checked:** the Comments panel with a live share in a browser (needs a real share: the owner's step 3).
+- **The owner checklist is rewritten** as one ordered list (push, decisions, try it, accounts, legal, vendors, before the beta).
+
+### 15 Nov 2026 · Owner checklist: Microsoft's runtime fetched, signing needed sooner
+
+The owner allowed fetching Microsoft's Visual C++ redistributable (done in `titan117-desktop`); Smart App Control blocked the unsigned installer, so code signing moves up on the checklist. Nothing changed in this repo's code.
+
+### 15 Nov 2026 · Phase 5: the Windows installer (shared docs)
+
+Decisions §49 and three lines on the owner checklist (confirm §49, OK to fetch Microsoft's runtime installer, a code signing certificate). Built in `titan117-desktop` on `phase-5-installer`; nothing changed in this repo's code.
+
+### 15 Nov 2026 · Phase 5: keep awake, checkpoints and notifications (shared docs)
+
+Decisions §48 and its line on the owner checklist. Built in `titan117-desktop` on `phase-5-awake`; nothing changed in this repo's code.
+
+### 15 Nov 2026 · Phase 5: offline (shared docs)
+
+Decisions §47 (how the app notices it's offline, cloud tasks stopping cleanly, what waits) and two lines on the owner checklist. Built in `titan117-desktop` on `phase-5-offline`; nothing changed in this repo's code.
+
+### 15 Nov 2026 · Phase 5: setup and health (shared docs)
+
+Decisions §46 (the first-launch wizard, the checklist, the health check, disk thresholds) and its line on the owner checklist. Built in `titan117-desktop` on `phase-5-setup`; nothing changed in this repo's code.
+
+### 15 Nov 2026 · Phase 5: error reports (Convex and web app)
+
+Started at the owner's request before phase 4's check is run (on the owner checklist). Built on `phase-5-error-reports`, branched from `phase-4`. Decisions §45, **to be confirmed**.
+
+- **Convex** `errorReports.ts` with the `errorReports` and `errorGroups` tables (the data table rows are no longer "planned"): `submitForDevice` (any signed-in device, 20 a day, keys and tokens scrubbed again, grouped by signature, a `T117-XXXXXX` reference), `fixedForDevice` (19.5), and for staff `groups`, `groupReports` (never the user's id) and `markFixed`; a daily run deletes reports after 90 days; account deletion deletes the user's reports.
+- **Web app:** `POST /api/v1/error-reports` and `/api/v1/error-reports/fixed` with the device token.
+- **Tests:** 13 new (denials, the daily limit, staff only, another user's reference, grouping across laptops and versions, scrubbing, 90 days, the signature); 120 in all. Pushed to the development Convex deployment; the web app builds.
+- **Not built yet in phase 5:** the portal's error screens (wait for Clerk Pro and two-factor), the installer and setup wizard, the hardware check, components, offline mode and the 14-day offline test, auto-update.
+
+### 15 Nov 2026 · The owner checklist
+
+Every open item for the owner, from all three repos' logs, is now in one place: `docs/owner-checklist.md` (shared doc): decisions to confirm (§44 first), checks only the owner can run (phase 4's check), accounts and services, legal, vendors, before the beta. CLAUDE.md says new owner items go there in the same commit. At the owner's request, phase 5 starts before phase 4's check is run; that's recorded on the checklist for the owner to confirm.
+
+### 15 Nov 2026 · Phase 4: web search and artifacts (web app, Convex, shared docs)
+
+Built on `phase-4` here and in `titan117-desktop` (details in that repo's log). Decisions §44, **to be confirmed by the owner**.
+
+- **Share links (17.13):** Convex `shares.ts` with two new tables, `sharedArtifacts` and `shareReports` (rows in the data table): the desktop uploads a self-contained snapshot through `POST /api/v1/shares` with its device token (only the hash reaches Convex), an active plan required, at most 5 MB, 100 shares and 30 a day; `DELETE /api/v1/shares/<id>` unshares and deletes the file. The public page `/s/<id>` (its own layout, no sign-in code, `noindex`) frames `/s/<id>/raw`, served with a `sandbox` content policy and no network, so a shared page can't reach our cookies or pages. A **Report** button posts to `/api/v1/shares/<id>/report`; staff see open reports and decide (`openReports`, `decide`: removed or kept, with the reason kept as the statement of reasons). Account deletion now deletes shares and their files.
+- **Tests:** 11 new (denials for every gated function, limits, a refused upload keeps nothing, another user can't unshare, takedown keeps the record, the account deletion covers `sharedArtifacts`), plus the guardrail checks for the two new tables. 107 in all.
+- **Checked on the local web app:** the "doesn't lead anywhere" page, the raw route's 404, phone width and dark mode; the build lists the new routes. Pushed to the development Convex deployment.
+- **Docs:** decisions §44 (search sources, Serper dropped, reading and robots.txt, cache, site lists, deep research, artifacts, downloads, sharing, licences); external-services rows for Brave, Tavily and Exa (checked on their docs) and our share-link hosting; OpenRouter's search tool checked on its docs **and with one real call** (`usage.cost` includes the search); open-source references for Readability, linkedom, marked, docx, ExcelJS, PptxGenJS and Mermaid. `Zlib` joins the allowed licences in all three repos' licence check.
+- **Not checked:** a live share with real data (needs the owner's signed-in desktop app and plan): the shared page with an artifact in its frame, the Report dialog sending, a takedown. The admin screens for reports belong to the product owner portal (phase 5).
+- **For the owner:** confirm §44; set up `abuse@titan117.com` as the Digital Services Act contact point and add it, with our content rules for shared pages, to the terms (the lawyer's review); a separate domain for shared pages before launch.
 
 ### 15 Nov 2026 · Phase 3 done
 

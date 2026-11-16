@@ -144,4 +144,103 @@ export default defineSchema({
   })
     .index("by_user_at", ["userId", "at"])
     .index("by_ref", ["ref"]),
+
+  /**
+   * Artifacts a user chose to share by link (§32: what the user shares;
+   * decisions §44). The snapshot is a self-contained HTML page in Convex file
+   * storage; anyone with the random public id can view it until the owner
+   * unshares it or staff take it down.
+   */
+  sharedArtifacts: defineTable({
+    userId: v.id("users"),
+    publicId: v.string(),
+    title: v.string(),
+    kind: v.string(),
+    bytes: v.number(),
+    storageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+    // Set by staff (shares.takeDown); the snapshot is deleted, the row stays as the record.
+    takenDownAt: v.optional(v.number()),
+    takedownReason: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_publicId", ["publicId"]),
+
+  /**
+   * Reports about shared pages (§32: our own records; the Digital Services
+   * Act's notice and action). No user link: the reporter may be anyone.
+   */
+  shareReports: defineTable({
+    publicId: v.string(),
+    reason: v.union(
+      v.literal("illegal"),
+      v.literal("privacy"),
+      v.literal("copyright"),
+      v.literal("abuse"),
+      v.literal("other"),
+    ),
+    note: v.string(),
+    email: v.optional(v.string()),
+    at: v.number(),
+    handledAt: v.optional(v.number()),
+    decision: v.optional(v.union(v.literal("removed"), v.literal("kept"))),
+  })
+    .index("by_publicId", ["publicId"])
+    .index("by_handledAt", ["handledAt"]),
+
+  /**
+   * Error reports the user chose to send (§32: reports the user sends;
+   * decisions §22, §45): versions, OS, the feature, the error and stack, the
+   * last redacted log lines and the user's note. Never files, prompts,
+   * memory, keys or tokens. Kept 90 days; deleted with the account.
+   */
+  errorReports: defineTable({
+    userId: v.id("users"),
+    groupId: v.id("errorGroups"),
+    // What the user is shown, e.g. T117-4F2A9C.
+    ref: v.string(),
+    appVersion: v.string(),
+    os: v.string(),
+    feature: v.string(),
+    message: v.string(),
+    stack: v.string(),
+    logLines: v.array(v.string()),
+    note: v.string(),
+    at: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_group", ["groupId", "at"])
+    .index("by_at", ["at"])
+    .index("by_ref", ["ref"]),
+
+  /** Reports grouped by signature (decisions §22): counts and versions, no user link. */
+  errorGroups: defineTable({
+    signature: v.string(),
+    feature: v.string(),
+    title: v.string(),
+    count: v.number(),
+    firstSeen: v.number(),
+    lastSeen: v.number(),
+    versions: v.array(v.string()),
+    os: v.array(v.string()),
+    // Set by staff when a release fixes it (19.5): the app then says "Fixed in 1.4".
+    fixedIn: v.optional(v.string()),
+    issueUrl: v.optional(v.string()),
+  })
+    .index("by_signature", ["signature"])
+    .index("by_lastSeen", ["lastSeen"]),
+
+  /**
+   * Comments on shared pages (17.14; §32: what the user shares): written by
+   * anyone with the link, or the owner's replies. Deleted with the page.
+   */
+  shareComments: defineTable({
+    publicId: v.string(),
+    name: v.string(),
+    text: v.string(),
+    fromOwner: v.boolean(),
+    at: v.number(),
+    // The owner hid it from the page.
+    hiddenAt: v.optional(v.number()),
+  }).index("by_publicId", ["publicId", "at"]),
 });
