@@ -14,7 +14,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 4 | Web search and artifacts | In progress | 15 Nov 2026 | |
 | 5 | Install and setup | In progress | 15 Nov 2026 | |
-| 6 | Folder agent | Not started | | |
+| 6 | Folder agent | In progress | 16 Nov 2026 | |
 | 7 | Coding engine and code builder | Not started | | |
 | 8 | App builder: web | Not started | | |
 | 9 | App builder: mobile and desktop | Not started | | |
@@ -31,6 +31,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 16 Nov 2026 · Phase 6: the folder agent (shared docs)
+
+Decisions §51, the embedding model under Hugging Face in external services, phase 6's open-source references (checked and cloned for reading), and phase 6 lines on the owner checklist (confirm §51, OCR's language files, the check with your own documents). Built in `titan117-desktop` on `phase-6-folder-agent`; nothing changed in this repo's code.
 
 ### 15 Nov 2026 · Phase 4 leftovers: comments on shared pages; the owner list rewritten
 
