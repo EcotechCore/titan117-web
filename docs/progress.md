@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 19 Nov 2026 · Dependencies updated
+
+All the Dependabot updates in one tested change: Next.js and eslint-config-next 16.4.6, React 19.3.1, Convex 1.50.0, Tailwind 4.3.5, ESLint 10. **TypeScript 6.0.3, not 7:** the newest typescript-eslint supports TypeScript below 6.1 only, so 7 waits for it. **@types/node 24, not 26:** it matches Node 24, which CI and the deployments run. TypeScript 6 no longer loads Node's types by itself, so the web app's and Convex's tsconfigs now list them. ESLint 10 checked with a file of known mistakes: the React, hooks, accessibility and Next.js rules all still fire. Typecheck, lint, 128 tests, build and licences pass.
+
 ### 19 Nov 2026 · Phase 4 done; the owner's checks of phases 4-6
 
 The owner ran step 3 of the checklist on this laptop: phase 4's check (a deep-research report downloaded as PDF, Word and Excel, shared by link, a comment, a report, the reply and "Apply with Titan"), sending an error report with its reference, offline and back online, a notification, phase 6's check with the owner's own documents (right file and page; a local-models-only folder stopping a cloud task), and the microphone. **Phase 4's check is met: phase 4 is done.** Phase 6's check is met too; phase 6 stays open for OCR (7.3). Two things the owner found were fixed in the desktop app the same day (see its log).
