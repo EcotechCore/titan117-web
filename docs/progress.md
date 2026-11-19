@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 4 is built and waiting for the owner's checks; phase 5 has started early at the owner's request, with error reports (15 Nov 2026). **Next step:** more of phase 5 (installer, setup, offline); the owner works through `docs/owner-checklist.md` at the end.
+**Now:** phase 4 is done (19 Nov 2026). Phase 6's check is met; phase 6 waits for OCR. Phase 5 waits for signing, a Mac and the portal's error screens. **Next step:** the owner's open choices (OCR's language files, Gmail's route, code signing), then the rest of phase 5. Production waits (§52).
 
 ## Phases
 
@@ -12,7 +12,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 1 | Engine core | Done | 14 Nov 2026 | 14 Nov 2026 |
 | 2 | Accounts and money | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
-| 4 | Web search and artifacts | In progress | 15 Nov 2026 | |
+| 4 | Web search and artifacts | Done | 15 Nov 2026 | 19 Nov 2026 |
 | 5 | Install and setup | In progress | 15 Nov 2026 | |
 | 6 | Folder agent | In progress | 16 Nov 2026 | |
 | 7 | Coding engine and code builder | Not started | | |
@@ -31,6 +31,14 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 19 Nov 2026 · Phase 4 done; the owner's checks of phases 4-6
+
+The owner ran step 3 of the checklist on this laptop: phase 4's check (a deep-research report downloaded as PDF, Word and Excel, shared by link, a comment, a report, the reply and "Apply with Titan"), sending an error report with its reference, offline and back online, a notification, phase 6's check with the owner's own documents (right file and page; a local-models-only folder stopping a cloud task), and the microphone. **Phase 4's check is met: phase 4 is done.** Phase 6's check is met too; phase 6 stays open for OCR (7.3). Two things the owner found were fixed in the desktop app the same day (see its log).
+
+### 18 Nov 2026 · Decisions §44–§51 confirmed; production waits
+
+The owner reviewed and confirmed decisions §44 to §51 (web search and artifacts, error reports, setup, offline, keep awake and resume, the installer, the phase 4 leftovers and auto-update, the folder agent) and that phase 5 started before phase 4's check. One addition to §44: when asked to search on Google or another engine, Titan does that search in the visible browser (§44.12; the instruction is in the desktop app's prompt). Decided (§52): **production waits** until everything works locally; nothing built so far depends on it. The owner checklist now starts at step 3, trying it all locally.
 
 ### 16 Nov 2026 · Phase 6: the folder agent (shared docs)
 
