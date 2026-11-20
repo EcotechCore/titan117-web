@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 6 is done (20 Nov 2026). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro for the portal's error screens. **Next step:** phase 7, the coding engine and code builder. Production waits (§52).
+**Now:** phase 7 has started (20 Nov 2026): the coding engine (OpenCode) runs in the desktop app behind our approvals and model router (decisions §53). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro for the portal's error screens. **Next step:** phase 7's code builder screen, git and pull requests (the GitHub App, owner checklist). Production waits (§52).
 
 ## Phases
 
@@ -15,7 +15,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 4 | Web search and artifacts | Done | 15 Nov 2026 | 19 Nov 2026 |
 | 5 | Install and setup | In progress | 15 Nov 2026 | |
 | 6 | Folder agent | Done | 16 Nov 2026 | 20 Nov 2026 |
-| 7 | Coding engine and code builder | Not started | | |
+| 7 | Coding engine and code builder | In progress | 20 Nov 2026 | |
 | 8 | App builder: web | Not started | | |
 | 9 | App builder: mobile and desktop | Not started | | |
 | 10 | Sidebar apps | Not started | | |
@@ -31,6 +31,15 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 20 Nov 2026 · Phase 7 started: the coding engine (shared docs)
+
+Phase 7's start review was done, and decisions §53 written. The owner chose on 20 Nov 2026 to ship OpenCode unchanged (its Bun runtime contains LGPL-2 JavaScriptCore; OpenCode's own MIT code may still be changed or forked later) and to download it on first use. Items 3–9 are to be confirmed.
+
+- **The OpenCode reference clone** was moved to the v1.19.6 tag (`f4e363c`) and read for every outside call, its permission prompts and its config.
+- **External services:** a new row for the downloads (npm and GitHub releases, pinned and hash-checked). A first look at OpenAI, Cursor and Modal terms (§53.9): Codex and Cursor stay experimental; Modal's terms limit use to the customer's internal business. Both rows say **To verify** before their parts of phase 7 (13.14, 3.15) are built.
+- **Owner checklist:** confirm §53; register the GitHub App (needed for pull requests); ask Modal in writing; OpenCode's licence in the launch review.
+- Built in `titan117-desktop` on `phase-7-coding-engine`: the coding engine runs behind our approvals and model router, and with a real model it fixed a sample repo's bugs so its tests passed. Nothing changed in this repo's code.
 
 ### 20 Nov 2026 · Phase 6 done: OCR, language files in the app
 
