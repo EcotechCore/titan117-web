@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 20 Nov 2026 · Phase 7: project memory, code review, open in your editor (shared docs)
+
+Decisions §54, items 9–13 (to be confirmed): project memory per repository, a code review that changes nothing, sub-agents as OpenCode's own, open in VS Code or Cursor, and the co-author switch. The owner checklist's §54 line was updated to match. Built in `titan117-desktop` on `phase-7-git`.
+
 ### 20 Nov 2026 · Phase 7: git and the code builder screen (shared docs)
 
 Decisions §54 (to be confirmed). In external services, the GitHub row now covers pull requests before the GitHub App: GitHub's CLI when signed in, otherwise GitHub's own page. On the owner checklist, confirm §54; the GitHub App is no longer blocking. Built in `titan117-desktop` on `phase-7-git`; nothing changed in this repo's code.
