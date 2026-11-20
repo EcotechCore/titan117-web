@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 7 has started (20 Nov 2026): the coding engine (OpenCode) runs in the desktop app behind our approvals and model router (decisions §53). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro for the portal's error screens. **Next step:** phase 7's code builder screen, git and pull requests (the GitHub App, owner checklist). Production waits (§52).
+**Now:** phase 7 is in progress (20 Nov 2026). The coding engine runs behind our approvals; git, pull requests (through GitHub's CLI or GitHub's own page) and the Code screen with diff review are built. Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Next step:** phase 7's check (fix real issues in a sample repo on GitHub and open a pull request), then project memory, review and the user's own coding tools. Production waits (§52).
 
 ## Phases
 
@@ -31,6 +31,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 20 Nov 2026 · Phase 7: git and the code builder screen (shared docs)
+
+Decisions §54 (to be confirmed). In external services, the GitHub row now covers pull requests before the GitHub App: GitHub's CLI when signed in, otherwise GitHub's own page. On the owner checklist, confirm §54; the GitHub App is no longer blocking. Built in `titan117-desktop` on `phase-7-git`; nothing changed in this repo's code.
 
 ### 20 Nov 2026 · Phase 7 started: the coding engine (shared docs)
 
