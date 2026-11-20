@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 4 is done (19 Nov 2026). Phase 6's check is met; phase 6 waits for OCR. Phase 5 waits for signing, a Mac and the portal's error screens. **Next step:** the owner's open choices (OCR's language files, Gmail's route, code signing), then the rest of phase 5. Production waits (§52).
+**Now:** phase 6 is done (20 Nov 2026). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro for the portal's error screens. **Next step:** phase 7, the coding engine and code builder. Production waits (§52).
 
 ## Phases
 
@@ -14,7 +14,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 3 | Titan and memory | Done | 15 Nov 2026 | 15 Nov 2026 |
 | 4 | Web search and artifacts | Done | 15 Nov 2026 | 19 Nov 2026 |
 | 5 | Install and setup | In progress | 15 Nov 2026 | |
-| 6 | Folder agent | In progress | 16 Nov 2026 | |
+| 6 | Folder agent | Done | 16 Nov 2026 | 20 Nov 2026 |
 | 7 | Coding engine and code builder | Not started | | |
 | 8 | App builder: web | Not started | | |
 | 9 | App builder: mobile and desktop | Not started | | |
@@ -31,6 +31,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 20 Nov 2026 · Phase 6 done: OCR, language files in the app
+
+The owner chose to ship OCR's language files inside the app (decisions §51.8). OCR is built in the desktop app (see its log), so **phase 6 is done**. Also recorded from the owner: the code signing certificate starts on Monday 23 Nov 2026 (reminder set); Clerk Pro waits until the app runs locally without issues; the repos go private later, no rush; phase 5's check still needs a Mac, a clean Windows machine and the 14-day offline test (owner checklist). The Gmail and Outlook verifications are only for the one inbox and Google Docs downloads, later.
 
 ### 19 Nov 2026 · Dependencies updated
 
