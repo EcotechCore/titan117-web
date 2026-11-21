@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 21 Nov 2026 · GitHub App: Repository creation permission
+
+The owner gave our GitHub App "Repository creation: Read and write", so Save to GitHub can make the repository itself. GitHub's public app details didn't list it yet right after; the first real save confirms it. Shared docs updated (decisions §56.16, the GitHub row, the owner checklist).
+
 ### 21 Nov 2026 · Phase 8: Save to GitHub (shared docs)
 
 Decisions §56.16 (Save to GitHub: the user's own repository, pushed as the user and kept up to date, never forced); the GitHub row notes that making a repository needs the app's "Repository creation" or "Administration" permission; the owner checklist adds that permission and a first real try. Built in `titan117-desktop` on `phase-8-app-builder`.
