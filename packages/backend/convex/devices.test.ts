@@ -142,13 +142,59 @@ describe("desktop sign-in", () => {
     ).rejects.toThrowError("FORBIDDEN");
   });
 
-  it("stops at the plan's device limit", async () => {
+  it("stops at the plan's device limit before the page says signed in", async () => {
     const t = setup();
     await user(t); // Starter: 2 devices
     for (let i = 0; i < 2; i++) expect((await exchange(t, { code: await code(t), verifier: VERIFIER })).status).toBe(200);
-    const third = await exchange(t, { code: await code(t), verifier: VERIFIER });
-    expect(third.status).toBe(409);
-    expect(await third.json()).toEqual({ error: "DEVICE_LIMIT" });
+    // The page asks for the code: refused there, so it can offer to sign a device out.
+    await expect(code(t)).rejects.toThrowError("DEVICE_LIMIT");
+  });
+
+  it("still refuses at the exchange when two sign-ins race for the last place", async () => {
+    const t = setup();
+    await user(t);
+    expect((await exchange(t, { code: await code(t), verifier: VERIFIER })).status).toBe(200);
+    const a = await code(t);
+    const b = await code(t);
+    expect((await exchange(t, { code: a, verifier: VERIFIER })).status).toBe(200);
+    const late = await exchange(t, { code: b, verifier: VERIFIER });
+    expect(late.status).toBe(409);
+    expect(await late.json()).toEqual({ error: "DEVICE_LIMIT" });
+  });
+
+  it("the same app install signing in again replaces its old device", async () => {
+    const t = setup();
+    const userId = await user(t); // Starter: 2 devices
+    const install = "i".repeat(43);
+    const signIn = async () =>
+      (
+        await t.withIdentity(identity("user_1")).action(api.devices.startSignIn, {
+          challenge: await pkceChallenge(VERIFIER),
+          name: "Ada's laptop",
+          install,
+        })
+      ).code;
+    const first = (await (await exchange(t, { code: await signIn(), verifier: VERIFIER })).json()) as { token: string };
+    // Another laptop fills the second place.
+    expect((await exchange(t, { code: await code(t), verifier: VERIFIER })).status).toBe(200);
+    // The first laptop signs in again (its sign-in was lost): allowed, and it replaces itself.
+    const again = await exchange(t, { code: await signIn(), verifier: VERIFIER });
+    expect(again.status).toBe(200);
+    const active = await t.run(async (ctx) =>
+      (await ctx.db.query("devices").withIndex("by_user", (q) => q.eq("userId", userId)).collect()).filter(
+        (d) => d.revokedAt === undefined,
+      ),
+    );
+    expect(active).toHaveLength(2);
+    // The old token no longer works.
+    expect((await leaseCall(t, first.token)).status).toBe(401);
+    await expect(
+      t.withIdentity(identity("user_1")).action(api.devices.startSignIn, {
+        challenge: await pkceChallenge(VERIFIER),
+        name: "x",
+        install: "not valid",
+      }),
+    ).rejects.toThrowError("FORBIDDEN");
   });
 });
 

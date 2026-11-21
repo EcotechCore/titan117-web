@@ -54,6 +54,9 @@ export default defineSchema({
     createdAt: v.optional(v.number()),
     lastSeenAt: v.optional(v.number()),
     appVersion: v.optional(v.string()),
+    // SHA-256 of the app install's random ID (the ID itself stays on the laptop):
+    // signing in again from the same install replaces its device instead of adding one.
+    installHash: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_tokenHash", ["tokenHash"]),
@@ -70,6 +73,7 @@ export default defineSchema({
     name: v.string(),
     expiresAt: v.number(),
     usedAt: v.optional(v.number()),
+    installHash: v.optional(v.string()),
   })
     .index("by_codeHash", ["codeHash"])
     .index("by_expiresAt", ["expiresAt"])
