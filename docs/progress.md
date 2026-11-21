@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Next step:** phase 8, the app builder for the web. Production waits (§52).
+**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Next step:** the rest of phase 8 (publishing to Cloudflare first, export, visual edit, more templates, the five sample apps). Production waits (§52).
 
 ## Phases
 
@@ -16,7 +16,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 5 | Install and setup | In progress | 15 Nov 2026 | |
 | 6 | Folder agent | Done | 16 Nov 2026 | 20 Nov 2026 |
 | 7 | Coding engine and code builder | Done (except what waits outside the code) | 20 Nov 2026 | 21 Nov 2026 |
-| 8 | App builder: web | Not started | | |
+| 8 | App builder: web | In progress | 21 Nov 2026 | |
 | 9 | App builder: mobile and desktop | Not started | | |
 | 10 | Sidebar apps | Not started | | |
 | 11 | Agent builder | Not started | | |
@@ -31,6 +31,22 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 21 Nov 2026 · GitHub App: Repository creation permission
+
+The owner gave our GitHub App "Repository creation: Read and write", so Save to GitHub can make the repository itself. After the owner saved and accepted it, GitHub's API lists `repository_creation: write`. Still to try: a real save from the Apps screen, signed in. Shared docs updated (decisions §56.16, the GitHub row, the owner checklist).
+
+### 21 Nov 2026 · Phase 8: Save to GitHub (shared docs)
+
+Decisions §56.16 (Save to GitHub: the user's own repository, pushed as the user and kept up to date, never forced); the GitHub row notes that making a repository needs the app's "Repository creation" or "Administration" permission; the owner checklist adds that permission and a first real try. Built in `titan117-desktop` on `phase-8-app-builder`.
+
+### 21 Nov 2026 · Phase 8 started: the phase-start review (shared docs)
+
+- **External services:** new rows checked on the vendors' own pages: Node.js, the npm registry, Playwright's browser builds, Cloudflare, Netlify and Vercel. Publishing: Cloudflare first (the user's API token), Netlify after our own OAuth app (its docs require OAuth for public integrations), Vercel waits for a written answer (Hobby is non-commercial; its API terms forbid an app receiving users' tokens).
+- **Decisions §56** (to be confirmed): the app builder for the web, first part.
+- **Open-source references:** Playwright's row filled in (the `playwright-core` package, Apache 2.0); a note on what phase 8 reads next.
+- **Owner checklist:** a phase 8 section (try the Apps screen, §56, models for builds, Netlify's OAuth app, a question to Vercel) and the licence review now covers the app builder's downloads.
+- Built in `titan117-desktop` on `phase-8-app-builder`.
 
 ### 21 Nov 2026 · Owner checklist: an "After phase 8" section
 
