@@ -32,6 +32,20 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 21 Nov 2026 · Fix: desktop sign-in said "signed in" at the device limit
+
+The owner signed in to the desktop app. The page said "You're signed in", but the app said the plan's devices were all signed in. **Why:**
+- the limit was checked only when the app exchanged its code, after the page had already said "signed in";
+- the owner's Starter plan (2 devices) held two active devices, both this same laptop, from earlier development sign-ins whose tokens were lost.
+
+**Fixed:**
+- **The limit is checked first:** when the user presses "Sign in to the app" (`startSignIn`), and again at the exchange in case two sign-ins race.
+- **At the limit, the page lists the devices,** each with Sign out, and offers Try again.
+- **The same install no longer uses up places:** each install sends the SHA-256 of a random ID kept on the laptop. Signing in again from the same install replaces its old device, and the old token stops working.
+
+New optional fields `devices.installHash` and `deviceSignIns.installHash` (data table updated). Tests: 3 new device tests, 125 backend tests in all. Pushed to the development Convex deployment; the web app builds.
+
+**For the owner:** sign in again. The page will list the two old "EcotechLaptop" devices: sign one or both out, then press Try again.
 ### 21 Nov 2026 · GitHub App registered (shared docs)
 
 The owner registered "Titan117 by EcotechCore". The external services GitHub row now records the app and its checked permissions, decisions §55.9 the client ID and the Choose repositories step, and the owner checklist ticks the app off and adds a line to sign in and choose repositories. Built in `titan117-desktop` on `phase-7-github-app`.
