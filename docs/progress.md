@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Next step:** the rest of phase 8 (publishing to Cloudflare first, export, visual edit, more templates, the five sample apps). Production waits (§52).
+**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Since then (21 Nov 2026):** Save to GitHub, ZIP export, more test conditions, starters and a brand kit, visual edit and Cloudflare publishing are built, and the five sample apps all pass. **Next step:** the owner's real Save to GitHub and Cloudflare publish (the last part of phase 8's check); Netlify waits for our OAuth app, Vercel and Convex for their written answers. Production waits (§52).
 
 ## Phases
 
@@ -31,6 +31,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 21 Nov 2026 · Phase 8: the rest of the first batch (shared docs)
+
+Decisions §56.17–§56.25 (ZIP export, more test conditions, the web specialist, starters, a brand kit, visual edit, Cloudflare publishing, Convex waits, five sample apps all passing); a Convex row (to verify; ask Convex), the Cloudflare row marked built; the owner checklist adds a real publish, a question to Convex, and the new Apps features to try. Built in `titan117-desktop` on `phase-8-app-builder`.
 
 ### 21 Nov 2026 · GitHub App: Repository creation permission
 
