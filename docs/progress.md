@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 21 Nov 2026 · GitHub App registered (shared docs)
+
+The owner registered "Titan117 by EcotechCore". The external services GitHub row now records the app and its checked permissions, decisions §55.9 the client ID and the Choose repositories step, and the owner checklist ticks the app off and adds a line to sign in and choose repositories. Built in `titan117-desktop` on `phase-7-github-app`.
+
 ### 21 Nov 2026 · Phase 7 done (except what waits outside the code): own coding tools, SSH, GitHub sign-in
 
 - **Decisions §55** (to be confirmed): the user's own coding tools, servers over SSH, Sign in with GitHub ready for the app, OpenCode in Seatbelt on macOS, JetBrains in Open in, and the kill switch.
