@@ -68,26 +68,48 @@ export const revoke = userMutation({
   },
 });
 
-/** Step 2: the signed-in user approved this laptop; returns the one-time code for the app. */
+/** A device another sign-in would add: not counting this same install, which it replaces. */
+async function wouldExceed(ctx: QueryCtx, userId: Id<"users">, installHash: string | undefined, now: number) {
+  const entitlement = await entitlementOf(ctx, userId);
+  if (!entitlement || !isUsable(entitlement, now) || entitlement.plan === "custom") return false;
+  const others = (await activeDevices(ctx, userId)).filter((d) => !installHash || d.installHash !== installHash);
+  return others.length >= PLANS[entitlement.plan].devices;
+}
+
+/**
+ * Step 2: the signed-in user approved this laptop; returns the one-time code
+ * for the app. The device limit is checked here, so the page never says
+ * "signed in" for a sign-in the app can't finish; the page then offers to
+ * sign out another device.
+ */
 export const startSignIn = userAction({
-  args: { challenge: v.string(), name: v.string() },
-  handler: async (ctx, { challenge, name }): Promise<{ code: string }> => {
-    // A PKCE S256 challenge is 43 base64url characters.
+  args: { challenge: v.string(), name: v.string(), install: v.optional(v.string()) },
+  handler: async (ctx, { challenge, name, install }): Promise<{ code: string }> => {
+    // A PKCE S256 challenge is 43 base64url characters; so is the install's hash.
     if (!/^[A-Za-z0-9_-]{43}$/.test(challenge)) fail("FORBIDDEN");
+    if (install !== undefined && !/^[A-Za-z0-9_-]{43}$/.test(install)) fail("FORBIDDEN");
     const code = randomToken();
     await ctx.runMutation(internal.devices.storeSignIn, {
       userId: ctx.userId,
       codeHash: await sha256Hex(code),
       challenge,
       name: cleanName(name),
+      ...(install ? { installHash: install } : {}),
     });
     return { code };
   },
 });
 
 export const storeSignIn = internalMutation({
-  args: { userId: v.id("users"), codeHash: v.string(), challenge: v.string(), name: v.string() },
+  args: {
+    userId: v.id("users"),
+    codeHash: v.string(),
+    challenge: v.string(),
+    name: v.string(),
+    installHash: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
+    if (await wouldExceed(ctx, args.userId, args.installHash, Date.now())) fail("DEVICE_LIMIT");
     await ctx.db.insert("deviceSignIns", { ...args, expiresAt: Date.now() + CODE_TTL_MS });
   },
 });
@@ -112,11 +134,12 @@ export const redeemSignIn = internalMutation({
     await ctx.db.patch(signIn._id, { usedAt: now });
     if (signIn.challenge !== challengeFromVerifier) return { error: "FORBIDDEN" as const };
 
-    const entitlement = await entitlementOf(ctx, signIn.userId);
-    if (entitlement && isUsable(entitlement, now) && entitlement.plan !== "custom") {
-      const allowed = PLANS[entitlement.plan].devices;
-      if ((await activeDevices(ctx, signIn.userId)).length >= allowed) return { error: "DEVICE_LIMIT" as const };
-    }
+    // Checked again: another sign-in may have finished since this one started.
+    if (await wouldExceed(ctx, signIn.userId, signIn.installHash, now)) return { error: "DEVICE_LIMIT" as const };
+    // The same app install signing in again replaces its old device (its old token stops working).
+    if (signIn.installHash)
+      for (const old of await activeDevices(ctx, signIn.userId))
+        if (old.installHash === signIn.installHash) await ctx.db.patch(old._id, { revokedAt: now });
     const deviceId = await ctx.db.insert("devices", {
       userId: signIn.userId,
       name: signIn.name,
@@ -124,6 +147,7 @@ export const redeemSignIn = internalMutation({
       createdAt: now,
       lastSeenAt: now,
       appVersion: appVersion.slice(0, 40),
+      ...(signIn.installHash ? { installHash: signIn.installHash } : {}),
     });
     return { deviceId };
   },
