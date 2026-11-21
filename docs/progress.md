@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 21 Nov 2026 · Phase 8's work merged
+
+The owner asked to merge: titan117-web #35, titan117-pop #30 and titan117-desktop #33 are merged into `main` (squashed) after CI passed. Before merging, CI caught a test that only failed on Linux (the Node.js download's fingerprint test stopped at "this system isn't supported"); fixed by letting the test name its system. The owner checklist now says to run the desktop app from `main`.
+
 ### 21 Nov 2026 · Phase 8: publish from GitHub, cheaper models compared (shared docs)
 
 Decisions §56.26 (each host's own Git connection, guided; Node 22 in the template) and §56.27 (four models on the five sample sites: Haiku and GLM 5.3 Flash pass all five at about 4 cents a site; no cheaper default); a row for the hosts' Git connections; an optional owner step to try it. Built in `titan117-desktop` on `phase-8-app-builder`.
