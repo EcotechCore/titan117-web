@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 7's check is met (20 Nov 2026): the code builder fixed four real issues in a sample repo and opened a pull request on GitHub. Phase 7 stays open for the user's own coding tools (13.14), other machines (3.15), Seatbelt on macOS and GitHub sign-in through our app. Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Next step:** phase 7's remaining parts, or phase 8 (the app builder for the web). Production waits (§52).
+**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Next step:** phase 8, the app builder for the web. Production waits (§52).
 
 ## Phases
 
@@ -15,7 +15,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 4 | Web search and artifacts | Done | 15 Nov 2026 | 19 Nov 2026 |
 | 5 | Install and setup | In progress | 15 Nov 2026 | |
 | 6 | Folder agent | Done | 16 Nov 2026 | 20 Nov 2026 |
-| 7 | Coding engine and code builder | In progress | 20 Nov 2026 | |
+| 7 | Coding engine and code builder | Done (except what waits outside the code) | 20 Nov 2026 | 21 Nov 2026 |
 | 8 | App builder: web | Not started | | |
 | 9 | App builder: mobile and desktop | Not started | | |
 | 10 | Sidebar apps | Not started | | |
@@ -31,6 +31,20 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 21 Nov 2026 · Phase 7 done (except what waits outside the code): own coding tools, SSH, GitHub sign-in
+
+- **Decisions §55** (to be confirmed): the user's own coding tools, servers over SSH, Sign in with GitHub ready for the app, OpenCode in Seatbelt on macOS, JetBrains in Open in, and the kill switch.
+- **External services:** the coding-tools, SSH and GitHub rows checked against the vendors' own pages.
+- **Owner checklist:**
+  - Enable Device Flow on the GitHub App, and where the client ID goes;
+  - Anthropic's Commercial Terms;
+  - trying your own coding tools and servers;
+  - the Mac test of Seatbelt.
+- **New route `/api/v1/kill-switches`:** reads `TITAN117_KILL_SWITCHES` and is public.
+- Built in `titan117-desktop` on `phase-7-own-tools`.
+
+**Phase 7 is done** apart from what waits outside the code: the GitHub App's client ID, Modal's answer, a Mac, and remote coding tasks with phase 15.
 
 ### 20 Nov 2026 · Phase 7's check is met
 
