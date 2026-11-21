@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Since then (21 Nov 2026):** Save to GitHub, ZIP export, more test conditions, starters and a brand kit, visual edit and Cloudflare publishing are built, and the five sample apps all pass. **Next step:** the owner's real Save to GitHub and Cloudflare publish (the last part of phase 8's check); Netlify waits for our OAuth app, Vercel and Convex for their written answers. Production waits (§52).
+**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Since then (21 Nov 2026):** Save to GitHub, ZIP export, more test conditions, starters and a brand kit, visual edit and Cloudflare publishing are built, and the five sample apps all pass. **Phase 9 started (21 Nov 2026):** the phase-start review is recorded (decisions §57), and mobile apps with Expo work in the built app: made and built by Titan, previewed and tested at phone sizes, and opened on a phone with Expo Go; a laptop check says what's needed for the emulator, clean-Windows tests and desktop apps. **Next step:** the owner's real Save to GitHub and Cloudflare publish (phase 8's check), trying a mobile app on a phone, and turning on Windows Hypervisor Platform and Windows Sandbox; then the Android emulator and Tauri desktop apps. Netlify waits for our OAuth app; Vercel, Convex, Expo (EAS) and BrowserStack for written answers. Production waits (§52).
 
 ## Phases
 
@@ -17,7 +17,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 6 | Folder agent | Done | 16 Nov 2026 | 20 Nov 2026 |
 | 7 | Coding engine and code builder | Done (except what waits outside the code) | 20 Nov 2026 | 21 Nov 2026 |
 | 8 | App builder: web | In progress | 21 Nov 2026 | |
-| 9 | App builder: mobile and desktop | Not started | | |
+| 9 | App builder: mobile and desktop | In progress | 21 Nov 2026 | |
 | 10 | Sidebar apps | Not started | | |
 | 11 | Agent builder | Not started | | |
 | 12 | QA and SEO agents | Not started | | |
@@ -31,6 +31,14 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 21 Nov 2026 · Phase 9 started: the phase-start review (shared docs)
+
+- **External services,** checked on the vendors' own pages: Expo (SDK, CLI and Expo Go; EAS), the Android SDK and emulator, Apple (Xcode, App Store), Google Play, Tauri with Rust and Microsoft's build tools, Windows Sandbox and Hyper-V, UTM and Tart, Podman and Docker, Maestro and Java, device farms. The "Expo EAS: to verify in phase 9" row is answered.
+- **Copyleft found and handled:** QEMU (GPL v2) inside Google's emulator and UTM, run unchanged as separate programs; Temurin (GPL v2 with the Classpath Exception) for Maestro, the same; **WiX** (MS-RL plus a maintenance fee) not used, NSIS instead; **Tart** (fair source) not used; node-forge in the mobile template used under its BSD option. Docker Desktop's paid tier noted (Podman first).
+- **Needs written answers before those parts are built:** Expo (EAS for users' own apps), BrowserStack (device farms). To check: Microsoft's Build Tools licence; Xcode's and macOS's licences on a Mac.
+- **Decisions §57** (to be confirmed), the references' rows for phase 9 (licences and commits), and a phase 9 section on the owner checklist.
+- **Built in `titan117-desktop`** on `phase-9-app-builder`: mobile apps with Expo, Expo Go on the phone, and the laptop check.
 
 ### 21 Nov 2026 · Phase 8's work merged
 
