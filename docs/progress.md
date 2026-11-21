@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 21 Nov 2026 · Phase 8: publish from GitHub, cheaper models compared (shared docs)
+
+Decisions §56.26 (each host's own Git connection, guided; Node 22 in the template) and §56.27 (four models on the five sample sites: Haiku and GLM 5.3 Flash pass all five at about 4 cents a site; no cheaper default); a row for the hosts' Git connections; an optional owner step to try it. Built in `titan117-desktop` on `phase-8-app-builder`.
+
 ### 21 Nov 2026 · Phase 8: the rest of the first batch (shared docs)
 
 Decisions §56.17–§56.25 (ZIP export, more test conditions, the web specialist, starters, a brand kit, visual edit, Cloudflare publishing, Convex waits, five sample apps all passing); a Convex row (to verify; ask Convex), the Cloudflare row marked built; the owner checklist adds a real publish, a question to Convex, and the new Apps features to try. Built in `titan117-desktop` on `phase-8-app-builder`.
