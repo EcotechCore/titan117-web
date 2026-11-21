@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 21 Nov 2026 · Owner checklist: an "After phase 8" section
+
+The owner put aside, until phase 8 is built: confirming decisions §53–§55, the code signing certificate, Anthropic's Commercial Terms, asking Modal, the sample repo's pull requests #5 and #6, and a decision on sending Claude Code jobs straight to Claude Code (no credits). These are gathered in a new section at the top of the checklist.
+
 ### 21 Nov 2026 · Fix: desktop sign-in said "signed in" at the device limit
 
 The owner signed in to the desktop app. The page said "You're signed in", but the app said the plan's devices were all signed in. **Why:**
