@@ -142,3 +142,46 @@ describe("proxy.settle", () => {
     await expect(asAda(t).mutation(api.proxy.begin, { proxySecret: SECRET, model: "m" })).resolves.toBeTruthy();
   });
 });
+
+describe("video jobs (decisions §59.10)", () => {
+  it("only the owner can follow a job, and it is attached and charged once", async () => {
+    const t = setup();
+    await userWithPlan(t);
+    await userWithPlan(t, "user_2");
+    const { callId } = await asAda(t).mutation(api.proxy.begin, { proxySecret: SECRET, model: "google/veo-3.1" });
+
+    await expect(t.mutation(api.proxy.attachJob, { proxySecret: "wrong", callId, jobId: "job1" })).rejects.toThrowError(
+      "FORBIDDEN",
+    );
+    await expect(
+      t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "../other" }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "job1" });
+    // A call carries one job only.
+    await expect(t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "job2" })).rejects.toThrowError(
+      "NOT_FOUND",
+    );
+
+    expect(await asAda(t).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" })).toEqual({
+      callId,
+      settled: false,
+    });
+    // Someone else's job doesn't exist for them.
+    await expect(
+      t.withIdentity(identity("user_2")).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await expect(asAda(t).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "nope" })).rejects.toThrowError(
+      "NOT_FOUND",
+    );
+    await expect(t.mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" })).rejects.toThrowError(
+      "UNAUTHENTICATED",
+    );
+
+    const before = await totalCredits(t);
+    await t.mutation(api.proxy.settle, { proxySecret: SECRET, callId, costUsd: 0.4 });
+    expect(await asAda(t).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" })).toMatchObject({
+      settled: true,
+    });
+    expect(before - (await totalCredits(t))).toBe(50);
+  });
+});
