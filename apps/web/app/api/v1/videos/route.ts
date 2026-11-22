@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   if (!token) return error(401, "UNAUTHENTICATED", "Sign in to Titan117 to use credits.");
   const body = await readBody(request);
   if (body instanceof Response) return body;
-  // A caller can't point OpenRouter's webhook anywhere, or reuse someone else's job.
+  // A caller can't point OpenRouter's webhook anywhere (ours is set below), or reuse someone else's job.
   delete body.callback_url;
   delete body.previous_job_id;
 
@@ -41,7 +41,10 @@ export async function POST(request: Request) {
     upstream = await fetch(`${OPENROUTER}/videos`, {
       method: "POST",
       headers: { Authorization: `Bearer ${cfg.openrouterKey}`, "Content-Type": "application/json", ...OPENROUTER_HEADERS },
-      body: JSON.stringify(body),
+      // Our signed webhook charges the job when it ends, even if nobody polls it (§59.13).
+      body: JSON.stringify(
+        process.env.PROXY_WEBHOOK_URL ? { ...body, callback_url: process.env.PROXY_WEBHOOK_URL } : body,
+      ),
     });
   } catch {
     await settle(cfg, callId, 0);

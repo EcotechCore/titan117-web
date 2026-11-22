@@ -8,7 +8,7 @@
 import { creditsForCost } from "@titan117/shared";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { deviceByTokenHash } from "./devices";
 import { balance, spend } from "./lib/credits";
@@ -54,18 +54,22 @@ export const beginForDevice = proxyServerMutation({
   },
 });
 
+async function charge(ctx: MutationCtx, call: Doc<"proxyCalls">, costUsd: number) {
+  if (call.settledAt !== undefined) return { credits: call.credits ?? 0, duplicate: true };
+  const credits = creditsForCost(Math.max(0, costUsd));
+  const now = Date.now();
+  const result = await spend(ctx, call.userId, credits, `proxy:${call._id}`, now);
+  await ctx.db.patch(call._id, { settledAt: now, credits });
+  return { credits, shortfall: result.shortfall, duplicate: false };
+}
+
 /** After the call: charge OpenRouter's cost × 1.25 in credits, once. */
 export const settle = proxyServerMutation({
   args: { callId: v.id("proxyCalls"), costUsd: v.number() },
   handler: async (ctx, { callId, costUsd }) => {
     const call = await ctx.db.get(callId);
     if (!call) fail("NOT_FOUND");
-    if (call.settledAt !== undefined) return { credits: call.credits ?? 0, duplicate: true };
-    const credits = creditsForCost(costUsd);
-    const now = Date.now();
-    const result = await spend(ctx, call.userId, credits, `proxy:${callId}`, now);
-    await ctx.db.patch(callId, { settledAt: now, credits });
-    return { credits, shortfall: result.shortfall, duplicate: false };
+    return await charge(ctx, call, costUsd);
   },
 });
 
@@ -107,4 +111,21 @@ export const jobForDevice = proxyServerMutation({
 export const jobForUser = proxyMutation({
   args: { jobId: v.string() },
   handler: async (ctx, { jobId }) => await jobOf(ctx, ctx.user._id, jobId),
+});
+
+/**
+ * OpenRouter's signed webhook said a video job ended (decisions §59.13): charge
+ * its call once, whoever polled it or not. A job that isn't ours is ignored.
+ */
+export const settleJob = proxyServerMutation({
+  args: { jobId: v.string(), costUsd: v.number() },
+  handler: async (ctx, { jobId, costUsd }) => {
+    if (!JOB_ID.test(jobId)) return { found: false };
+    const call = await ctx.db
+      .query("proxyCalls")
+      .withIndex("by_job", (q) => q.eq("jobId", jobId))
+      .unique();
+    if (!call) return { found: false };
+    return { found: true, ...(await charge(ctx, call, costUsd)) };
+  },
 });
