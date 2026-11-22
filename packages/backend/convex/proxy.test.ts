@@ -142,3 +142,73 @@ describe("proxy.settle", () => {
     await expect(asAda(t).mutation(api.proxy.begin, { proxySecret: SECRET, model: "m" })).resolves.toBeTruthy();
   });
 });
+
+describe("video jobs (decisions §59.10)", () => {
+  it("only the owner can follow a job, and it is attached and charged once", async () => {
+    const t = setup();
+    await userWithPlan(t);
+    await userWithPlan(t, "user_2");
+    const { callId } = await asAda(t).mutation(api.proxy.begin, { proxySecret: SECRET, model: "google/veo-3.1" });
+
+    await expect(t.mutation(api.proxy.attachJob, { proxySecret: "wrong", callId, jobId: "job1" })).rejects.toThrowError(
+      "FORBIDDEN",
+    );
+    await expect(
+      t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "../other" }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "job1" });
+    // A call carries one job only.
+    await expect(t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "job2" })).rejects.toThrowError(
+      "NOT_FOUND",
+    );
+
+    expect(await asAda(t).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" })).toEqual({
+      callId,
+      settled: false,
+    });
+    // Someone else's job doesn't exist for them.
+    await expect(
+      t.withIdentity(identity("user_2")).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" }),
+    ).rejects.toThrowError("NOT_FOUND");
+    await expect(asAda(t).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "nope" })).rejects.toThrowError(
+      "NOT_FOUND",
+    );
+    await expect(t.mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" })).rejects.toThrowError(
+      "UNAUTHENTICATED",
+    );
+
+    const before = await totalCredits(t);
+    await t.mutation(api.proxy.settle, { proxySecret: SECRET, callId, costUsd: 0.4 });
+    expect(await asAda(t).mutation(api.proxy.jobForUser, { proxySecret: SECRET, jobId: "job1" })).toMatchObject({
+      settled: true,
+    });
+    expect(before - (await totalCredits(t))).toBe(50);
+  });
+});
+
+describe("video jobs charged by the webhook (decisions §59.13)", () => {
+  it("charges the job's call once and ignores jobs that aren't ours", async () => {
+    const t = setup();
+    await userWithPlan(t);
+    const { callId } = await asAda(t).mutation(api.proxy.begin, { proxySecret: SECRET, model: "google/veo-3.1" });
+    await t.mutation(api.proxy.attachJob, { proxySecret: SECRET, callId, jobId: "job9" });
+    await expect(t.mutation(api.proxy.settleJob, { proxySecret: "wrong", jobId: "job9", costUsd: 1 })).rejects.toThrowError(
+      "FORBIDDEN",
+    );
+    expect(await t.mutation(api.proxy.settleJob, { proxySecret: SECRET, jobId: "other", costUsd: 1 })).toEqual({
+      found: false,
+    });
+    const before = await totalCredits(t);
+    expect(await t.mutation(api.proxy.settleJob, { proxySecret: SECRET, jobId: "job9", costUsd: 0.4 })).toMatchObject({
+      found: true,
+      credits: 50,
+      duplicate: false,
+    });
+    // A retried delivery, or the desktop's poll afterwards, charges nothing more.
+    expect(await t.mutation(api.proxy.settleJob, { proxySecret: SECRET, jobId: "job9", costUsd: 0.4 })).toMatchObject({
+      duplicate: true,
+    });
+    await t.mutation(api.proxy.settle, { proxySecret: SECRET, callId, costUsd: 0.4 });
+    expect(before - (await totalCredits(t))).toBe(50);
+  });
+});

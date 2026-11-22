@@ -1,13 +1,14 @@
 /**
  * The credits proxy's two calls into Convex (decisions §12, architecture §5):
  * `begin` before a cloud call, `settle` after it with OpenRouter's cost.
- * The proxy itself is the route in apps/web/app/api/v1/chat/completions.
+ * The proxy itself is the routes in apps/web/app/api/v1 (chat completions,
+ * images, and video jobs, decisions §59.10).
  * Nothing here sees the prompt or the answer (decisions §32).
  */
 import { creditsForCost } from "@titan117/shared";
 import { v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { deviceByTokenHash } from "./devices";
 import { balance, spend } from "./lib/credits";
@@ -53,17 +54,78 @@ export const beginForDevice = proxyServerMutation({
   },
 });
 
+async function charge(ctx: MutationCtx, call: Doc<"proxyCalls">, costUsd: number) {
+  if (call.settledAt !== undefined) return { credits: call.credits ?? 0, duplicate: true };
+  const credits = creditsForCost(Math.max(0, costUsd));
+  const now = Date.now();
+  const result = await spend(ctx, call.userId, credits, `proxy:${call._id}`, now);
+  await ctx.db.patch(call._id, { settledAt: now, credits });
+  return { credits, shortfall: result.shortfall, duplicate: false };
+}
+
 /** After the call: charge OpenRouter's cost × 1.25 in credits, once. */
 export const settle = proxyServerMutation({
   args: { callId: v.id("proxyCalls"), costUsd: v.number() },
   handler: async (ctx, { callId, costUsd }) => {
     const call = await ctx.db.get(callId);
     if (!call) fail("NOT_FOUND");
-    if (call.settledAt !== undefined) return { credits: call.credits ?? 0, duplicate: true };
-    const credits = creditsForCost(costUsd);
-    const now = Date.now();
-    const result = await spend(ctx, call.userId, credits, `proxy:${callId}`, now);
-    await ctx.db.patch(callId, { settledAt: now, credits });
-    return { credits, shortfall: result.shortfall, duplicate: false };
+    return await charge(ctx, call, costUsd);
+  },
+});
+
+const JOB_ID = /^[0-9A-Za-z_-]{1,128}$/;
+
+/** A video job was accepted: remember its id on the call, so only its owner can poll it and it is charged once. */
+export const attachJob = proxyServerMutation({
+  args: { callId: v.id("proxyCalls"), jobId: v.string() },
+  handler: async (ctx, { callId, jobId }) => {
+    if (!JOB_ID.test(jobId)) fail("NOT_FOUND");
+    const call = await ctx.db.get(callId);
+    if (!call || call.settledAt !== undefined || call.jobId !== undefined) fail("NOT_FOUND");
+    await ctx.db.patch(callId, { jobId });
+  },
+});
+
+async function jobOf(ctx: MutationCtx, userId: Id<"users">, jobId: string) {
+  if (!JOB_ID.test(jobId)) fail("NOT_FOUND");
+  const call = await ctx.db
+    .query("proxyCalls")
+    .withIndex("by_job", (q) => q.eq("jobId", jobId))
+    .unique();
+  // Someone else's job doesn't exist, as far as this user can tell.
+  if (!call || call.userId !== userId) fail("NOT_FOUND");
+  return { callId: call._id, settled: call.settledAt !== undefined };
+}
+
+/** Before polling or downloading a video job from the desktop app: it must be this device's user's job. */
+export const jobForDevice = proxyServerMutation({
+  args: { tokenHash: v.string(), jobId: v.string() },
+  handler: async (ctx, { tokenHash, jobId }) => {
+    const device = await deviceByTokenHash(ctx, tokenHash);
+    if (!device) fail("UNAUTHENTICATED");
+    return await jobOf(ctx, device.userId, jobId);
+  },
+});
+
+/** The same from the web (a Clerk token). */
+export const jobForUser = proxyMutation({
+  args: { jobId: v.string() },
+  handler: async (ctx, { jobId }) => await jobOf(ctx, ctx.user._id, jobId),
+});
+
+/**
+ * OpenRouter's signed webhook said a video job ended (decisions §59.13): charge
+ * its call once, whoever polled it or not. A job that isn't ours is ignored.
+ */
+export const settleJob = proxyServerMutation({
+  args: { jobId: v.string(), costUsd: v.number() },
+  handler: async (ctx, { jobId, costUsd }) => {
+    if (!JOB_ID.test(jobId)) return { found: false };
+    const call = await ctx.db
+      .query("proxyCalls")
+      .withIndex("by_job", (q) => q.eq("jobId", jobId))
+      .unique();
+    if (!call) return { found: false };
+    return { found: true, ...(await charge(ctx, call, costUsd)) };
   },
 });

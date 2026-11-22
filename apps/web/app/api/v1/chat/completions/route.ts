@@ -10,111 +10,40 @@
  * `usage.cost` in USD, the last streamed chunk included; `GET
  * /api/v1/generation?id=` returns `data.total_cost` for a call cut short.
  */
-import { api } from "@titan117/backend/api";
-import type { Id } from "@titan117/backend/dataModel";
-import { isErrorCode } from "@titan117/shared";
-import { ConvexHttpClient } from "convex/browser";
-import { createHash } from "node:crypto";
-import { ConvexError } from "convex/values";
 import { after } from "next/server";
+
+import {
+  bearer,
+  config,
+  error,
+  lookupCost,
+  notConfigured,
+  OPENROUTER,
+  OPENROUTER_HEADERS,
+  openCall,
+  readBody,
+  settle as charge,
+  UNKNOWN_COST_USD,
+} from "../../_lib/credits";
 
 export const maxDuration = 300;
 
-const OPENROUTER = "https://openrouter.ai/api/v1";
-const MAX_BODY_BYTES = 8 * 1024 * 1024;
-// When a call's cost can't be found at all, charge this much rather than nothing.
-const UNKNOWN_COST_USD = 0.01;
-
-const STATUS: Record<string, number> = {
-  UNAUTHENTICATED: 401,
-  PAYMENT_REQUIRED: 402,
-  INSUFFICIENT_CREDITS: 402,
-  RATE_LIMITED: 429,
-};
-
-function error(status: number, code: string, message: string) {
-  // OpenAI's error shape, so existing clients show it.
-  return Response.json({ error: { code, message } }, { status });
-}
-
-function config() {
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-  const proxySecret = process.env.PROXY_SECRET;
-  const openrouterKey = process.env.OPENROUTER_API_KEY;
-  return convexUrl && proxySecret && openrouterKey ? { convexUrl, proxySecret, openrouterKey } : null;
-}
-
-/**
- * OpenRouter's recorded cost for a generation. A cancelled call's record
- * appeared after 8–15 seconds when tested (15 Nov 2026), so this tries for
- * about half a minute.
- */
-async function lookupCost(id: string | null, key: string): Promise<number | null> {
-  if (!id || !/^gen-[0-9A-Za-z-]{1,124}$/.test(id)) return null;
-  for (const wait of [1000, 2000, 3000, 5000, 8000, 12000]) {
-    await new Promise((r) => setTimeout(r, wait));
-    const res = await fetch(`${OPENROUTER}/generation?id=${id}`, { headers: { Authorization: `Bearer ${key}` } });
-    if (res.ok) {
-      const cost = ((await res.json()) as { data?: { total_cost?: number } }).data?.total_cost;
-      if (typeof cost === "number") return cost;
-    }
-  }
-  return null;
-}
-
 export async function POST(request: Request) {
   const cfg = config();
-  if (!cfg) {
-    console.error("credits proxy: NEXT_PUBLIC_CONVEX_URL, PROXY_SECRET or OPENROUTER_API_KEY is not set");
-    return error(503, "NOT_CONFIGURED", "Cloud models through credits aren't available right now.");
-  }
+  if (!cfg) return notConfigured();
 
-  const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
+  const token = bearer(request);
   if (!token) return error(401, "UNAUTHENTICATED", "Sign in to Titan117 to use credits.");
 
-  const raw = await request.text();
-  if (raw.length > MAX_BODY_BYTES) return error(413, "TOO_LARGE", "The request is too large.");
-  let body: Record<string, unknown>;
-  try {
-    body = JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    return error(400, "BAD_REQUEST", "The request isn't valid JSON.");
-  }
-  if (typeof body.model !== "string" || !body.model) return error(400, "BAD_REQUEST", "No model given.");
+  const body = await readBody(request);
+  if (body instanceof Response) return body;
 
-  // Open the call in Convex: the desktop app signs with its device token (we
-  // send only its SHA-256); the web signs with the user's Clerk token. Either
-  // way our server's secret goes too.
-  let callId: Id<"proxyCalls">;
-  try {
-    if (token.startsWith("t117d_")) {
-      const tokenHash = createHash("sha256").update(token).digest("hex");
-      ({ callId } = await new ConvexHttpClient(cfg.convexUrl).mutation(api.proxy.beginForDevice, {
-        proxySecret: cfg.proxySecret,
-        tokenHash,
-        model: body.model,
-      }));
-    } else {
-      const asUser = new ConvexHttpClient(cfg.convexUrl);
-      asUser.setAuth(token);
-      ({ callId } = await asUser.mutation(api.proxy.begin, { proxySecret: cfg.proxySecret, model: body.model }));
-    }
-  } catch (e) {
-    const code = e instanceof ConvexError && isErrorCode(e.data) ? e.data : null;
-    if (code && STATUS[code]) return error(STATUS[code], code, code);
-    // A token Convex can't verify arrives as a plain error.
-    if (/auth|token|jwt/i.test(String(e))) return error(401, "UNAUTHENTICATED", "Sign in to Titan117 to use credits.");
-    console.error("credits proxy: begin failed");
-    return error(502, "UPSTREAM", "Couldn't start the call. Please try again.");
-  }
+  const opened = await openCall(cfg, token, body.model as string);
+  if (opened instanceof Response) return opened;
+  const { callId } = opened;
 
-  const server = new ConvexHttpClient(cfg.convexUrl);
   let settled: Promise<unknown> | null = null;
-  const settle = (costUsd: number) =>
-    (settled ??= server.mutation(api.proxy.settle, { proxySecret: cfg.proxySecret, callId, costUsd }).catch(() => {
-      // Logged without details: the call id is enough to find it.
-      console.error(`credits proxy: settle failed for ${callId}`);
-    }));
+  const settle = (costUsd: number) => (settled ??= charge(cfg, callId, costUsd));
   let finished!: () => void;
   const done = new Promise<void>((resolve) => (finished = resolve));
   // Keep the function alive until the call is charged, even after the client has gone.
@@ -127,8 +56,7 @@ export async function POST(request: Request) {
       headers: {
         Authorization: `Bearer ${cfg.openrouterKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://titan117.com",
-        "X-Title": "Titan117",
+        ...OPENROUTER_HEADERS,
       },
       body: JSON.stringify(body),
       signal: request.signal,

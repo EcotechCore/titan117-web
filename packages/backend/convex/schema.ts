@@ -125,8 +125,11 @@ export default defineSchema({
     startedAt: v.number(),
     settledAt: v.optional(v.number()),
     credits: v.optional(v.number()),
+    // A video job's id at OpenRouter (decisions §59.10): charged when the job ends, polled only by its owner.
+    jobId: v.optional(v.string()),
   })
     .index("by_user_open", ["userId", "settledAt"])
+    .index("by_job", ["jobId"])
     .index("by_startedAt", ["startedAt"]),
 
   /** Every change to a user's credits, for the credits page. Amounts are signed. */
