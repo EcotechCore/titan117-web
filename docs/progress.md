@@ -2,7 +2,7 @@
 
 Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.md). Update this file in the same commit as the work: change the phase table when a phase starts or finishes, and add a log entry, newest first.
 
-**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Since then (21 Nov 2026):** Save to GitHub, ZIP export, more test conditions, starters and a brand kit, visual edit and Cloudflare publishing are built, and the five sample apps all pass. **Phase 9 started (21 Nov 2026):** the phase-start review is recorded (decisions §57), and mobile apps with Expo work in the built app: made and built by Titan, previewed and tested at phone sizes, and opened on a phone with Expo Go; a laptop check says what's needed for the emulator, clean-Windows tests and desktop apps. **Next step:** the owner's real Save to GitHub and Cloudflare publish (phase 8's check), trying a mobile app on a phone, and turning on Windows Hypervisor Platform and Windows Sandbox; then the Android emulator and Tauri desktop apps. Netlify waits for our OAuth app; Vercel, Convex, Expo (EAS) and BrowserStack for written answers. Production waits (§52).
+**Now:** phase 7 is done (21 Nov 2026), apart from what waits outside the code: the GitHub App's client ID, Modal's answer (cloud sandboxes), a Mac (Seatbelt) and remote coding tasks (phase 15). Phase 5 waits for code signing (the owner starts on Monday 23 Nov 2026), a Mac, a clean Windows machine, the 14-day offline test and, once paying, Clerk Pro. **Phase 8 started (21 Nov 2026):** its first part works in the built app: make a web app, a plan you approve, the build, checks in Chromium, Firefox and WebKit at three sizes, fixes, a test report, versions and a live preview. **Since then (21 Nov 2026):** Save to GitHub, ZIP export, more test conditions, starters and a brand kit, visual edit and Cloudflare publishing are built, and the five sample apps all pass. **Phase 9 started (21 Nov 2026):** the phase-start review is recorded (decisions §57), and mobile apps with Expo work in the built app: made and built by Titan, previewed and tested at phone sizes, and opened on a phone with Expo Go; a laptop check says what's needed for the emulator, clean-Windows tests and desktop apps. **Phase 10 started (22 Nov 2026):** sidebar apps work in the built app: Titan built an Inventory and a CRM that reads the inventory's items, both run sandboxed in the sidebar with their data on the laptop, and Titan answered a question across both (phase 10's check, seen working; decisions §58 to be confirmed). Sync waits for phase 15's device keys; another target and `titan.ai` come later in phase 10. **Next step:** the owner's real Save to GitHub and Cloudflare publish (phase 8's check), trying a mobile app on a phone, and turning on Windows Hypervisor Platform and Windows Sandbox; then the Android emulator and Tauri desktop apps. Netlify waits for our OAuth app; Vercel, Convex, Expo (EAS) and BrowserStack for written answers. Production waits (§52).
 
 ## Phases
 
@@ -18,7 +18,7 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 | 7 | Coding engine and code builder | Done (except what waits outside the code) | 20 Nov 2026 | 21 Nov 2026 |
 | 8 | App builder: web | In progress | 21 Nov 2026 | |
 | 9 | App builder: mobile and desktop | In progress | 21 Nov 2026 | |
-| 10 | Sidebar apps | Not started | | |
+| 10 | Sidebar apps | In progress | 22 Nov 2026 | |
 | 11 | Agent builder | Not started | | |
 | 12 | QA and SEO agents | Not started | | |
 | 13 | Automation | Not started | | |
@@ -31,6 +31,13 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 ## Log
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
+
+### 22 Nov 2026 · Phase 10 started: the phase-start review, sidebar apps (shared docs)
+
+- **Licences and vendors,** read on the projects' own licence files and the vendors' own pages: Electric, Rocicorp's Zero and PowerSync are Apache 2.0 but each reads the data on a server, so they're not used (§32); **Evolu** (MIT) keeps sync end to end encrypted and is the model for sync; cr-sqlite, Automerge, Yjs and TinyBase MIT; Twenty AGPL and Triplit AGPL, NocoDB fair-code: ideas only. Rows in `open-source-references.md` (phase 10, with commits) and `external-services.md` (sync engines and relays).
+- **Decisions §58** (to be confirmed): sidebar apps, the shared data layer, what an app may reach, the sandbox, Titan's tools, agents maintaining apps, sync later. **§11** gets the planned `syncChanges` table (ciphertext only).
+- **Owner checklist:** a Phase 10 section (try two sidebar apps; confirm §58).
+- Built in `titan117-desktop` on `phase-10-sidebar-apps`; phase 10's check seen working there.
 
 ### 22 Nov 2026 · Phase 9: the rest this laptop could build (shared docs)
 
