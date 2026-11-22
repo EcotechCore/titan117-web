@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 22 Nov 2026 · Phase 9: the rest this laptop could build (shared docs)
+
+Decisions §57.19: the emulator's set-up up to Google's licence, the installer step, the clean-Windows test and the store guides. The owner checklist adds setting up the emulator and trying an installer in a clean Windows. Built in `titan117-desktop` on `phase-9-app-builder`.
+
 ### 22 Nov 2026 · Phase 9: desktop apps with Tauri, first part (shared docs)
 
 Decisions §57.18 and the Tauri row: the desktop template (Tauri 2.12.7, NSIS installers only, its page tested at window sizes in Chromium and WebKit); the installer waits for Rust and Microsoft's build tools on the laptop. The owner checklist adds "Try a desktop app". Built in `titan117-desktop` on `phase-9-app-builder`.
