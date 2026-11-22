@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 22 Nov 2026 · Phase 12 merged
+
+- The phase 12 pull requests are merged in all three repos (web #41 first, then desktop #39 and pop #36 after their docs check). The owner checklist now says to run the desktop app from `main`. Phase 12 stays in progress: Search Console and keyword data come next; decisions §60 waits for the owner.
+
 ### 22 Nov 2026 · Phase 12 started: phase-start review (shared docs)
 
 - **Phase-start review** (guardrails §11b), on the vendors' and projects' own pages: Google PageSpeed Insights and the CrUX API, the Search Console API and Google's sign-in for desktop apps (scopes, verification, quotas), Google Business Profile API access, OpenRouter's web search and Perplexity's models (AI visibility), DataForSEO (auth, prices, terms), axe-core (MPL 2.0, no dependencies) and Lighthouse (Apache 2.0, but Sentry and Puppeteer inside, so not shipped). Rows added to `external-services.md`; the three phase 12 "to verify" rows are settled; axe-core and Lighthouse cloned and checked in `open-source-references.md`.
