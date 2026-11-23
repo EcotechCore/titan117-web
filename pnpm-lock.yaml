@@ -230,8 +230,8 @@ importers:
         specifier: ^1.50.0
         version: 1.50.0(@clerk/react@6.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
       convex-helpers:
-        specifier: ^0.1.134
-        version: 0.1.134(convex@1.50.0(@clerk/react@6.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1))(prettier@3.9.10)(react@19.3.1)(typescript@6.0.3)(zod@4.6.7)
+        specifier: ^0.1.136
+        version: 0.1.136(convex@1.50.0(@clerk/react@6.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1))(prettier@3.9.10)(react@19.3.1)(typescript@6.0.3)(zod@4.6.7)
     devDependencies:
       '@edge-runtime/vm':
         specifier: ^5.0.0
@@ -1447,8 +1447,8 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  convex-helpers@0.1.134:
-    resolution: {integrity: sha512-GPVj5HmRMOyd2PF/OxUYQlNS/HdmOo3pZ4iTyPXyEOxuXwvNeQcx7OUlvNFTTYnHhcuonsMx8UuqjVo5gCqpZA==}
+  convex-helpers@0.1.136:
+    resolution: {integrity: sha512-GoveeoUdEyg0hpCNNAjAimgn4P3mx7f8Yy5oSISck9AquxfL3NbtQesUwhZLrDkCWasK2i1COjb7ZjQseonovA==}
     hasBin: true
     peerDependencies:
       '@standard-schema/spec': ^1.0.0
@@ -3742,7 +3742,7 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex-helpers@0.1.134(convex@1.50.0(@clerk/react@6.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1))(prettier@3.9.10)(react@19.3.1)(typescript@6.0.3)(zod@4.6.7):
+  convex-helpers@0.1.136(convex@1.50.0(@clerk/react@6.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1))(prettier@3.9.10)(react@19.3.1)(typescript@6.0.3)(zod@4.6.7):
     dependencies:
       convex: 1.50.0(@clerk/react@6.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
     optionalDependencies:
