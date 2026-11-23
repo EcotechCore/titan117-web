@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@clerk/backend": "^3.27.0",
+    "@clerk/backend": "^3.31.2",
     "@titan117/shared": "workspace:*",
     "convex": "^1.50.0",
     "convex-helpers": "^0.1.134"
