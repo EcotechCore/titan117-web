@@ -13,7 +13,7 @@
   "dependencies": {
     "@clerk/backend": "^3.27.0",
     "@titan117/shared": "workspace:*",
-    "convex": "^1.50.0",
+    "convex": "^1.51.0",
     "convex-helpers": "^0.1.134"
   },
   "devDependencies": {
