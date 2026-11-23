@@ -19,7 +19,7 @@
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
     "@types/node": "^24",
-    "convex-test": "^0.0.67",
+    "convex-test": "^0.0.73",
     "eslint": "^10.14.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
