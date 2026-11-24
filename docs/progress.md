@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 24 Nov 2026 · Phase 13's first part merged
+
+- The phase 13 pull requests are merged in all three repos (web #53 first, then desktop #48 and pop #40 after their docs check). The owner checklist now says to run the desktop app from `main`. Phase 13 stays in progress: the law watcher on a real change, recording by hand, and computer use come next; decisions §61 waits for the owner.
+
 ### 24 Nov 2026 · Phase 13 started: automation (shared docs)
 
 - **Phase-start review** (guardrails §11b), on the vendors' and projects' own pages: Playwright's test generator (no public library call to record, so our own recorder), Puppeteer Replay's step format, UI-TARS (the model is Apache 2.0; the desktop app was archived on 9 Nov 2026), nut.js (no licence, public packages removed), Anthropic's computer use tool, OpenRouter's tool calling (computer use not stated), Microsoft's UI Automation and `SendInput`, and the law sources (EUR-Lex's legal notice read; `legislatie.just.ro` didn't answer and EUR-Lex's robots.txt came back empty: both "to verify"). Three new rows in `external-services.md`; phase 13's rows in `open-source-references.md` filled in.
