@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 24 Nov 2026 · Phase 14's first two parts merged
+
+- The phase 14 pull requests are merged in all three repos (web #56 first, then desktop #51 and pop #43 after their docs check). Before merging, CI caught a test that only failed on Linux (a `C:/Windows/…` path is relative there, so it landed inside the allowed folder); fixed by using a separate temporary folder. The owner checklist now says to run the desktop app from `main`. Phase 14 stays in progress: newsletters, sequences, website analytics and the video studio come next; decisions §62 waits for the owner.
+
 ### 24 Nov 2026 · Phase 14: reports, ads, leads and monitoring (shared docs)
 
 - **Decisions §62.15–§62.19** (to be confirmed): campaign reports from numbers the user types in, tracked links on posts, ad drafts (a Google Ads Editor file with everything paused, a Meta sheet), lead finding as research into a spreadsheet, and review watching and landing pages through the Web watcher and the Builder.
