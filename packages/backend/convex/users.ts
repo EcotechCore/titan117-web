@@ -75,7 +75,7 @@ export const deleteFromClerk = internalMutation({
       .collect();
     for (const row of signIns) await ctx.db.delete(row._id);
     // Remote control (decisions §64): keys, pairings and sealed messages.
-    for (const table of ["deviceKeys", "pairings", "remoteMessages"] as const) {
+    for (const table of ["deviceKeys", "pairings", "remoteMessages", "pushSubscriptions"] as const) {
       const rows = await ctx.db
         .query(table)
         .withIndex("by_user", (q) => q.eq("userId", user._id))

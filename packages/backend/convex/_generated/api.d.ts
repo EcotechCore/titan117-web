@@ -21,6 +21,7 @@ import type * as lib_functions from "../lib/functions.js";
 import type * as lib_secondFactor from "../lib/secondFactor.js";
 import type * as lib_stripe from "../lib/stripe.js";
 import type * as lib_tokens from "../lib/tokens.js";
+import type * as lib_webPush from "../lib/webPush.js";
 import type * as proxy from "../proxy.js";
 import type * as remote from "../remote.js";
 import type * as shares from "../shares.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   "lib/secondFactor": typeof lib_secondFactor;
   "lib/stripe": typeof lib_stripe;
   "lib/tokens": typeof lib_tokens;
+  "lib/webPush": typeof lib_webPush;
   proxy: typeof proxy;
   remote: typeof remote;
   shares: typeof shares;

@@ -14,6 +14,7 @@ import {
   REMOTE_MAX_FILE_BYTES,
   REMOTE_MESSAGE_TTL_MS,
   REMOTE_PROTOCOL_VERSION,
+  fromBase64Url,
   open,
   randomId,
   seal,
@@ -44,9 +45,28 @@ interface LaptopState {
   details: Record<string, { task: RemoteTask; steps: RemoteStep[]; result: string | null }>;
   alerts: string[];
   problems: string[];
+  /** Ready posts whose time has come, for the share sheet (decisions §64.13). */
+  shares: Extract<RemoteEvent, { type: "share" }>[];
 }
 
-const empty = (): LaptopState => ({ tasks: [], approvals: [], details: {}, alerts: [], problems: [] });
+const empty = (): LaptopState => ({ tasks: [], approvals: [], details: {}, alerts: [], problems: [], shares: [] });
+
+/** Opens the phone's share sheet with the post's text and pictures; copies the text where sharing isn't offered. */
+async function sharePost(post: Extract<RemoteEvent, { type: "share" }>): Promise<string> {
+  const files = post.files.map((f) => new File([Uint8Array.from(atob(f.data), (c) => c.charCodeAt(0))], f.name, { type: f.type }));
+  try {
+    if (files.length && navigator.canShare?.({ files })) await navigator.share({ text: post.text, files });
+    else if (navigator.share) await navigator.share({ text: post.text });
+    else {
+      await navigator.clipboard.writeText(post.text);
+      return "Text copied. Paste it in the app.";
+    }
+    return "Shared. Mark it posted on the laptop.";
+  } catch {
+    await navigator.clipboard.writeText(post.text).catch(() => undefined);
+    return "Not shared. The text is copied.";
+  }
+}
 const STATUS: Record<string, string> = {
   running: "Working",
   waiting: "Needs you",
@@ -84,6 +104,9 @@ export default function Remote() {
   const send = useMutation(api.remote.send);
   const ack = useMutation(api.remote.ack);
   const revokeAll = useMutation(api.remote.revokeAll);
+  const pushKey = useQuery(api.remote.pushKey, isAuthenticated ? {} : "skip");
+  const subscribePush = useMutation(api.remote.subscribePush);
+  const [pushState, setPushState] = useState<string | null>(null);
   const [states, setStates] = useState<Record<string, LaptopState>>({});
   const [chosen, setChosen] = useState<string | null>(null);
   const [openTask, setOpenTask] = useState<string | null>(null);
@@ -118,6 +141,8 @@ export default function Remote() {
       } else if (event.type === "task") {
         s.details = { ...s.details, [event.task.id]: { task: event.task, steps: event.steps, result: event.result } };
         s.approvals = [...s.approvals.filter((a) => a.taskId !== event.task.id), ...event.approvals];
+      } else if (event.type === "share") {
+        s.shares = [event, ...s.shares.filter((p) => p.postId !== event.postId)].slice(0, 10);
       } else if (event.type === "alert") {
         s.alerts = [event.text, ...s.alerts].slice(0, 5);
       } else if (event.type === "done" && !event.ok) {
@@ -202,6 +227,26 @@ export default function Remote() {
     let bin = "";
     for (const b of bytes) bin += String.fromCharCode(b);
     await command({ type: "file.add", name: file.name, data: btoa(bin) });
+  }
+
+  /** Notifications on this device (decisions §64.10): a push says only "Titan117 needs you". */
+  async function enablePush() {
+    if (!me || !pushKey) return;
+    try {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        const iPhone = /iPhone|iPad/.test(navigator.userAgent);
+        return setPushState(
+          iPhone ? "On iPhone, add this page to your Home Screen (Share, then Add to Home Screen) and turn notifications on from there." : "This browser can't show notifications.",
+        );
+      }
+      const reg = await navigator.serviceWorker.register("/remote-sw.js", { scope: "/remote" });
+      if ((await Notification.requestPermission()) !== "granted") return setPushState("Notifications are blocked for this site.");
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: fromBase64Url(pushKey) as BufferSource });
+      await subscribePush({ key: me.publicKey, endpoint: sub.endpoint });
+      setPushState("Notifications are on for this device.");
+    } catch (error) {
+      setPushState(error instanceof ConvexError ? errorText(error) : "Couldn't turn notifications on here.");
+    }
   }
 
   if (isLoading || me === undefined) return <main className="min-h-screen" />;
@@ -299,6 +344,27 @@ export default function Remote() {
             )}
           </section>
 
+          {state.shares.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h2 className="text-lg font-medium">Time to post</h2>
+              {state.shares.map((p) => (
+                <div key={p.postId} className="flex flex-col gap-2 rounded-xl border border-[#e6e6e6] p-4">
+                  <p className="text-sm text-[#6b6b6b]">{p.platform}</p>
+                  <p className="whitespace-pre-wrap">{p.text}</p>
+                  {p.left.length > 0 && (
+                    <p className="text-sm text-[#6b6b6b]">Too large to send here, still on the laptop: {p.left.join(", ")}</p>
+                  )}
+                  <button
+                    className="h-9 self-start rounded-[8px] bg-[#ff6347] px-4 text-sm font-medium text-white hover:bg-[#c2361f]"
+                    onClick={() => void sharePost(p).then(setProblem)}
+                  >
+                    Share{p.files.length ? ` with ${p.files.length} picture${p.files.length > 1 ? "s" : ""}` : ""}
+                  </button>
+                </div>
+              ))}
+            </section>
+          )}
+
           {state.approvals.length > 0 && (
             <section className="flex flex-col gap-2">
               <h2 className="text-lg font-medium">Needs you</h2>
@@ -381,6 +447,23 @@ export default function Remote() {
             ))}
           </section>
         </>
+      )}
+
+      {me && pushKey && usable.some((l) => l.trusted) && (
+        <section className="mt-6 flex flex-col gap-2 border-t border-[#e6e6e6] pt-6">
+          <h2 className="text-lg font-medium">Notifications</h2>
+          <p className="text-sm text-[#6b6b6b]">
+            Get a notification on this device when the laptop needs you or a task finishes. It says only &quot;Titan117
+            needs you&quot;; the details stay encrypted until you open this page.
+          </p>
+          <button
+            className="h-9 self-start rounded-[8px] border border-[#e6e6e6] px-4 text-sm hover:border-[#ff6347]"
+            onClick={() => void enablePush()}
+          >
+            Turn on notifications
+          </button>
+          {pushState && <p className="text-sm text-[#6b6b6b]">{pushState}</p>}
+        </section>
       )}
 
       <section className="mt-6 flex flex-col gap-2 border-t border-[#e6e6e6] pt-6">

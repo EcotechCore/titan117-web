@@ -101,6 +101,21 @@ export default defineSchema({
     .index("by_user", ["userId"]),
 
   /**
+   * Web Push for a paired browser or phone (§32: devices; decisions §64.10):
+   * only the push service's address for it. Pushes carry no content, so the
+   * subscription's encryption keys aren't kept.
+   */
+  pushSubscriptions: defineTable({
+    userId: v.id("users"),
+    deviceKey: v.string(),
+    endpoint: v.string(),
+    createdAt: v.number(),
+    lastPushAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_deviceKey", ["deviceKey"]),
+
+  /**
    * Remote messages (§32 item 4; decisions §64.3): ciphertext and routing
    * fields only. Deleted once the recipient has them, at expiry, on Revoke
    * all and with the account.

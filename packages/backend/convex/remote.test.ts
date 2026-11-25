@@ -342,3 +342,69 @@ describe("revoking", () => {
     expect(left).toEqual([]);
   });
 });
+
+describe("Web Push", () => {
+  async function vapid() {
+    const pair = (await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"])) as CryptoKeyPair;
+    const b64 = (b: ArrayBuffer) => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    vi.stubEnv("VAPID_PRIVATE_KEY", b64(await crypto.subtle.exportKey("pkcs8", pair.privateKey)));
+    vi.stubEnv("VAPID_PUBLIC_KEY", b64(await crypto.subtle.exportKey("raw", pair.publicKey)));
+    return pair.publicKey;
+  }
+
+  it("keeps only a known push service's address, for this account's own paired device", async () => {
+    const t = setup();
+    const { as, browserKey, laptopKey } = await pairedSetup(t);
+    const endpoint = "https://fcm.googleapis.com/fcm/send/abc";
+    await expect(as.mutation(api.remote.subscribePush, { key: browserKey.publicKey, endpoint: "https://evil.example/x" })).rejects.toThrow(/FORBIDDEN/);
+    await expect(as.mutation(api.remote.subscribePush, { key: laptopKey.publicKey, endpoint })).rejects.toThrow(/FORBIDDEN/);
+    await user(t, "user_2");
+    await expect(
+      t.withIdentity(identity("user_2")).mutation(api.remote.subscribePush, { key: browserKey.publicKey, endpoint }),
+    ).rejects.toThrow(/FORBIDDEN/);
+    await user(t, "user_3", null);
+    await expect(
+      t.withIdentity(identity("user_3")).mutation(api.remote.subscribePush, { key: browserKey.publicKey, endpoint }),
+    ).rejects.toThrow(/PAYMENT_REQUIRED/);
+    await as.mutation(api.remote.subscribePush, { key: browserKey.publicKey, endpoint });
+    expect(await t.query(internal.remote.hasPush, { deviceKey: browserKey.publicKey })).toBe(true);
+    await as.mutation(api.remote.unsubscribePush, { key: browserKey.publicKey });
+    expect(await t.query(internal.remote.hasPush, { deviceKey: browserKey.publicKey })).toBe(false);
+  });
+
+  it("a notifying event schedules one empty push signed with VAPID; a gone subscription is dropped", async () => {
+    const t = setup();
+    const publicKey = await vapid();
+    const { as, browserKey } = await pairedSetup(t);
+    expect(await as.query(api.remote.pushKey, {})).toMatch(/^[A-Za-z0-9_-]{87}$/);
+    await as.mutation(api.remote.subscribePush, { key: browserKey.publicKey, endpoint: "https://fcm.googleapis.com/fcm/send/abc" });
+    await sync(t, { on: true, outgoing: [{ to: browserKey.publicKey, kind: "event", msgId: randomId(), sealed: "A".repeat(1500), notify: true }] });
+    const scheduled = await t.run((ctx) => ctx.db.system.query("_scheduled_functions").collect());
+    expect(scheduled.filter((s) => s.name.includes("push"))).toHaveLength(1);
+
+    const calls: { url: string; headers: Headers; body: string }[] = [];
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
+      calls.push({ url, headers: new Headers(init.headers), body: String(init.body ?? "") });
+      return new Response(null, { status: calls.length === 1 ? 201 : 410 });
+    });
+    await t.action(internal.remote.push, { deviceKey: browserKey.publicKey });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.body).toBe("");
+    expect(calls[0]!.headers.get("TTL")).toBe("86400");
+    const auth = calls[0]!.headers.get("Authorization")!;
+    const [, jwt] = auth.match(/^vapid t=([^,]+), k=[A-Za-z0-9_-]{87}$/)!;
+    const [h, c, sig] = jwt!.split(".");
+    const dec = (x: string) => Uint8Array.from(atob(x.replace(/-/g, "+").replace(/_/g, "/")), (ch) => ch.charCodeAt(0));
+    expect(JSON.parse(new TextDecoder().decode(dec(c!)))).toMatchObject({ aud: "https://fcm.googleapis.com", sub: "mailto:security@titan117.com" });
+    expect(await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, publicKey, dec(sig!), new TextEncoder().encode(`${h}.${c}`))).toBe(true);
+
+    // At most one a minute per device.
+    await t.action(internal.remote.push, { deviceKey: browserKey.publicKey });
+    expect(calls).toHaveLength(1);
+    vi.setSystemTime(T0 + 61_000);
+    await t.action(internal.remote.push, { deviceKey: browserKey.publicKey });
+    expect(calls).toHaveLength(2);
+    expect(await t.query(internal.remote.hasPush, { deviceKey: browserKey.publicKey })).toBe(false);
+    vi.unstubAllGlobals();
+  });
+});

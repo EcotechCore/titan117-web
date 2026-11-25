@@ -26,10 +26,11 @@ import { v } from "convex/values";
 
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
-import { internalMutation, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { internalAction, internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { entitlementOf, isUsable } from "./lib/credits";
-import { fail, paidMutation, paidQuery, userAction, userMutation } from "./lib/functions";
+import { fail, paidMutation, paidQuery, userAction, userMutation, userQuery } from "./lib/functions";
 import { hasFreshSecondFactor } from "./lib/secondFactor";
+import { isPushEndpoint, sendPush, vapidPublicKey } from "./lib/webPush";
 
 const MINUTE = 60 * 1000;
 /** A laptop counts as online when it looked in this recently. */
@@ -313,6 +314,11 @@ async function markRead(ctx: MutationCtx, m: Doc<"remoteMessages">) {
 }
 
 async function deleteMessagesTo(ctx: MutationCtx, publicKey: string) {
+  for (const sub of await ctx.db
+    .query("pushSubscriptions")
+    .withIndex("by_deviceKey", (q) => q.eq("deviceKey", publicKey))
+    .collect())
+    await ctx.db.delete(sub._id);
   for (const m of await ctx.db
     .query("remoteMessages")
     .withIndex("by_to", (q) => q.eq("to", publicKey))
@@ -348,8 +354,87 @@ export async function revokeAllFor(ctx: MutationCtx, userId: Id<"users">) {
     .withIndex("by_user", (q) => q.eq("userId", userId))
     .collect())
     await ctx.db.delete(p._id);
+  for (const sub of await ctx.db
+    .query("pushSubscriptions")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect())
+    await ctx.db.delete(sub._id);
   await ctx.db.patch(userId, { remoteRevokedAllAt: now });
 }
+
+// ------------------------------------------------------------ Web Push
+
+/** Our VAPID public key, for the browser's subscription; null until the owner set the keys. */
+export const pushKey = userQuery({ args: {}, handler: async () => vapidPublicKey() });
+
+/** Notifications on this paired browser or phone: keeps only the push service's address. */
+export const subscribePush = paidMutation({
+  args: { key: v.string(), endpoint: v.string() },
+  handler: async (ctx, { key, endpoint }) => {
+    const me = await keyRow(ctx, key);
+    if (!me || me.userId !== ctx.user._id || me.kind === "laptop") fail("FORBIDDEN");
+    if (!isPushEndpoint(endpoint)) fail("FORBIDDEN");
+    for (const old of await ctx.db
+      .query("pushSubscriptions")
+      .withIndex("by_deviceKey", (q) => q.eq("deviceKey", key))
+      .collect())
+      await ctx.db.delete(old._id);
+    await ctx.db.insert("pushSubscriptions", { userId: ctx.user._id, deviceKey: key, endpoint, createdAt: Date.now() });
+  },
+});
+
+export const unsubscribePush = userMutation({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    for (const sub of await ctx.db
+      .query("pushSubscriptions")
+      .withIndex("by_deviceKey", (q) => q.eq("deviceKey", key))
+      .collect())
+      if (sub.userId === ctx.user._id) await ctx.db.delete(sub._id);
+  },
+});
+
+/** At most one push a minute per device; the page shows what's new when opened. */
+const PUSH_GAP_MS = 60 * 1000;
+
+export const pushTarget = internalMutation({
+  args: { deviceKey: v.string() },
+  handler: async (ctx, { deviceKey }) => {
+    const sub = await ctx.db
+      .query("pushSubscriptions")
+      .withIndex("by_deviceKey", (q) => q.eq("deviceKey", deviceKey))
+      .first();
+    if (!sub || (sub.lastPushAt && Date.now() - sub.lastPushAt < PUSH_GAP_MS)) return null;
+    await ctx.db.patch(sub._id, { lastPushAt: Date.now() });
+    return { id: sub._id, endpoint: sub.endpoint };
+  },
+});
+
+export const dropSubscription = internalMutation({
+  args: { id: v.id("pushSubscriptions") },
+  handler: async (ctx, { id }) => {
+    if (await ctx.db.get(id)) await ctx.db.delete(id);
+  },
+});
+
+export const push = internalAction({
+  args: { deviceKey: v.string() },
+  handler: async (ctx, { deviceKey }) => {
+    const target = await ctx.runMutation(internal.remote.pushTarget, { deviceKey });
+    if (!target) return;
+    if ((await sendPush(target.endpoint)) === "gone") await ctx.runMutation(internal.remote.dropSubscription, { id: target.id });
+  },
+});
+
+/** For tests and the portal later: whether a device has notifications on. */
+export const hasPush = internalQuery({
+  args: { deviceKey: v.string() },
+  handler: async (ctx, { deviceKey }) =>
+    !!(await ctx.db
+      .query("pushSubscriptions")
+      .withIndex("by_deviceKey", (q) => q.eq("deviceKey", deviceKey))
+      .first()),
+});
 
 // ------------------------------------------------------------ the laptop (http.ts)
 
@@ -358,6 +443,8 @@ const outgoing = v.object({
   kind: v.union(v.literal("event"), v.literal("key")),
   msgId: v.string(),
   sealed: v.string(),
+  // Wake the device with a push that says only "Titan117 needs you" (decisions §64.10).
+  notify: v.optional(v.boolean()),
 });
 
 /**
@@ -436,11 +523,14 @@ export const laptopSync = internalMutation({
       const sent = await sentLastMinute(ctx, userId, new Set(["laptop"]), keys);
       if (sent + args.outgoing.length > LAPTOP_SENDS_PER_MINUTE) return { error: "RATE_LIMITED" as const };
     }
-    for (const m of args.outgoing) {
+    const wake = new Set<string>();
+    for (const { notify, ...m } of args.outgoing) {
       // Only to this account's own paired browsers and phones (a revoked one gets nothing).
       if (!own.has(m.to)) continue;
       await insertMessage(ctx, userId, { from: laptopKey.publicKey, ...m });
+      if (notify) wake.add(m.to);
     }
+    for (const deviceKey of wake) await ctx.scheduler.runAfter(0, internal.remote.push, { deviceKey });
     for (const id of args.ack.slice(0, 200)) {
       const m = await ctx.db.get(id);
       if (m && m.to === laptopKey.publicKey) await markRead(ctx, m);
