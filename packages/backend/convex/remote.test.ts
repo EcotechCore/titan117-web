@@ -314,6 +314,22 @@ describe("revoking", () => {
     expect(rows).toEqual([]);
   });
 
+  it("the laptop can remove a device or revoke all, but never another account's keys", async () => {
+    const t = setup();
+    const { as, browserKey } = await pairedSetup(t);
+    await user(t, "user_2");
+    const otherKey = await generateDeviceKey(false);
+    const otherId = await t.run(async (ctx) => {
+      const u = (await ctx.db.query("users").collect()).find((x) => x.clerkId === "user_2")!;
+      return ctx.db.insert("deviceKeys", { userId: u._id, kind: "browser", name: "theirs", publicKey: otherKey.publicKey, createdAt: T0 });
+    });
+    await sync(t, { on: true, revokeKeys: [browserKey.publicKey, otherKey.publicKey] });
+    expect(await as.query(api.remote.pairedDevices, {})).toEqual([]);
+    expect((await t.run((ctx) => ctx.db.get(otherId)))?.revokedAt).toBeUndefined();
+    await sync(t, { on: false, revokeAll: true });
+    expect((await t.run((ctx) => ctx.db.query("users").collect())).find((u) => u.clerkId === "user_1")?.remoteRevokedAllAt).toBeGreaterThanOrEqual(T0);
+  });
+
   it("goes with the account", async () => {
     const t = setup();
     await pairedSetup(t);

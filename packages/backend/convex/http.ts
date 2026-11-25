@@ -132,6 +132,8 @@ const desktopRemote = httpAction(async (ctx, request) => {
       ack: Array.isArray(body.ack) ? (body.ack as never) : [],
       ...(body.startPairing === true ? { startPairing: true } : {}),
       ...(body.answerPairing && typeof body.answerPairing === "object" ? { answerPairing: body.answerPairing as never } : {}),
+      ...(Array.isArray(body.revokeKeys) ? { revokeKeys: body.revokeKeys as never } : {}),
+      ...(body.revokeAll === true ? { revokeAll: true } : {}),
     });
     if ("error" in result && result.error) return json({ error: result.error }, result.error === "UNAUTHENTICATED" ? 401 : 403);
     return json(result);

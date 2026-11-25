@@ -66,8 +66,9 @@ const ID = /^[A-Za-z0-9_-]{1,80}$/;
 
 /** A file name that can't leave its folder: no separators, no dots in front, no reserved characters. */
 export function safeFileName(name: string): string | null {
-  const clean = name
-    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "")
+  const clean = [...name]
+    .filter((ch) => ch.charCodeAt(0) >= 32 && !'\\/:*?"<>|'.includes(ch))
+    .join("")
     .replace(/^[.\s]+/, "")
     .trim()
     .slice(0, 120);
@@ -256,7 +257,12 @@ function headerBytes(h: SealHeader): Uint8Array {
   return enc.encode(`${h.v}|${h.from}|${h.to}|${h.kind}|${h.id}`);
 }
 
-async function messageKey(ephemeralShared: Uint8Array, staticShared: Uint8Array, ephemeralPublic: Uint8Array, h: SealHeader) {
+async function messageKey(
+  ephemeralShared: Uint8Array,
+  staticShared: Uint8Array,
+  ephemeralPublic: Uint8Array,
+  h: SealHeader,
+): Promise<CryptoKey> {
   const ikm = await crypto.subtle.importKey("raw", concat(ephemeralShared, staticShared) as BufferSource, "HKDF", false, ["deriveKey"]);
   return crypto.subtle.deriveKey(
     { name: "HKDF", hash: "SHA-256", salt: concat(ephemeralPublic, headerBytes(h)) as BufferSource, info: INFO as BufferSource },

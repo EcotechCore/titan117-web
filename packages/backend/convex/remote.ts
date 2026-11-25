@@ -375,18 +375,29 @@ export const laptopSync = internalMutation({
     ack: v.array(v.id("remoteMessages")),
     startPairing: v.optional(v.boolean()),
     answerPairing: v.optional(v.object({ pairingId: v.id("pairings"), accept: v.boolean() })),
+    // Removing devices and "Revoke all" from the laptop itself (decisions §64.8).
+    revokeKeys: v.optional(v.array(v.string())),
+    revokeAll: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const device = await ctx.db.get(args.deviceId);
     if (!device || device.revokedAt !== undefined) return { error: "UNAUTHENTICATED" as const };
     const now = Date.now();
     const userId = device.userId;
-    const user = await ctx.db.get(userId);
-
     // Switching off on the laptop needs no second factor, and Convex follows at once.
     if (!args.on && device.remoteEnabledAt !== undefined) await ctx.db.patch(device._id, { remoteEnabledAt: undefined });
     if (!device.lastSeenAt || now - device.lastSeenAt > 30_000) await ctx.db.patch(device._id, { lastSeenAt: now });
+    // Taking access away works with or without a plan.
+    if (args.revokeAll) await revokeAllFor(ctx, userId);
+    for (const publicKey of (args.revokeKeys ?? []).slice(0, 25)) {
+      const row = await keyRow(ctx, publicKey);
+      if (row && row.userId === userId && row.kind !== "laptop") {
+        await ctx.db.patch(row._id, { revokedAt: now });
+        await deleteMessagesTo(ctx, publicKey);
+      }
+    }
     if (!(await usablePlan(ctx, userId))) return { error: "PAYMENT_REQUIRED" as const };
+    const user = await ctx.db.get(userId);
     const enabled = args.on && device.remoteEnabledAt !== undefined;
     const base = {
       v: REMOTE_PROTOCOL_VERSION,
