@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 25 Nov 2026 · Phase 14's newsletters, analytics and video studio merged
+
+The pull requests are merged in all three repos (web #58 first, then desktop #53 and pop #45 after their docs check). Run the desktop app from `main`. Phase 14 stays in progress: a real newsletter send, real visits, a post published from its reminder (the phone half waits for phase 15) and the drag-and-drop timeline editor; decisions §62 and §63 wait for the owner.
+
 ### 25 Nov 2026 · Phase 14: newsletters, sequences, analytics and the video studio (shared docs)
 
 - **Phase-start review for the rest of phase 14** (guardrails §11b), on the vendors' own pages: Brevo's and Postmark's API references (sending, lists, campaigns, broadcast streams, suppressions, senders and domains), Mailgun's sending and acceptable use (its unsubscribe API pages answered 404), and Cloudflare's Workers Analytics Engine (pricing, limits, bindings, SQL API), the "Edit Cloudflare Workers" token template and static assets billing. The email providers' row is checked; a new row for Workers Analytics Engine.
