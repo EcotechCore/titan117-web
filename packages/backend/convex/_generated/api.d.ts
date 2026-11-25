@@ -18,9 +18,11 @@ import type * as http from "../http.js";
 import type * as lib_billing from "../lib/billing.js";
 import type * as lib_credits from "../lib/credits.js";
 import type * as lib_functions from "../lib/functions.js";
+import type * as lib_secondFactor from "../lib/secondFactor.js";
 import type * as lib_stripe from "../lib/stripe.js";
 import type * as lib_tokens from "../lib/tokens.js";
 import type * as proxy from "../proxy.js";
+import type * as remote from "../remote.js";
 import type * as shares from "../shares.js";
 import type * as users from "../users.js";
 
@@ -41,9 +43,11 @@ declare const fullApi: ApiFromModules<{
   "lib/billing": typeof lib_billing;
   "lib/credits": typeof lib_credits;
   "lib/functions": typeof lib_functions;
+  "lib/secondFactor": typeof lib_secondFactor;
   "lib/stripe": typeof lib_stripe;
   "lib/tokens": typeof lib_tokens;
   proxy: typeof proxy;
+  remote: typeof remote;
   shares: typeof shares;
   users: typeof users;
 }>;

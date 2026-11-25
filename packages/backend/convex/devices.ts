@@ -17,7 +17,7 @@ import { v } from "convex/values";
 
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { internalMutation, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { entitlementOf, isUsable } from "./lib/credits";
 import { fail, userAction, userMutation, userQuery } from "./lib/functions";
 import { randomToken, sha256Hex } from "./lib/tokens";
@@ -161,6 +161,12 @@ export async function deviceByTokenHash(ctx: QueryCtx, tokenHash: string) {
     .unique();
   return device && device.revokedAt === undefined ? device : null;
 }
+
+/** The signed-in device behind a token, for the remote route; null otherwise. */
+export const deviceForToken = internalQuery({
+  args: { tokenHash: v.string() },
+  handler: async (ctx, { tokenHash }) => (await deviceByTokenHash(ctx, tokenHash))?._id ?? null,
+});
 
 /**
  * Step 4: what this device's lease should say right now, and when it was

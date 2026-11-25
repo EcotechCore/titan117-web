@@ -16,4 +16,7 @@ crons.daily("account deletion", { hourUTC: 4, minuteUTC: 0 }, internal.account.p
 // Error reports older than 90 days (errorReports.ts, decisions §22).
 crons.daily("error reports", { hourUTC: 4, minuteUTC: 30 }, internal.errorReports.prune, {});
 
+// Remote messages past their expiry and old pairings (remote.ts, decisions §64).
+crons.hourly("remote messages", { minuteUTC: 10 }, internal.remote.prune, {});
+
 export default crons;
