@@ -99,3 +99,4 @@ export interface LeasePayload {
 
 /** Days the app keeps working offline on one lease (decisions §17). */
 export const LEASE_OFFLINE_DAYS = 14;
+export * from "./remote.js";

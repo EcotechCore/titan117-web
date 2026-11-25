@@ -15,6 +15,8 @@ export default defineSchema({
     // Account deletion (account.ts): when it happens, and whether asking for it stopped the plan renewing.
     deleteAfter: v.optional(v.number()),
     deletionStoppedRenewal: v.optional(v.boolean()),
+    // "Revoke all devices" (decisions §64.8): laptops unlink their chat channels and rotate their keys when they see it.
+    remoteRevokedAllAt: v.optional(v.number()),
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_deleteAfter", ["deleteAfter"]),
@@ -57,9 +59,82 @@ export default defineSchema({
     // SHA-256 of the app install's random ID (the ID itself stays on the laptop):
     // signing in again from the same install replaces its device instead of adding one.
     installHash: v.optional(v.string()),
+    // Remote control (decisions §64.5): switched on with a fresh second factor;
+    // the laptop's own setting decides too, and switching off there clears it.
+    remoteEnabledAt: v.optional(v.number()),
+    // A paired browser or phone just sent something: the laptop looks more often for a while.
+    remoteWakeAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_tokenHash", ["tokenHash"]),
+
+  /**
+   * Remote control keys (§32: devices; decisions §64.2): public keys only.
+   * A laptop's row has its device; a browser's or phone's was added by a
+   * pairing the laptop confirmed. The key itself is the id on the wire.
+   */
+  deviceKeys: defineTable({
+    userId: v.id("users"),
+    kind: v.union(v.literal("laptop"), v.literal("browser"), v.literal("phone")),
+    deviceId: v.optional(v.id("devices")),
+    name: v.string(),
+    publicKey: v.string(),
+    createdAt: v.number(),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_publicKey", ["publicKey"])
+    .index("by_device", ["deviceId"]),
+
+  /** Pairings in progress (decisions §64.6): five minutes, used once, confirmed on the laptop. */
+  pairings: defineTable({
+    userId: v.id("users"),
+    deviceId: v.id("devices"),
+    laptopKey: v.string(),
+    expiresAt: v.number(),
+    status: v.union(v.literal("open"), v.literal("claimed"), v.literal("confirmed"), v.literal("refused")),
+    claimedKey: v.optional(v.string()),
+    claimedName: v.optional(v.string()),
+  })
+    .index("by_device", ["deviceId"])
+    .index("by_expiresAt", ["expiresAt"])
+    .index("by_user", ["userId"]),
+
+  /**
+   * Web Push for a paired browser or phone (§32: devices; decisions §64.10):
+   * only the push service's address for it. Pushes carry no content, so the
+   * subscription's encryption keys aren't kept.
+   */
+  pushSubscriptions: defineTable({
+    userId: v.id("users"),
+    deviceKey: v.string(),
+    endpoint: v.string(),
+    createdAt: v.number(),
+    lastPushAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_deviceKey", ["deviceKey"]),
+
+  /**
+   * Remote messages (§32 item 4; decisions §64.3): ciphertext and routing
+   * fields only. Deleted once the recipient has them, at expiry, on Revoke
+   * all and with the account.
+   */
+  remoteMessages: defineTable({
+    userId: v.id("users"),
+    from: v.string(),
+    to: v.string(),
+    kind: v.union(v.literal("command"), v.literal("event"), v.literal("key")),
+    msgId: v.string(),
+    sealed: v.string(),
+    size: v.number(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_to", ["to", "createdAt"])
+    .index("by_user", ["userId", "createdAt"])
+    .index("by_msgId", ["msgId"])
+    .index("by_expiresAt", ["expiresAt"]),
 
   /**
    * Desktop sign-ins in progress: a one-time code (stored hashed) the web

@@ -111,10 +111,43 @@ const desktopLease = httpAction(async (ctx, request) => {
   return json({ lease: await signLease(lease) });
 });
 
+/**
+ * Remote control for the laptop (remote.ts `laptopSync`, decisions §64): one
+ * call every few seconds while it's on, with the device token. Sealed
+ * messages only; this route never sees a readable command or result.
+ */
+const desktopRemote = httpAction(async (ctx, request) => {
+  const token = request.headers.get("authorization")?.match(/^Bearer (t117d_[A-Za-z0-9_-]{43})$/)?.[1];
+  if (!token) return json({ error: "UNAUTHENTICATED" }, 401);
+  const device = await ctx.runQuery(internal.devices.deviceForToken, { tokenHash: await sha256Hex(token) });
+  if (!device) return json({ error: "UNAUTHENTICATED" }, 401);
+  const body = await readJson(request);
+  if (!body) return json({ error: "FORBIDDEN" }, 400);
+  try {
+    const result = await ctx.runMutation(internal.remote.laptopSync, {
+      deviceId: device,
+      on: body.on === true,
+      ...(typeof body.laptopKey === "string" ? { laptopKey: body.laptopKey } : {}),
+      outgoing: Array.isArray(body.outgoing) ? (body.outgoing as never) : [],
+      ack: Array.isArray(body.ack) ? (body.ack as never) : [],
+      ...(body.startPairing === true ? { startPairing: true } : {}),
+      ...(body.answerPairing && typeof body.answerPairing === "object" ? { answerPairing: body.answerPairing as never } : {}),
+      ...(Array.isArray(body.revokeKeys) ? { revokeKeys: body.revokeKeys as never } : {}),
+      ...(body.revokeAll === true ? { revokeAll: true } : {}),
+    });
+    if ("error" in result && result.error) return json({ error: result.error }, result.error === "UNAUTHENTICATED" ? 401 : 403);
+    return json(result);
+  } catch {
+    // A malformed field (validators) or a refused message: no details.
+    return json({ error: "FORBIDDEN" }, 400);
+  }
+});
+
 const http = httpRouter();
 http.route({ path: "/clerk", method: "POST", handler: clerkWebhook });
 http.route({ path: "/stripe", method: "POST", handler: stripeWebhook });
 http.route({ path: "/desktop/exchange", method: "POST", handler: desktopExchange });
 http.route({ path: "/desktop/lease", method: "POST", handler: desktopLease });
+http.route({ path: "/desktop/remote", method: "POST", handler: desktopRemote });
 
 export default http;

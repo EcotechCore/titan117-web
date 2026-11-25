@@ -52,7 +52,12 @@ async function userWithEverything(t: T, clerkId: string, cancelAtPeriodEnd = fal
   });
   await t.mutation(internal.credits.charge, { userId, credits: 3, ref: `req_${clerkId}` });
   await t.run(async (ctx) => {
-    await ctx.db.insert("devices", { userId, name: "laptop", tokenHash: `h_${clerkId}` });
+    const deviceId = await ctx.db.insert("devices", { userId, name: "laptop", tokenHash: `h_${clerkId}` });
+    const key = `k_${clerkId}`.padEnd(43, "x");
+    await ctx.db.insert("deviceKeys", { userId, kind: "laptop", deviceId, name: "laptop", publicKey: key, createdAt: T0 });
+    await ctx.db.insert("pairings", { userId, deviceId, laptopKey: key, expiresAt: T0, status: "open" });
+    await ctx.db.insert("remoteMessages", { userId, from: key, to: key, kind: "event", msgId: `m_${clerkId}`, sealed: "AAAA", size: 3, createdAt: T0, expiresAt: T0 });
+    await ctx.db.insert("pushSubscriptions", { userId, deviceKey: key, endpoint: "https://fcm.googleapis.com/fcm/send/x", createdAt: T0 });
     await ctx.db.insert("deviceSignIns", { userId, codeHash: `c_${clerkId}`, challenge: "x", name: "laptop", expiresAt: T0 });
     await ctx.db.insert("proxyCalls", { userId, model: "m", startedAt: T0 });
     const storageId = await ctx.storage.store(new Blob(["<p>shared</p>"]));
@@ -73,6 +78,10 @@ const USER_TABLES = [
   "proxyCalls",
   "sharedArtifacts",
   "errorReports",
+  "deviceKeys",
+  "pairings",
+  "remoteMessages",
+  "pushSubscriptions",
 ] as const;
 
 async function rowsOf(t: T, userId: Id<"users">) {

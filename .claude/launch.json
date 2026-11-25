@@ -4,20 +4,50 @@
     {
       "name": "homepage-grid",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "4180", "--directory", "homepage-grid"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4180",
+        "--directory",
+        "homepage-grid"
+      ],
       "port": 4180
     },
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@titan117/web", "dev", "--port", "3100"],
+      "runtimeArgs": [
+        "--filter",
+        "@titan117/web",
+        "dev",
+        "--port",
+        "3100"
+      ],
       "port": 3100
     },
     {
       "name": "pop",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--dir", "../titan117-pop", "dev", "--port", "3101"],
+      "runtimeArgs": [
+        "--dir",
+        "../titan117-pop",
+        "dev",
+        "--port",
+        "3101"
+      ],
       "port": 3101
+    },
+    {
+      "name": "shared-dist",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4190",
+        "--directory",
+        "packages/shared/dist"
+      ],
+      "port": 4190
     }
   ]
 }
