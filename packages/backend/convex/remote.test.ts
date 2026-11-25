@@ -18,6 +18,9 @@ const FAKE_SESSION = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyXzEiLCJmdmEiOlswLDBdf
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(T0);
+  // No Clerk keys: the second-factor check must refuse without any network call.
+  vi.stubEnv("CLERK_SECRET_KEY", "");
+  vi.stubEnv("CLERK_JWT_KEY", "");
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -405,6 +408,26 @@ describe("Web Push", () => {
     await t.action(internal.remote.push, { deviceKey: browserKey.publicKey });
     expect(calls).toHaveLength(2);
     expect(await t.query(internal.remote.hasPush, { deviceKey: browserKey.publicKey })).toBe(false);
+    vi.unstubAllGlobals();
+  });
+});
+
+describe("the second-factor check's first steps", () => {
+  const part = (o: object) => btoa(JSON.stringify(o)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  it("reaches Clerk's verification only for a token that names its key and this user", async () => {
+    const { hasFreshSecondFactor } = await import("./lib/secondFactor");
+    vi.stubEnv("CLERK_JWT_KEY", "not-a-real-pem");
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      calls.push(String(url));
+      return new Response("{}", { status: 500 });
+    });
+    const token = (head: object, body: object) => `${part(head)}.${part(body)}.c2lnbmF0dXJl`;
+    expect(await hasFreshSecondFactor(token({ alg: "RS256" }, { sub: "user_1" }), "user_1")).toBe(false);
+    expect(await hasFreshSecondFactor(token({ alg: "RS256", kid: "k" }, { sub: "user_2" }), "user_1")).toBe(false);
+    // A well-formed token goes on to Clerk's own check (which refuses this one: the key isn't real).
+    expect(await hasFreshSecondFactor(token({ alg: "RS256", kid: "k" }, { sub: "user_1", fva: [0, 0] }), "user_1")).toBe(false);
+    expect(calls).toEqual([]);
     vi.unstubAllGlobals();
   });
 });

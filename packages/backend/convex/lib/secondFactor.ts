@@ -34,6 +34,16 @@ export function twoFactorSwitchedOff() {
 export async function hasFreshSecondFactor(sessionToken: string, clerkId: string): Promise<boolean> {
   if (twoFactorSwitchedOff()) return true;
   if (typeof sessionToken !== "string" || sessionToken.length > 8192 || sessionToken.split(".").length !== 3) return false;
+  // Cheap checks before any network call: a session token names its key and belongs to this user.
+  try {
+    const [head, body] = sessionToken
+      .split(".")
+      .slice(0, 2)
+      .map((p) => JSON.parse(atob(p.replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>);
+    if (typeof head?.kid !== "string" || body?.sub !== clerkId) return false;
+  } catch {
+    return false;
+  }
   const secretKey = process.env.CLERK_SECRET_KEY;
   const jwtKey = process.env.CLERK_JWT_KEY;
   if (!secretKey && !jwtKey) return false;
