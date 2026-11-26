@@ -14,8 +14,10 @@ import { v } from "convex/values";
 
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
-import { adminMutation, adminQuery, fail, publicQuery, userMutation } from "./lib/functions";
+import { deviceByTokenHash } from "./devices";
+import { adminMutation, adminQuery, fail, proxyServerMutation, publicQuery, userMutation } from "./lib/functions";
 
 const GITHUB = "https://api.github.com";
 /** Two calls each (the commit and titan.json); stays well under 60 an hour. */
@@ -54,6 +56,9 @@ function publicView(item: Doc<"marketItems">) {
     pushedAt: item.pushedAt,
     verified: item.verifiedAt !== undefined,
     verifiedCommit: item.verifiedCommit ?? null,
+    installs: item.installs ?? 0,
+    rating: item.ratingCount ? Math.round(((item.ratingSum ?? 0) / item.ratingCount) * 10) / 10 : null,
+    ratings: item.ratingCount ?? 0,
   };
 }
 
@@ -142,6 +147,100 @@ export const report = userMutation({
     return { ok: true };
   },
 });
+
+// ---------------------------------------------------------------- installs and ratings (§66.12)
+
+export const MAX_INSTALLS_PER_DAY = 50;
+
+/**
+ * The laptop says it installed an item at a commit (from our server, with the
+ * device token's hash). One row per account and item; a reinstall or update
+ * moves it to the new commit. Nothing about the add-on's data is sent.
+ */
+export const installedForDevice = proxyServerMutation({
+  args: { tokenHash: v.string(), fullName: v.string(), commit: v.string() },
+  handler: async (ctx, { tokenHash, fullName, commit }) => {
+    const device = await deviceByTokenHash(ctx, tokenHash);
+    if (!device) return { ok: false as const, code: "UNAUTHENTICATED" };
+    if (!/^[0-9a-f]{40}$/.test(commit)) return { ok: false as const, code: "BAD_REQUEST" };
+    const item = await byFullName(ctx, fullName);
+    if (!item || item.takenDownAt !== undefined) return { ok: false as const, code: "NOT_FOUND" };
+    const now = Date.now();
+    const today = await ctx.db
+      .query("marketInstalls")
+      .withIndex("by_user", (q) => q.eq("userId", device.userId).gt("at", now - DAY))
+      .collect();
+    if (today.length >= MAX_INSTALLS_PER_DAY) return { ok: false as const, code: "RATE_LIMITED" };
+    const existing = await ctx.db
+      .query("marketInstalls")
+      .withIndex("by_user_item", (q) => q.eq("userId", device.userId).eq("itemId", item._id))
+      .unique();
+    if (existing) await ctx.db.patch(existing._id, { commit, at: now });
+    else {
+      await ctx.db.insert("marketInstalls", { userId: device.userId, itemId: item._id, commit, at: now });
+      await ctx.db.patch(item._id, { installs: (item.installs ?? 0) + 1 });
+    }
+    return { ok: true as const };
+  },
+});
+
+/** Stars, 1 to 5, only from an account that installed the item; a new rating replaces the old. */
+export const rateForDevice = proxyServerMutation({
+  args: { tokenHash: v.string(), fullName: v.string(), stars: v.number() },
+  handler: async (ctx, { tokenHash, fullName, stars }) => {
+    const device = await deviceByTokenHash(ctx, tokenHash);
+    if (!device) return { ok: false as const, code: "UNAUTHENTICATED" };
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) return { ok: false as const, code: "BAD_REQUEST" };
+    const item = await byFullName(ctx, fullName);
+    if (!item || item.takenDownAt !== undefined) return { ok: false as const, code: "NOT_FOUND" };
+    const installed = await ctx.db
+      .query("marketInstalls")
+      .withIndex("by_user_item", (q) => q.eq("userId", device.userId).eq("itemId", item._id))
+      .unique();
+    if (!installed) return { ok: false as const, code: "FORBIDDEN" };
+    const existing = await ctx.db
+      .query("marketRatings")
+      .withIndex("by_user_item", (q) => q.eq("userId", device.userId).eq("itemId", item._id))
+      .unique();
+    if (existing) {
+      await ctx.db.patch(existing._id, { stars, at: Date.now() });
+      await ctx.db.patch(item._id, { ratingSum: (item.ratingSum ?? 0) - existing.stars + stars });
+    } else {
+      await ctx.db.insert("marketRatings", { userId: device.userId, itemId: item._id, stars, at: Date.now() });
+      await ctx.db.patch(item._id, {
+        ratingSum: (item.ratingSum ?? 0) + stars,
+        ratingCount: (item.ratingCount ?? 0) + 1,
+      });
+    }
+    return { ok: true as const };
+  },
+});
+
+/** An account's installs and stars go with it, and the listings' counts drop (users.ts). */
+export async function forgetUser(ctx: MutationCtx, userId: Id<"users">) {
+  const ratings = await ctx.db
+    .query("marketRatings")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  for (const r of ratings) {
+    const item = await ctx.db.get(r.itemId);
+    if (item)
+      await ctx.db.patch(item._id, {
+        ratingSum: Math.max(0, (item.ratingSum ?? 0) - r.stars),
+        ratingCount: Math.max(0, (item.ratingCount ?? 0) - 1),
+      });
+    await ctx.db.delete(r._id);
+  }
+  const installs = await ctx.db
+    .query("marketInstalls")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  for (const row of installs) {
+    const item = await ctx.db.get(row.itemId);
+    if (item) await ctx.db.patch(item._id, { installs: Math.max(0, (item.installs ?? 0) - 1) });
+    await ctx.db.delete(row._id);
+  }
+}
 
 // ---------------------------------------------------------------- staff (portal)
 
@@ -294,6 +393,13 @@ export const remove = internalMutation({
         .withIndex("by_item", (q) => q.eq("itemId", item._id))
         .collect();
       for (const r of reports) await ctx.db.delete(r._id);
+      for (const table of ["marketInstalls", "marketRatings"] as const) {
+        const rows = await ctx.db
+          .query(table)
+          .withIndex("by_item", (q) => q.eq("itemId", item._id))
+          .collect();
+        for (const x of rows) await ctx.db.delete(x._id);
+      }
       await ctx.db.delete(item._id);
     }
   },

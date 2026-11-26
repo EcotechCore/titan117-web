@@ -400,6 +400,10 @@ export default defineSchema({
     verifiedCommit: v.optional(v.string()),
     takenDownAt: v.optional(v.number()),
     takedownReason: v.optional(v.string()),
+    // Counts kept with the listing (decisions §66.12): accounts that installed it, and their stars.
+    installs: v.optional(v.number()),
+    ratingSum: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
   })
     .index("by_fullName", ["fullName"])
     .index("by_stars", ["stars"]),
@@ -426,4 +430,29 @@ export default defineSchema({
     .index("by_item", ["itemId"])
     .index("by_reporter", ["reporterId", "at"])
     .index("by_handledAt", ["handledAt"]),
+
+  /**
+   * Who installed which marketplace item at which commit (§32 item 8;
+   * decisions §66.12), one row per account and item, reported by the laptop.
+   */
+  marketInstalls: defineTable({
+    userId: v.id("users"),
+    itemId: v.id("marketItems"),
+    commit: v.string(),
+    at: v.number(),
+  })
+    .index("by_user", ["userId", "at"])
+    .index("by_user_item", ["userId", "itemId"])
+    .index("by_item", ["itemId"]),
+
+  /** Stars from accounts that installed the item (decisions §66.12), one per account and item. */
+  marketRatings: defineTable({
+    userId: v.id("users"),
+    itemId: v.id("marketItems"),
+    stars: v.number(),
+    at: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_item", ["userId", "itemId"])
+    .index("by_item", ["itemId"]),
 });

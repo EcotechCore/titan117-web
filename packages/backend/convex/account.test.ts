@@ -63,6 +63,24 @@ async function userWithEverything(t: T, clerkId: string, cancelAtPeriodEnd = fal
     await ctx.db.insert("syncChanges", { userId, deviceId, seq: 1, keyGen: 1, size: 6, storageId: packageId, createdAt: T0 });
     await ctx.db.insert("deviceSignIns", { userId, codeHash: `c_${clerkId}`, challenge: "x", name: "laptop", expiresAt: T0 });
     await ctx.db.insert("proxyCalls", { userId, model: "m", startedAt: T0 });
+    const itemId = await ctx.db.insert("marketItems", {
+      fullName: `acme/${clerkId}`.toLowerCase().replace(/_/g, "-"),
+      owner: "acme",
+      repo: clerkId,
+      name: "clerk",
+      type: "agent",
+      title: "Clerk",
+      version: "1.0.0",
+      description: "d",
+      license: "MIT",
+      stars: 0,
+      defaultBranch: "main",
+      commit: "a".repeat(40),
+      pushedAt: T0,
+      readAt: T0,
+    });
+    await ctx.db.insert("marketInstalls", { userId, itemId, commit: "a".repeat(40), at: T0 });
+    await ctx.db.insert("marketRatings", { userId, itemId, stars: 5, at: T0 });
     const storageId = await ctx.storage.store(new Blob(["<p>shared</p>"]));
     const groupId = await ctx.db.insert("errorGroups", { signature: `s_${clerkId}`, feature: "f", title: "t", count: 1, firstSeen: T0, lastSeen: T0, versions: [], os: [] });
     await ctx.db.insert("errorReports", { userId, groupId, ref: `T117-${clerkId}`, appVersion: "1", os: "w", feature: "f", message: "m", stack: "", logLines: [], note: "", at: T0 });
@@ -72,6 +90,8 @@ async function userWithEverything(t: T, clerkId: string, cancelAtPeriodEnd = fal
 }
 
 const USER_TABLES = [
+  "marketInstalls",
+  "marketRatings",
   "entitlements",
   "stripeCustomers",
   "creditBuckets",
