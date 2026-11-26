@@ -28,6 +28,8 @@ const TYPE_NAMES: Record<string, string> = {
   tool: "Tools",
   "app-template": "App templates",
   "sidebar-app": "Sidebar apps",
+  "mcp-server": "MCP servers",
+  workflow: "Workflows",
 };
 
 const LICENCE_OK = /^(MIT|Apache-2\.0|BSD-[23]-Clause|ISC|0BSD|Unlicense)$/i;
