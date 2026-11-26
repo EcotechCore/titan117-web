@@ -112,6 +112,9 @@ export function Header() {
               </div>
             </div>
           </div>
+          <a href="/marketplace" data-nav="marketplace">
+            Marketplace
+          </a>
           <a href="/pricing" data-nav="pricing">
             Pricing
           </a>
@@ -157,6 +160,7 @@ export function Footer() {
           <a href="/#product">Overview</a>
           <a href="/agents">Agents</a>
           <a href="/pricing">Pricing</a>
+          <a href="/marketplace">Marketplace</a>
           <a href="/#trust">Security</a>
         </div>
         <div className="footer-col">

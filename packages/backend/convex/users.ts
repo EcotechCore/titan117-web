@@ -106,6 +106,12 @@ export const deleteFromClerk = internalMutation({
       await removeComments(ctx, row.publicId);
       await ctx.db.delete(row._id);
     }
+    // Marketplace reports stay for accountability, without the reporter (decisions §66.11).
+    const marketReports = await ctx.db
+      .query("marketReports")
+      .withIndex("by_reporter", (q) => q.eq("reporterId", user._id))
+      .collect();
+    for (const row of marketReports) await ctx.db.patch(row._id, { reporterId: undefined });
     await ctx.db.delete(user._id);
   },
 });
