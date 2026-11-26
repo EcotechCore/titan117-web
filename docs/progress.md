@@ -32,6 +32,10 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 26 Nov 2026 · Phase 16's first part merged
+
+The pull requests are merged in all three repos (web #62 first, then desktop #57 and pop #49 after their docs check passed). Run the desktop app from `main`. Phase 16 stays in progress: fork and publish, installs and ratings, later takedowns, MCP servers and workflows from the marketplace, other hosts, the update card and the portal's screen; decisions §66 waits for the owner.
+
 ### 26 Nov 2026 · Phase 16 started: the marketplace's listing and `titan.json` (shared docs, web)
 
 The phase-start review (guardrails §11b) is done and the plan is decisions §66 (to be confirmed). Licences read from the projects' own files: Octokit MIT, osv-scanner Apache 2.0, gitleaks MIT, licensee MIT (all ideas only, none shipped) and quickjs-emscripten MIT (the desktop's one new dependency). Vendors' own pages read for GitHub's search, commits, ZIP downloads, content, licences, topics and terms, OSV's API, and partly GitLab, Codeberg and Hugging Face (rows in `external-services.md`; other hosts stay "to verify").
