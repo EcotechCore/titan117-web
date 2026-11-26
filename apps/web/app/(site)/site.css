@@ -785,6 +785,15 @@ a.cap:hover { background: var(--tile); }
 .faq-group h3 { font-size: 20px; font-weight: 500; margin-bottom: 14px; }
 .faq-group + .faq-group { margin-top: 0; }
 .empty { color: var(--muted-fg); padding-top: 8px; }
+.chips .chip-link { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); font-size: 14px; color: var(--muted-fg); transition: all .2s; }
+.chips .chip-link:hover { color: var(--fg); border-color: var(--muted-fg); }
+.chips .chip-link[aria-current="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.market-card .market-meta { font-size: 13px; }
+.market-card .market-meta a { text-decoration: underline; }
+.market-warn { color: var(--accent, #e5533d); }
+.market-install { font-size: 13px; color: var(--muted-fg); margin-top: auto; }
+.market-install code, .empty code { font-family: var(--mono, ui-monospace, monospace); font-size: 12px; background: var(--tile); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
+.market-note { color: var(--muted-fg); font-size: 14px; margin-top: 32px; max-width: 760px; }
 .empty a { text-decoration: underline; }
 
 /* ---------- pricing page ---------- */

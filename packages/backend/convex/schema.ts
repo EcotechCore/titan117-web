@@ -373,4 +373,57 @@ export default defineSchema({
     // The owner hid it from the page.
     hiddenAt: v.optional(v.number()),
   }).index("by_publicId", ["publicId", "at"]),
+  /**
+   * Marketplace listings (§32 item 8; decisions §66.3): public GitHub
+   * repositories with the `titan117-addon` topic and a valid `titan.json`.
+   * Only the listing; the code stays on GitHub. Written by the hourly index.
+   */
+  marketItems: defineTable({
+    // "owner/repo" in small letters: the key.
+    fullName: v.string(),
+    owner: v.string(),
+    repo: v.string(),
+    name: v.string(),
+    type: v.string(),
+    title: v.string(),
+    version: v.string(),
+    description: v.string(),
+    license: v.union(v.string(), v.null()),
+    stars: v.number(),
+    defaultBranch: v.string(),
+    // The default branch's commit when titan.json was read.
+    commit: v.string(),
+    pushedAt: v.number(),
+    readAt: v.number(),
+    verifiedAt: v.optional(v.number()),
+    // The commit staff read when they verified it.
+    verifiedCommit: v.optional(v.string()),
+    takenDownAt: v.optional(v.number()),
+    takedownReason: v.optional(v.string()),
+  })
+    .index("by_fullName", ["fullName"])
+    .index("by_stars", ["stars"]),
+
+  /**
+   * Reports about marketplace items (decisions §66.11): who reported (removed
+   * on account deletion), why, and what staff decided.
+   */
+  marketReports: defineTable({
+    itemId: v.id("marketItems"),
+    reporterId: v.optional(v.id("users")),
+    reason: v.union(
+      v.literal("malware"),
+      v.literal("security"),
+      v.literal("licence"),
+      v.literal("spam"),
+      v.literal("other"),
+    ),
+    note: v.string(),
+    at: v.number(),
+    handledAt: v.optional(v.number()),
+    decision: v.optional(v.union(v.literal("removed"), v.literal("kept"))),
+  })
+    .index("by_item", ["itemId"])
+    .index("by_reporter", ["reporterId", "at"])
+    .index("by_handledAt", ["handledAt"]),
 });
