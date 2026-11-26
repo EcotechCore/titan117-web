@@ -13,6 +13,7 @@ import { v } from "convex/values";
 
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
+import { forgetUser } from "./market";
 import type { MutationCtx } from "./_generated/server";
 import { removeBilling } from "./lib/billing";
 import { identityMutation, userQuery } from "./lib/functions";
@@ -112,6 +113,8 @@ export const deleteFromClerk = internalMutation({
       .withIndex("by_reporter", (q) => q.eq("reporterId", user._id))
       .collect();
     for (const row of marketReports) await ctx.db.patch(row._id, { reporterId: undefined });
+    // Installs and stars ("marketInstalls", "marketRatings") go, and the listings' counts drop.
+    await forgetUser(ctx, user._id);
     await ctx.db.delete(user._id);
   },
 });

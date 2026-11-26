@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api, internal } from "./_generated/api";
-import { MAX_REPORTS_PER_DAY, READS_PER_RUN, setGitHubFetch } from "./market";
+import { MAX_INSTALLS_PER_DAY, MAX_REPORTS_PER_DAY, READS_PER_RUN, setGitHubFetch } from "./market";
 import { identity, setup } from "./test.setup";
 
 type T = ReturnType<typeof setup>;
@@ -211,5 +211,81 @@ describe("verified, reports and takedown (decisions §66.11)", () => {
     const reports = await t.run((ctx) => ctx.db.query("marketReports").collect());
     expect(reports).toHaveLength(1);
     expect(reports[0].reporterId).toBeUndefined();
+  });
+});
+
+describe("installs and ratings (decisions §66.12)", () => {
+  const SECRET = "s".repeat(48);
+  async function listedWithDevice(t: T) {
+    fakeGitHub([{ full_name: "acme/clerk", file: manifest("clerk") }]);
+    await t.action(internal.market.refresh, {});
+    const userId = await t.run((ctx) => ctx.db.insert("users", { clerkId: "user_1" }));
+    await t.run((ctx) => ctx.db.insert("devices", { userId, name: "laptop", tokenHash: "hash_1" }));
+    return userId;
+  }
+
+  it("refuses a wrong server secret, an unknown device and a bad commit; counts one install per account", async () => {
+    vi.stubEnv("PROXY_SECRET", SECRET);
+    const t = setup();
+    await listedWithDevice(t);
+    await expect(
+      t.mutation(api.market.installedForDevice, { proxySecret: "x".repeat(48), tokenHash: "hash_1", fullName: "acme/clerk", commit: SHA }),
+    ).rejects.toThrowError("FORBIDDEN");
+    expect(
+      await t.mutation(api.market.installedForDevice, { proxySecret: SECRET, tokenHash: "nope", fullName: "acme/clerk", commit: SHA }),
+    ).toEqual({ ok: false, code: "UNAUTHENTICATED" });
+    expect(
+      await t.mutation(api.market.installedForDevice, { proxySecret: SECRET, tokenHash: "hash_1", fullName: "acme/clerk", commit: "main" }),
+    ).toEqual({ ok: false, code: "BAD_REQUEST" });
+    for (const commit of [SHA, SHA2])
+      expect(
+        await t.mutation(api.market.installedForDevice, { proxySecret: SECRET, tokenHash: "hash_1", fullName: "acme/clerk", commit }),
+      ).toEqual({ ok: true });
+    expect(await t.query(api.market.get, { fullName: "acme/clerk" })).toMatchObject({ installs: 1, rating: null });
+    vi.unstubAllEnvs();
+  });
+
+  it("takes stars only after installing, replaces a rating, and drops it all with the account", async () => {
+    vi.stubEnv("PROXY_SECRET", SECRET);
+    const t = setup();
+    await listedWithDevice(t);
+    const rate = (stars: number) =>
+      t.mutation(api.market.rateForDevice, { proxySecret: SECRET, tokenHash: "hash_1", fullName: "acme/clerk", stars });
+    expect(await rate(5)).toEqual({ ok: false, code: "FORBIDDEN" });
+    await t.mutation(api.market.installedForDevice, { proxySecret: SECRET, tokenHash: "hash_1", fullName: "acme/clerk", commit: SHA });
+    expect(await rate(0)).toEqual({ ok: false, code: "BAD_REQUEST" });
+    expect(await rate(4.5)).toEqual({ ok: false, code: "BAD_REQUEST" });
+    expect(await rate(5)).toEqual({ ok: true });
+    expect(await rate(3)).toEqual({ ok: true });
+    expect(await t.query(api.market.get, { fullName: "acme/clerk" })).toMatchObject({ installs: 1, rating: 3, ratings: 1 });
+    await t.mutation(internal.users.deleteFromClerk, { clerkId: "user_1" });
+    expect(await t.query(api.market.get, { fullName: "acme/clerk" })).toMatchObject({ installs: 0, rating: null, ratings: 0 });
+    expect(await t.run((ctx) => ctx.db.query("marketInstalls").collect())).toEqual([]);
+    expect(await t.run((ctx) => ctx.db.query("marketRatings").collect())).toEqual([]);
+    vi.unstubAllEnvs();
+  });
+
+  it("limits installs a day, and refuses a taken-down item", async () => {
+    vi.stubEnv("PROXY_SECRET", SECRET);
+    const t = setup();
+    const repos = Array.from({ length: MAX_INSTALLS_PER_DAY + 1 }, (_, i) => ({ full_name: `acme/i${i}`, file: manifest(`i${i}`) }));
+    fakeGitHub(repos);
+    await t.action(internal.market.refresh, {});
+    const userId = await t.run((ctx) => ctx.db.insert("users", { clerkId: "user_1" }));
+    await t.run((ctx) => ctx.db.insert("devices", { userId, name: "laptop", tokenHash: "hash_1" }));
+    // The first run reads only READS_PER_RUN repositories: run until all are listed.
+    while ((await t.query(api.market.list, {})).length < repos.length) await t.action(internal.market.refresh, {});
+    const install = (i: number) =>
+      t.mutation(api.market.installedForDevice, { proxySecret: SECRET, tokenHash: "hash_1", fullName: `acme/i${i}`, commit: SHA });
+    for (let i = 0; i < MAX_INSTALLS_PER_DAY; i++) expect(await install(i)).toEqual({ ok: true });
+    expect(await install(MAX_INSTALLS_PER_DAY)).toEqual({ ok: false, code: "RATE_LIMITED" });
+    await staff(t);
+    const [item] = await t.run((ctx) => ctx.db.query("marketItems").collect());
+    await admin(t).mutation(api.market.decide, { itemId: item._id, decision: "removed", reason: "x" });
+    vi.setSystemTime(T0 + 2 * 24 * 3600_000);
+    expect(
+      await t.mutation(api.market.installedForDevice, { proxySecret: SECRET, tokenHash: "hash_1", fullName: item.fullName, commit: SHA }),
+    ).toEqual({ ok: false, code: "NOT_FOUND" });
+    vi.unstubAllEnvs();
   });
 });

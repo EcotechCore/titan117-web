@@ -32,6 +32,12 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 26 Nov 2026 · Phase 16: installs and ratings (shared docs, web)
+
+Built (decisions §66.19): `marketInstalls` and `marketRatings` (§11 row), counts on `marketItems`, `installedForDevice` and `rateForDevice` behind our server's secret with the device token's hash (one install per account and item, 50 a day; stars only after installing), the routes `/api/v1/market/installs` and `/api/v1/market/ratings`, installs and the average on `/marketplace`, and deletion with the account (counts drop) and with the listing. Docs: the compare page read for the update card (`external-services.md`).
+
+- **Checks:** Convex 185 tests (3 new: secret, device, commit and counting; ratings only after installing, replaced, gone with the account; the daily limit and takedowns), the deletion coverage with both tables seeded, typecheck and lint. **Not seen yet:** real counts (no listed repository yet).
+
 ### 26 Nov 2026 · Phase 16's first part merged
 
 The pull requests are merged in all three repos (web #62 first, then desktop #57 and pop #49 after their docs check passed). Run the desktop app from `main`. Phase 16 stays in progress: fork and publish, installs and ratings, later takedowns, MCP servers and workflows from the marketplace, other hosts, the update card and the portal's screen; decisions §66 waits for the owner.

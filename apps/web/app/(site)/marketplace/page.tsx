@@ -66,7 +66,8 @@ async function Listing({ q, type }: { q: string; type: string | null }) {
             <a href={`https://github.com/${item.owner}/${item.repo}`} rel="noopener noreferrer" target="_blank">
               {item.owner}/{item.repo}
             </a>{" "}
-            · v{item.version} · ★ {item.stars} ·{" "}
+            · v{item.version} · {item.installs} {item.installs === 1 ? "install" : "installs"} ·{" "}
+            {item.rating !== null ? `★ ${item.rating} (${item.ratings})` : "not rated yet"} · {item.stars} on GitHub ·{" "}
             <span className={item.license && LICENCE_OK.test(item.license) ? "" : "market-warn"}>
               {item.license ?? "No licence found"}
             </span>
