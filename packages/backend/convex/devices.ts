@@ -21,6 +21,7 @@ import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from
 import { entitlementOf, isUsable } from "./lib/credits";
 import { fail, userAction, userMutation, userQuery } from "./lib/functions";
 import { randomToken, sha256Hex } from "./lib/tokens";
+import { leaveSync } from "./sync";
 
 const CODE_TTL_MS = 5 * 60 * 1000;
 const DAY = 24 * 60 * 60 * 1000;
@@ -65,6 +66,8 @@ export const revoke = userMutation({
     // Another user's device looks the same as one that doesn't exist.
     if (!device || device.userId !== ctx.user._id) fail("NOT_FOUND");
     if (device.revokedAt === undefined) await ctx.db.patch(deviceId, { revokedAt: Date.now() });
+    // A signed-out laptop leaves sync; the laptops still in change the key (decisions §65.5).
+    await leaveSync(ctx, deviceId);
   },
 });
 
@@ -139,7 +142,10 @@ export const redeemSignIn = internalMutation({
     // The same app install signing in again replaces its old device (its old token stops working).
     if (signIn.installHash)
       for (const old of await activeDevices(ctx, signIn.userId))
-        if (old.installHash === signIn.installHash) await ctx.db.patch(old._id, { revokedAt: now });
+        if (old.installHash === signIn.installHash) {
+          await ctx.db.patch(old._id, { revokedAt: now });
+          await leaveSync(ctx, old._id);
+        }
     const deviceId = await ctx.db.insert("devices", {
       userId: signIn.userId,
       name: signIn.name,

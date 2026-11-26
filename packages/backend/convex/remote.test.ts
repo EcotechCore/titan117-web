@@ -431,3 +431,59 @@ describe("the second-factor check's first steps", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("a second factor for a laptop-only answer (decisions §65.7)", () => {
+  async function leaseKey() {
+    const pair = (await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"])) as CryptoKeyPair;
+    const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey));
+    vi.stubEnv("LEASE_PRIVATE_KEY", btoa(String.fromCharCode(...pkcs8)));
+    return pair.publicKey;
+  }
+  const b64 = (s: string) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+
+  it("is refused without a fresh second factor", async () => {
+    const t = setup();
+    const { as, browserKey } = await pairedSetup(t);
+    await leaseKey();
+    vi.stubEnv("REMOTE_TWO_FACTOR", "");
+    await expect(
+      as.action(api.remote.secondFactorProof, { approvalId: "a_1", deviceKey: browserKey.publicKey, sessionToken: FAKE_SESSION }),
+    ).rejects.toThrowError("FORBIDDEN");
+  });
+
+  it("signs one answer from this account's own paired device, over a prefix a lease never has", async () => {
+    const t = setup();
+    const { as, userId, browserKey, laptopKey } = await pairedSetup(t);
+    const verifyKey = await leaseKey();
+    const { proof } = await as.action(api.remote.secondFactorProof, {
+      approvalId: "a_1",
+      deviceKey: browserKey.publicKey,
+      sessionToken: FAKE_SESSION,
+    });
+    const [body, sig] = proof.split(".");
+    const enc = new TextEncoder();
+    const verify = (text: string) =>
+      crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, verifyKey, b64(sig) as BufferSource, enc.encode(text) as BufferSource);
+    expect(await verify("titan117 second-factor|" + body)).toBe(true);
+    // Checked the way a lease is checked, it fails.
+    expect(await verify(body)).toBe(false);
+    const payload = JSON.parse(new TextDecoder().decode(b64(body)));
+    expect(payload).toEqual({ v: 1, kind: "second-factor", sub: userId, key: browserKey.publicKey, approval: "a_1", iat: T0, exp: T0 + 5 * 60_000 });
+
+    // Not for the laptop's own key, another account's key, or a bad approval id.
+    await expect(
+      as.action(api.remote.secondFactorProof, { approvalId: "a_1", deviceKey: laptopKey.publicKey, sessionToken: FAKE_SESSION }),
+    ).rejects.toThrowError("FORBIDDEN");
+    await expect(
+      as.action(api.remote.secondFactorProof, { approvalId: "../x", deviceKey: browserKey.publicKey, sessionToken: FAKE_SESSION }),
+    ).rejects.toThrowError("FORBIDDEN");
+    await user(t, "user_2");
+    await expect(
+      t.withIdentity(identity("user_2")).action(api.remote.secondFactorProof, {
+        approvalId: "a_1",
+        deviceKey: browserKey.publicKey,
+        sessionToken: FAKE_SESSION,
+      }),
+    ).rejects.toThrowError("FORBIDDEN");
+  });
+});

@@ -17,6 +17,13 @@ export default defineSchema({
     deletionStoppedRenewal: v.optional(v.boolean()),
     // "Revoke all devices" (decisions §64.8): laptops unlink their chat channels and rotate their keys when they see it.
     remoteRevokedAllAt: v.optional(v.number()),
+    // Staff (role admin) confirmed a fresh second factor at this time (decisions §65.8); admits them for 8 hours.
+    staffSecondFactorAt: v.optional(v.number()),
+    // Sync between laptops (decisions §65.5–6): the sync key's current generation, when a laptop last
+    // asked every laptop to send everything again, and the highest package dropped at 30 days unread.
+    syncKeyGen: v.optional(v.number()),
+    syncResendAt: v.optional(v.number()),
+    syncExpiredTop: v.optional(v.number()),
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_deleteAfter", ["deleteAfter"]),
@@ -114,6 +121,47 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_deviceKey", ["deviceKey"]),
+
+  /**
+   * Sync between the user's laptops (§32: devices; decisions §65.4–6): each
+   * laptop that switched sync on, its sync public key, whether it's in, and
+   * the account's sync key sealed to it. Convex can't open that key.
+   */
+  syncMembers: defineTable({
+    userId: v.id("users"),
+    deviceId: v.id("devices"),
+    name: v.string(),
+    publicKey: v.string(),
+    status: v.union(v.literal("waiting"), v.literal("in")),
+    createdAt: v.number(),
+    // The sync key sealed to this laptop by a laptop already in (header kind "sync").
+    sealedKey: v.optional(v.string()),
+    sealedBy: v.optional(v.string()),
+    keyMsgId: v.optional(v.string()),
+    keyGen: v.optional(v.number()),
+    // The last package this laptop has read.
+    cursor: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_device", ["deviceId"]),
+
+  /**
+   * Synced changes (§32: sync, end to end encrypted; decisions §58.7, §65.6):
+   * sealed packages in file storage with routing fields only. Deleted once
+   * every laptop in has read them, at 30 days, and with the account.
+   */
+  syncChanges: defineTable({
+    userId: v.id("users"),
+    deviceId: v.id("devices"),
+    seq: v.number(),
+    keyGen: v.number(),
+    size: v.number(),
+    storageId: v.id("_storage"),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId", "seq"])
+    .index("by_user_time", ["userId", "createdAt"])
+    .index("by_createdAt", ["createdAt"]),
 
   /**
    * Remote messages (§32 item 4; decisions §64.3): ciphertext and routing

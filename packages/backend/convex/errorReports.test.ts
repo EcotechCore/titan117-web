@@ -31,7 +31,7 @@ function report(tokenHash: string, extra: Partial<Record<string, unknown>> = {})
   };
 }
 
-const staff = (t: T) => t.withIdentity(identity("staff_1", { fva: [0, 0] }));
+const staff = (t: T) => t.withIdentity(identity("staff_1"));
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -90,7 +90,7 @@ describe("error report refusals (guardrails §2)", () => {
     const t = setup();
     await userWithDevice(t, "user_1");
     await userWithDevice(t, "user_2");
-    await t.run((ctx) => ctx.db.insert("users", { clerkId: "staff_1", role: "admin" }));
+    await t.run((ctx) => ctx.db.insert("users", { clerkId: "staff_1", role: "admin", staffSecondFactorAt: Date.now() }));
     const { ref } = await t.mutation(api.errorReports.submitForDevice, report("hash_user_1"));
     const [group] = await t.run((ctx) => ctx.db.query("errorGroups").collect());
     await staff(t).mutation(api.errorReports.markFixed, { groupId: group._id, fixedIn: "1.4" });
@@ -108,7 +108,7 @@ describe("error reports", () => {
     const t = setup();
     await userWithDevice(t, "user_1");
     await userWithDevice(t, "user_2");
-    await t.run((ctx) => ctx.db.insert("users", { clerkId: "staff_1", role: "admin" }));
+    await t.run((ctx) => ctx.db.insert("users", { clerkId: "staff_1", role: "admin", staffSecondFactorAt: Date.now() }));
     const a = await t.mutation(api.errorReports.submitForDevice, report("hash_user_1"));
     const b = await t.mutation(
       api.errorReports.submitForDevice,

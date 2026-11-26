@@ -10,8 +10,9 @@
  * second factor never verified (clerk.com/docs/guides/sessions/session-tokens).
  *
  * Until the owner moves to Clerk Pro (decisions §37) no account can have a
- * second factor, so for local development only REMOTE_TWO_FACTOR set to
- * exactly `off-until-clerk-pro` skips the check. Anything else keeps it on.
+ * second factor, so for local development only REMOTE_TWO_FACTOR (remote
+ * control) or PORTAL_TWO_FACTOR (staff, decisions §65.8) set to exactly
+ * `off-until-clerk-pro` skips the check. Anything else keeps it on.
  */
 import { SECOND_FACTOR_MAX_MINUTES } from "@titan117/shared";
 import { verifyToken } from "@clerk/backend";
@@ -23,16 +24,22 @@ export function secondFactorAge(claims: Record<string, unknown>): number | null 
   return fva[1];
 }
 
-export function twoFactorSwitchedOff() {
-  return process.env.REMOTE_TWO_FACTOR === "off-until-clerk-pro";
+export type TwoFactorSwitch = "REMOTE_TWO_FACTOR" | "PORTAL_TWO_FACTOR";
+
+export function twoFactorSwitchedOff(name: TwoFactorSwitch = "REMOTE_TWO_FACTOR") {
+  return process.env[name] === "off-until-clerk-pro";
 }
 
 /**
  * True when `sessionToken` is a valid Clerk session token of `clerkId` whose
  * second factor was verified at most ten minutes ago. Never throws.
  */
-export async function hasFreshSecondFactor(sessionToken: string, clerkId: string): Promise<boolean> {
-  if (twoFactorSwitchedOff()) return true;
+export async function hasFreshSecondFactor(
+  sessionToken: string,
+  clerkId: string,
+  switchName: TwoFactorSwitch = "REMOTE_TWO_FACTOR",
+): Promise<boolean> {
+  if (twoFactorSwitchedOff(switchName)) return true;
   if (typeof sessionToken !== "string" || sessionToken.length > 8192 || sessionToken.split(".").length !== 3) return false;
   // Cheap checks before any network call: a session token names its key and belongs to this user.
   try {

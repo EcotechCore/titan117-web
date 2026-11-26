@@ -3,7 +3,7 @@
  * Convex runtime has no Node crypto). Random values are made in actions and
  * HTTP actions, never in queries or mutations, whose randomness is seeded.
  */
-import type { LeasePayload } from "@titan117/shared";
+import { SECOND_FACTOR_PROOF_PREFIX, type LeasePayload, type SecondFactorProof } from "@titan117/shared";
 
 const enc = new TextEncoder();
 
@@ -52,5 +52,21 @@ export async function signLease(payload: LeasePayload) {
   ]);
   const body = base64url(enc.encode(JSON.stringify(payload)));
   const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, enc.encode(body));
+  return `${body}.${base64url(new Uint8Array(sig))}`;
+}
+
+/**
+ * Signs a proof of a fresh second factor (decisions §65.7) with the lease
+ * key, over a different prefix, so a proof can't pass for a lease or the
+ * other way round. Same format as a lease.
+ */
+export async function signSecondFactorProof(payload: SecondFactorProof) {
+  const pkcs8 = process.env.LEASE_PRIVATE_KEY;
+  if (!pkcs8) throw new Error("LEASE_PRIVATE_KEY is not set in the Convex environment");
+  const key = await crypto.subtle.importKey("pkcs8", fromBase64(pkcs8), { name: "ECDSA", namedCurve: "P-256" }, false, [
+    "sign",
+  ]);
+  const body = base64url(enc.encode(JSON.stringify(payload)));
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, enc.encode(SECOND_FACTOR_PROOF_PREFIX + body));
   return `${body}.${base64url(new Uint8Array(sig))}`;
 }

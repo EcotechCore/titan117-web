@@ -58,6 +58,9 @@ async function userWithEverything(t: T, clerkId: string, cancelAtPeriodEnd = fal
     await ctx.db.insert("pairings", { userId, deviceId, laptopKey: key, expiresAt: T0, status: "open" });
     await ctx.db.insert("remoteMessages", { userId, from: key, to: key, kind: "event", msgId: `m_${clerkId}`, sealed: "AAAA", size: 3, createdAt: T0, expiresAt: T0 });
     await ctx.db.insert("pushSubscriptions", { userId, deviceKey: key, endpoint: "https://fcm.googleapis.com/fcm/send/x", createdAt: T0 });
+    await ctx.db.insert("syncMembers", { userId, deviceId, name: "laptop", publicKey: key, status: "in", createdAt: T0, cursor: 0 });
+    const packageId = await ctx.storage.store(new Blob(["sealed"]));
+    await ctx.db.insert("syncChanges", { userId, deviceId, seq: 1, keyGen: 1, size: 6, storageId: packageId, createdAt: T0 });
     await ctx.db.insert("deviceSignIns", { userId, codeHash: `c_${clerkId}`, challenge: "x", name: "laptop", expiresAt: T0 });
     await ctx.db.insert("proxyCalls", { userId, model: "m", startedAt: T0 });
     const storageId = await ctx.storage.store(new Blob(["<p>shared</p>"]));
@@ -82,6 +85,8 @@ const USER_TABLES = [
   "pairings",
   "remoteMessages",
   "pushSubscriptions",
+  "syncMembers",
+  "syncChanges",
 ] as const;
 
 async function rowsOf(t: T, userId: Id<"users">) {

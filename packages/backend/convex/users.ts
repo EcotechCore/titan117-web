@@ -17,6 +17,7 @@ import type { MutationCtx } from "./_generated/server";
 import { removeBilling } from "./lib/billing";
 import { identityMutation, userQuery } from "./lib/functions";
 import { removeComments } from "./shares";
+import { dropAllChanges } from "./sync";
 
 async function findByClerkId(ctx: MutationCtx, clerkId: string) {
   return await ctx.db
@@ -75,7 +76,9 @@ export const deleteFromClerk = internalMutation({
       .collect();
     for (const row of signIns) await ctx.db.delete(row._id);
     // Remote control (decisions §64): keys, pairings and sealed messages.
-    for (const table of ["deviceKeys", "pairings", "remoteMessages", "pushSubscriptions"] as const) {
+    // Sync (decisions §65): the sealed packages ("syncChanges") with their files, then the laptops' sealed keys below.
+    await dropAllChanges(ctx, user._id);
+    for (const table of ["deviceKeys", "pairings", "remoteMessages", "pushSubscriptions", "syncMembers"] as const) {
       const rows = await ctx.db
         .query(table)
         .withIndex("by_user", (q) => q.eq("userId", user._id))
