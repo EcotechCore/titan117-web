@@ -32,6 +32,12 @@ Where the build stands against the phases in the [roadmap](01-launch-roadmap-v1.
 
 Each entry: date, phase, what was done, and anything left open. One entry per piece of work, not per commit.
 
+### 26 Nov 2026 · Phase 16: the rest (shared docs, web)
+
+Decisions §66.21–26: MCP servers and workflows as add-on types (`titan.json` in `@titan117/shared`, with their cases), GitLab.com as a source, publishing within the GitHub App's permissions (topics and forks need "Administration", which we don't ask for), add-ons from a folder, any open-source project, and why the portal's screen waits for phase 5's staff screens. `/marketplace` lists the two new kinds. Vendor pages read: GitHub's permissions, repository creation, contents, topics and forks; GitLab's commits, archives, paths and limits; Codeberg's API (404, still to verify).
+
+- **Checks:** shared 32, web typecheck, lint and build. **Not seen yet:** a real MCP server or workflow add-on from a repository.
+
 ### 26 Nov 2026 · Phase 16's second part merged
 
 The pull requests are merged in all three repos (web #64 first, then desktop #59 and pop #51 after their docs check passed), and the development Convex deployment has the new tables. Run the desktop app from `main`. Phase 16 stays in progress: fork and publish, larger tools from the coding engine, MCP servers and workflows from the marketplace, install any open-source project, other hosts and the portal's screen; decisions §66 waits for the owner.
