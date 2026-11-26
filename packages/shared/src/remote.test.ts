@@ -120,3 +120,17 @@ describe("commands", () => {
     expect(parseCommand({ type: "file.add", name: "a.txt", data: "not base64!" })).toBeNull();
   });
 });
+
+describe("second-factor proofs", () => {
+  it("accept an answer with a well-formed proof and refuse a malformed one", () => {
+    const proof = `${"a".repeat(40)}.${"b".repeat(86)}`;
+    expect(parseCommand({ type: "approval.answer", approvalId: "a_1", answer: "approve", proof })).toEqual({
+      type: "approval.answer",
+      approvalId: "a_1",
+      answer: "approve",
+      proof,
+    });
+    expect(parseCommand({ type: "approval.answer", approvalId: "a_1", answer: "approve", proof: "x.y" })).toBeNull();
+    expect(parseCommand({ type: "approval.answer", approvalId: "a_1", answer: "approve", proof: 5 })).toBeNull();
+  });
+});

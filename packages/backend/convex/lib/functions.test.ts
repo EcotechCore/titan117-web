@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 
 import { identity, setup } from "../test.setup";
-import { hasSecondFactor, requireAdmin, requireDevice, requirePlan, requireUser } from "./functions";
+import { requireAdmin, requireDevice, requirePlan, requireUser, STAFF_SECOND_FACTOR_MS } from "./functions";
 
 type T = ReturnType<typeof setup>;
 const DAY = 86_400_000;
@@ -117,43 +117,38 @@ describe("requireDevice", () => {
 });
 
 describe("requireAdmin", () => {
-  const twoFactor = { fva: [3, 3] };
+  const insertStaff = (t: T, clerkId: string, at?: number) =>
+    t.run((ctx) => ctx.db.insert("users", { clerkId, role: "admin", ...(at !== undefined ? { staffSecondFactorAt: at } : {}) }));
 
   it("refuses a signed-out caller", async () => {
     await expect(setup().run((ctx) => requireAdmin(ctx))).rejects.toThrowError("UNAUTHENTICATED");
   });
 
-  it("refuses a user who isn't an admin, even with two-factor", async () => {
+  it("refuses a user who isn't an admin, even with a recent second factor", async () => {
     const t = setup();
-    await insertUser(t, "user_1");
+    await t.run((ctx) => ctx.db.insert("users", { clerkId: "user_1", staffSecondFactorAt: Date.now() }));
+    await expect(t.withIdentity(identity("user_1")).run((ctx) => requireAdmin(ctx))).rejects.toThrowError("FORBIDDEN");
+  });
+
+  it("refuses an admin who never confirmed a second factor, whatever the session says", async () => {
+    const t = setup();
+    await insertStaff(t, "admin_1");
+    // Convex leaves fva out, so a claim in the identity counts for nothing (decisions §65.8).
     await expect(
-      t.withIdentity(identity("user_1", twoFactor)).run((ctx) => requireAdmin(ctx)),
+      t.withIdentity(identity("admin_1", { fva: [3, 3] })).run((ctx) => requireAdmin(ctx)),
     ).rejects.toThrowError("FORBIDDEN");
   });
 
-  it("refuses an admin whose session has no second factor", async () => {
+  it("refuses an admin whose second factor is older than 8 hours", async () => {
     const t = setup();
-    await insertUser(t, "admin_1", "admin");
-    await expect(
-      t.withIdentity(identity("admin_1", { fva: [3, -1] })).run((ctx) => requireAdmin(ctx)),
-    ).rejects.toThrowError("FORBIDDEN");
+    await insertStaff(t, "admin_1", Date.now() - STAFF_SECOND_FACTOR_MS - 1000);
+    await expect(t.withIdentity(identity("admin_1")).run((ctx) => requireAdmin(ctx))).rejects.toThrowError("FORBIDDEN");
   });
 
-  it("allows an admin with a second factor", async () => {
+  it("allows an admin who confirmed a second factor in the last 8 hours", async () => {
     const t = setup();
-    await insertUser(t, "admin_1", "admin");
-    const { user } = await t.withIdentity(identity("admin_1", twoFactor)).run((ctx) => requireAdmin(ctx));
+    await insertStaff(t, "admin_1", Date.now() - 60_000);
+    const { user } = await t.withIdentity(identity("admin_1")).run((ctx) => requireAdmin(ctx));
     expect(user.role).toBe("admin");
-  });
-});
-
-describe("hasSecondFactor", () => {
-  it.each([
-    [{}, false],
-    [{ fva: [1, -1] }, false],
-    [{ fva: "[1,1]" }, false],
-    [{ fva: [1, 0] }, true],
-  ])("%j → %s", (claims, expected) => {
-    expect(hasSecondFactor(claims)).toBe(expected);
   });
 });

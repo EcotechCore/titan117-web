@@ -21,6 +21,7 @@ import {
   REMOTE_MAX_SEALED_BYTES,
   REMOTE_MESSAGE_TTL_MS,
   REMOTE_PROTOCOL_VERSION,
+  SECOND_FACTOR_PROOF_TTL_MS,
 } from "@titan117/shared";
 import { v } from "convex/values";
 
@@ -30,6 +31,7 @@ import { internalAction, internalMutation, internalQuery, type MutationCtx, type
 import { entitlementOf, isUsable } from "./lib/credits";
 import { fail, paidMutation, paidQuery, userAction, userMutation, userQuery } from "./lib/functions";
 import { hasFreshSecondFactor } from "./lib/secondFactor";
+import { signSecondFactorProof } from "./lib/tokens";
 import { isPushEndpoint, sendPush, vapidPublicKey } from "./lib/webPush";
 
 const MINUTE = 60 * 1000;
@@ -168,6 +170,44 @@ export const markEnabled = internalMutation({
     if (!device || device.userId !== userId || device.revokedAt !== undefined) fail("NOT_FOUND");
     if (!(await usablePlan(ctx, userId))) fail("PAYMENT_REQUIRED");
     await ctx.db.patch(deviceId, { remoteEnabledAt: Date.now() });
+  },
+});
+
+/**
+ * A proof of a fresh second factor for one answer to one laptop-only
+ * approval (decisions §65.7), from one of the caller's paired browsers or
+ * phones. The laptop checks the signature, the account, the device and the
+ * approval; it accepts the answer only for a category the user switched on.
+ */
+export const secondFactorProof = userAction({
+  args: { approvalId: v.string(), deviceKey: v.string(), sessionToken: v.string() },
+  handler: async (ctx, args): Promise<{ proof: string }> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity || !(await hasFreshSecondFactor(args.sessionToken, identity.subject))) fail("FORBIDDEN");
+    if (!/^[A-Za-z0-9_-]{1,80}$/.test(args.approvalId)) fail("FORBIDDEN");
+    const ok: boolean = await ctx.runQuery(internal.remote.proofAllowed, { userId: ctx.userId, deviceKey: args.deviceKey });
+    if (!ok) fail("FORBIDDEN");
+    const now = Date.now();
+    return {
+      proof: await signSecondFactorProof({
+        v: 1,
+        kind: "second-factor",
+        sub: ctx.userId,
+        key: args.deviceKey,
+        approval: args.approvalId,
+        iat: now,
+        exp: now + SECOND_FACTOR_PROOF_TTL_MS,
+      }),
+    };
+  },
+});
+
+/** The device key is the user's own paired browser or phone, and the plan is usable. */
+export const proofAllowed = internalQuery({
+  args: { userId: v.id("users"), deviceKey: v.string() },
+  handler: async (ctx, { userId, deviceKey }) => {
+    const row = await keyRow(ctx, deviceKey);
+    return !!row && row.userId === userId && row.kind !== "laptop" && !!(await usablePlan(ctx, userId));
   },
 });
 

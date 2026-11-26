@@ -19,4 +19,7 @@ crons.daily("error reports", { hourUTC: 4, minuteUTC: 30 }, internal.errorReport
 // Remote messages past their expiry and old pairings (remote.ts, decisions §64).
 crons.hourly("remote messages", { minuteUTC: 10 }, internal.remote.prune, {});
 
+// Sync packages nobody read in 30 days (sync.ts, decisions §65.6).
+crons.daily("sync packages", { hourUTC: 5, minuteUTC: 0 }, internal.sync.prune, {});
+
 export default crons;

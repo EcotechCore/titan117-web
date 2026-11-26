@@ -64,22 +64,26 @@ export async function requireDevice(ctx: Ctx, deviceId: Id<"devices">) {
   return { user, device };
 }
 
+/** Staff stay admitted this long after confirming a second factor (decisions §65.8). */
+export const STAFF_SECOND_FACTOR_MS = 8 * 60 * 60 * 1000;
+
 /**
- * Clerk's `fva` claim: minutes since the first and second factor were
- * verified, -1 when the second factor never was (clerk.com/docs, session
- * tokens, checked 9 Nov 2026). The Convex JWT template must carry it; wired up
- * with the portal in phase 5.
+ * Whether a staff member confirmed a second factor recently enough. Convex
+ * never sees Clerk's `fva` claim, so the portal confirms it through
+ * `staff.confirmSecondFactor` (an action that verifies the session token)
+ * and the time is kept on the user. PORTAL_TWO_FACTOR set to exactly
+ * `off-until-clerk-pro` skips this until Clerk Pro (decisions §37).
  */
-export function hasSecondFactor(identity: Record<string, unknown>) {
-  const fva = identity.fva;
-  return Array.isArray(fva) && typeof fva[1] === "number" && fva[1] >= 0;
+export function staffSecondFactorFresh(user: { staffSecondFactorAt?: number }, now: number) {
+  if (process.env.PORTAL_TWO_FACTOR === "off-until-clerk-pro") return true;
+  const at = user.staffSecondFactorAt;
+  return typeof at === "number" && at <= now && now - at <= STAFF_SECOND_FACTOR_MS;
 }
 
 export async function requireAdmin(ctx: Ctx) {
-  const identity = await ctx.auth.getUserIdentity();
   const user = await requireUser(ctx);
   if (user.role !== "admin") fail("FORBIDDEN");
-  if (!identity || !hasSecondFactor(identity)) fail("FORBIDDEN");
+  if (!staffSecondFactorFresh(user, Date.now())) fail("FORBIDDEN");
   return { user };
 }
 

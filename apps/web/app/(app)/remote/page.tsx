@@ -6,8 +6,11 @@
  * read the result and send a file. Everything is sealed in this browser to
  * the laptop's key and opened here with this browser's own key; Convex only
  * passes along what it can't read. Laptop-only approvals are shown but can't
- * be answered here (guardrails §9).
+ * be answered here (guardrails §9), unless the user switched their category on
+ * for a second factor on the laptop (decisions §65.7): then this page asks
+ * Clerk for one and sends Convex's signed proof inside the sealed answer.
  */
+import { useAuth, useReverification } from "@clerk/nextjs";
 import { api } from "@titan117/backend/api";
 import type { Id } from "@titan117/backend/dataModel";
 import {
@@ -25,7 +28,7 @@ import {
   type RemoteTask,
   type SealHeader,
 } from "@titan117/shared";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -33,6 +36,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   deviceKey,
   forgetAll,
+  needsSecondFactor,
   replaceLaptopKey,
   trustedLaptops,
   type DeviceKey,
@@ -102,6 +106,8 @@ export default function Remote() {
   const laptops = useQuery(api.remote.laptops, isAuthenticated ? {} : "skip");
   const inbox = useQuery(api.remote.inbox, isAuthenticated && me ? { key: me.publicKey } : "skip");
   const send = useMutation(api.remote.send);
+  const { getToken } = useAuth();
+  const secondFactorProof = useAction(api.remote.secondFactorProof);
   const ack = useMutation(api.remote.ack);
   const revokeAll = useMutation(api.remote.revokeAll);
   const pushKey = useQuery(api.remote.pushKey, isAuthenticated ? {} : "skip");
@@ -206,6 +212,30 @@ export default function Remote() {
       setBusy(false);
     }
   }
+  // A laptop-only answer the user allowed with a second factor: Clerk's own prompt when it's older than 10 minutes.
+  const proveAnswer = useReverification(async (approvalId: string) => {
+    if (!me) throw new Error("This browser isn't paired.");
+    const sessionToken = await getToken({ skipCache: true });
+    if (!sessionToken) throw new Error("Not signed in.");
+    try {
+      const { proof } = await secondFactorProof({ approvalId, deviceKey: me.publicKey, sessionToken });
+      return { proof };
+    } catch (error) {
+      if (error instanceof ConvexError && error.data === "FORBIDDEN") return needsSecondFactor();
+      throw error;
+    }
+  });
+  async function answerWithSecondFactor(approvalId: string, answer: "approve" | "deny") {
+    setProblem(null);
+    try {
+      const result = await proveAnswer(approvalId);
+      if (!result || !("proof" in result)) return setProblem("That needs two-factor sign-in switched on in your profile.");
+      await command({ type: "approval.answer", approvalId, answer, proof: result.proof });
+    } catch (error) {
+      setProblem(errorText(error));
+    }
+  }
+
   // The effect below always calls the latest one.
   const latestCommand = useRef(command);
   useEffect(() => {
@@ -371,7 +401,24 @@ export default function Remote() {
               {state.approvals.map((a) => (
                 <div key={a.id} className="flex flex-col gap-3 rounded-xl border border-[#ff6347] p-4">
                   <p>{a.summary}</p>
-                  {a.laptopOnly ? (
+                  {a.laptopOnly && a.secondFactor ? (
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        className="h-9 rounded-[8px] bg-[#ff6347] px-4 text-sm font-medium text-white hover:bg-[#c2361f]"
+                        disabled={busy}
+                        onClick={() => void answerWithSecondFactor(a.id, "approve")}
+                      >
+                        Approve with your second factor
+                      </button>
+                      <button
+                        className="h-9 rounded-[8px] border border-[#e6e6e6] px-4 text-sm hover:border-[#ff6347]"
+                        disabled={busy}
+                        onClick={() => void answerWithSecondFactor(a.id, "deny")}
+                      >
+                        Deny
+                      </button>
+                    </div>
+                  ) : a.laptopOnly ? (
                     <p className="text-sm text-[#6b6b6b]">Approve this on your laptop.</p>
                   ) : (
                     <div className="flex gap-2">

@@ -1,4 +1,5 @@
 import { verifyWebhook } from "@clerk/backend/webhooks";
+import { SYNC_MAX_PACKAGE_BYTES } from "@titan117/shared";
 import { httpRouter } from "convex/server";
 
 import { internal } from "./_generated/api";
@@ -143,11 +144,71 @@ const desktopRemote = httpAction(async (ctx, request) => {
   }
 });
 
+function bearerToken(request: Request) {
+  return request.headers.get("authorization")?.match(/^Bearer (t117d_[A-Za-z0-9_-]{43})$/)?.[1] ?? null;
+}
+
+/**
+ * Sync between laptops (sync.ts `laptop`, decisions §65): one call every few
+ * seconds while sync is on, with the device token. Sealed keys and package
+ * addresses only.
+ */
+const desktopSync = httpAction(async (ctx, request) => {
+  const token = bearerToken(request);
+  if (!token) return json({ error: "UNAUTHENTICATED" }, 401);
+  const device = await ctx.runQuery(internal.devices.deviceForToken, { tokenHash: await sha256Hex(token) });
+  if (!device) return json({ error: "UNAUTHENTICATED" }, 401);
+  const body = await readJson(request);
+  if (!body) return json({ error: "FORBIDDEN" }, 400);
+  try {
+    const result = await ctx.runMutation(internal.sync.laptop, {
+      deviceId: device,
+      on: body.on === true,
+      ...(typeof body.publicKey === "string" ? { publicKey: body.publicKey } : {}),
+      ...(typeof body.cursor === "number" ? { cursor: body.cursor } : {}),
+      ...(body.admit && typeof body.admit === "object" ? { admit: body.admit as never } : {}),
+      ...(typeof body.refuse === "string" ? { refuse: body.refuse as never } : {}),
+      ...(typeof body.remove === "string" ? { remove: body.remove as never } : {}),
+      ...(body.rekey && typeof body.rekey === "object" ? { rekey: body.rekey as never } : {}),
+      ...(body.resend === true ? { resend: true } : {}),
+    });
+    if ("error" in result) return json({ error: result.error }, result.error === "UNAUTHENTICATED" ? 401 : 403);
+    return json(result);
+  } catch {
+    return json({ error: "FORBIDDEN" }, 400);
+  }
+});
+
+/** One sealed sync package from a laptop that's in (decisions §65.6), kept in file storage. */
+const desktopSyncPackage = httpAction(async (ctx, request) => {
+  const token = bearerToken(request);
+  if (!token) return json({ error: "UNAUTHENTICATED" }, 401);
+  const device = await ctx.runQuery(internal.devices.deviceForToken, { tokenHash: await sha256Hex(token) });
+  if (!device) return json({ error: "UNAUTHENTICATED" }, 401);
+  const keyGen = Number(request.headers.get("x-titan117-key-gen"));
+  const declared = Number(request.headers.get("content-length"));
+  if (!Number.isInteger(keyGen) || keyGen < 1) return json({ error: "FORBIDDEN" }, 400);
+  const allowed = await ctx.runQuery(internal.sync.canUpload, {
+    deviceId: device,
+    keyGen,
+    size: Number.isFinite(declared) && declared > 0 ? declared : 1,
+  });
+  if (allowed !== "ok") return json({ error: allowed }, allowed === "UNAUTHENTICATED" ? 401 : allowed === "RATE_LIMITED" ? 429 : 403);
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength === 0 || bytes.byteLength > SYNC_MAX_PACKAGE_BYTES) return json({ error: "FORBIDDEN" }, 413);
+  const storageId = await ctx.storage.store(new Blob([bytes], { type: "application/octet-stream" }));
+  const seq = await ctx.runMutation(internal.sync.addChange, { deviceId: device, keyGen, size: bytes.byteLength, storageId });
+  if (seq === null) return json({ error: "FORBIDDEN" }, 403);
+  return json({ seq });
+});
+
 const http = httpRouter();
 http.route({ path: "/clerk", method: "POST", handler: clerkWebhook });
 http.route({ path: "/stripe", method: "POST", handler: stripeWebhook });
 http.route({ path: "/desktop/exchange", method: "POST", handler: desktopExchange });
 http.route({ path: "/desktop/lease", method: "POST", handler: desktopLease });
 http.route({ path: "/desktop/remote", method: "POST", handler: desktopRemote });
+http.route({ path: "/desktop/sync", method: "POST", handler: desktopSync });
+http.route({ path: "/desktop/sync/package", method: "POST", handler: desktopSyncPackage });
 
 export default http;

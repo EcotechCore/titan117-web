@@ -47,7 +47,7 @@ async function share(t: T, tokenHash: string, html = "<h1>Report</h1>") {
   return { publicId: result.publicId };
 }
 
-const admin = (t: T) => t.withIdentity(identity("staff_1", { fva: [0, 0] }));
+const admin = (t: T) => t.withIdentity(identity("staff_1"));
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -153,7 +153,7 @@ describe("sharing", () => {
   it("a report, then a takedown, removes the snapshot and keeps the record", async () => {
     const t = setup();
     await userWithPlan(t, "user_1");
-    await t.run((ctx) => ctx.db.insert("users", { clerkId: "staff_1", role: "admin" }));
+    await t.run((ctx) => ctx.db.insert("users", { clerkId: "staff_1", role: "admin", staffSecondFactorAt: Date.now() }));
     const { publicId } = await share(t, "hash_user_1");
     await t.mutation(api.shares.report, {
       proxySecret: SECRET,

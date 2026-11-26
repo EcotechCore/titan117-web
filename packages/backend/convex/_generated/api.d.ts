@@ -25,6 +25,8 @@ import type * as lib_webPush from "../lib/webPush.js";
 import type * as proxy from "../proxy.js";
 import type * as remote from "../remote.js";
 import type * as shares from "../shares.js";
+import type * as staff from "../staff.js";
+import type * as sync from "../sync.js";
 import type * as users from "../users.js";
 
 import type {
@@ -51,6 +53,8 @@ declare const fullApi: ApiFromModules<{
   proxy: typeof proxy;
   remote: typeof remote;
   shares: typeof shares;
+  staff: typeof staff;
+  sync: typeof sync;
   users: typeof users;
 }>;
 
