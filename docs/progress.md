@@ -36,7 +36,7 @@ Each entry: date, phase, what was done, and anything left open. One entry per pi
 
 Decisions §67 (to be confirmed) and design.md 0.3: the desktop's new look, our own version of the Antigravity app's layout and palette (no logo, icons or exact details of theirs), with the Azure gradient the owner chose. A grey window with the chat and the right panel as white rounded sheets, the right one a drawer; a short sidebar with folders and their tasks nested and Customize for the settings-like screens; steps folded into one line; a floating message box. The gradient replaces tomato for actions in the app (Send included); Titan stays tomato; the website and logo keep tomato. The faint grey is `#6c7277` so text reads 4.5:1; white on the gradient is below that, on the owner's choice (owner checklist). §8 and §19 point to §67.
 
-- **Checks:** docs only; the desktop's checks are in its own log. **Owner:** confirm §67, the gradient's contrast and the faint grey.
+- **Checks:** docs only; the desktop's checks are in its own log. **Owner:** confirm §67 and the faint grey. The owner kept the gradient as it is, white text included (§67.9, ticked in the owner checklist).
 
 ### 26 Nov 2026 · Phase 16: the rest (shared docs, web)
 
