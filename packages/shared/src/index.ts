@@ -34,16 +34,51 @@ export const ERROR_CODES = [
  * found by these lookup keys; what each plan includes lives here, so the web
  * app, Convex and the desktop app agree.
  */
-export const PLAN_IDS = ["starter", "pro", "max"] as const;
+export const PLAN_IDS = ["starter", "pro", "max", "team", "agency"] as const;
 export type PlanId = (typeof PLAN_IDS)[number];
-/** "custom" plans are set up by hand for teams (phase 17). */
+/** "custom" plans are set up by hand. */
 export type AnyPlanId = PlanId | "custom";
 
-export const PLANS: Record<PlanId, { name: string; monthlyCredits: number; devices: number }> = {
+/**
+ * `monthlyCredits` and `devices` are per person for the per-seat plans
+ * (Team and Agency, decisions §68): credits go into one team pool
+ * (credits × seats), devices are what each member may sign in.
+ */
+export interface PlanInfo {
+  name: string;
+  monthlyCredits: number;
+  devices: number;
+  /** Bought per seat (Stripe quantity); a team's members use the owner's plan. */
+  perSeat?: { minSeats: number; maxSeats: number; teams: number; whiteLabel: boolean };
+}
+
+export const PLANS: Record<PlanId, PlanInfo> = {
   starter: { name: "Starter", monthlyCredits: 700, devices: 2 },
   pro: { name: "Pro", monthlyCredits: 1_500, devices: 3 },
   max: { name: "Max", monthlyCredits: 3_500, devices: 5 },
+  // To be confirmed by the owner (decisions §68.6): names, prices, credits and limits.
+  team: { name: "Team", monthlyCredits: 1_000, devices: 3, perSeat: { minSeats: 2, maxSeats: 50, teams: 1, whiteLabel: false } },
+  agency: {
+    name: "Agency",
+    monthlyCredits: 1_500,
+    devices: 3,
+    perSeat: { minSeats: 3, maxSeats: 100, teams: 20, whiteLabel: true },
+  },
 };
+
+/** A plan's monthly credits: per seat times seats for the per-seat plans. */
+export function planAllowance(plan: AnyPlanId | undefined, seats = 1) {
+  if (!plan || plan === "custom") return 0;
+  const info = PLANS[plan];
+  return info.perSeat ? info.monthlyCredits * Math.max(1, Math.floor(seats)) : info.monthlyCredits;
+}
+
+/** Seats a checkout may ask for: whole numbers inside the plan's range. */
+export function validSeats(plan: PlanId, seats: number) {
+  const per = PLANS[plan].perSeat;
+  if (!per) return seats === 1;
+  return Number.isInteger(seats) && seats >= per.minSeats && seats <= per.maxSeats;
+}
 
 export const BILLING_INTERVALS = ["month", "year"] as const;
 export type BillingInterval = (typeof BILLING_INTERVALS)[number];
@@ -101,3 +136,4 @@ export interface LeasePayload {
 export const LEASE_OFFLINE_DAYS = 14;
 export * from "./remote.js";
 export * from "./addons.js";
+export * from "./teams.js";

@@ -11,7 +11,8 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { deviceByTokenHash } from "./devices";
-import { entitlementOf, isUsable } from "./lib/credits";
+import { planOf } from "./lib/teams";
+import { brandForUser } from "./teams";
 import { adminMutation, adminQuery, fail, proxyServerMutation, publicQuery } from "./lib/functions";
 
 /** Limits per user (decisions §44); storage counts towards the plan. */
@@ -37,7 +38,7 @@ async function deviceUser(ctx: QueryCtx, tokenHash: string) {
   const device = await deviceByTokenHash(ctx, tokenHash);
   if (!device) fail("UNAUTHENTICATED");
   // Sharing is a paid feature, checked on every call (guardrails §3).
-  if (!isUsable(await entitlementOf(ctx, device.userId), Date.now())) fail("PAYMENT_REQUIRED");
+  if (!(await planOf(ctx, device.userId))) fail("PAYMENT_REQUIRED");
   return device.userId;
 }
 
@@ -158,6 +159,8 @@ export const view = publicQuery({
       kind: share.kind,
       createdAt: share.createdAt,
       url: await ctx.storage.getUrl(share.storageId),
+      // An agency's brand, when the sharer is in an Agency team (decisions §68.7).
+      brand: await brandForUser(ctx, share.userId),
     };
   },
 });

@@ -56,11 +56,22 @@ async function Shared({ params }: { params: PageProps<"/s/[id]">["params"] }) {
     );
   return (
     <>
-      <header className="bar">
+      <header className="bar" style={share.brand ? { borderBottom: `3px solid ${share.brand.accent}` } : undefined}>
+        {share.brand && (
+          <span className="brand">
+            {share.brand.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={share.brand.logoUrl} alt="" width={24} height={24} />
+            )}
+            {share.brand.name}
+          </span>
+        )}
         <h1>{share.title}</h1>
-        <span className="by">
-          Made with <a href="https://titan117.com">Titan117</a>
-        </span>
+        {!share.brand?.hideMadeWith && (
+          <span className="by">
+            Made with <a href="https://titan117.com">Titan117</a>
+          </span>
+        )}
         <Comments id={id} comments={await loadComments(id)} />
         <ReportButton id={id} />
       </header>

@@ -28,7 +28,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalAction, internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
-import { entitlementOf, isUsable } from "./lib/credits";
+import { planOf } from "./lib/teams";
 import { fail, paidMutation, paidQuery, userAction, userMutation, userQuery } from "./lib/functions";
 import { hasFreshSecondFactor } from "./lib/secondFactor";
 import { signSecondFactorProof } from "./lib/tokens";
@@ -53,8 +53,7 @@ function cleanName(name: string) {
 }
 
 async function usablePlan(ctx: QueryCtx, userId: Id<"users">) {
-  const entitlement = await entitlementOf(ctx, userId);
-  return entitlement && isUsable(entitlement, Date.now()) ? entitlement : null;
+  return (await planOf(ctx, userId))?.entitlement ?? null;
 }
 
 async function keyRow(ctx: QueryCtx, publicKey: string) {

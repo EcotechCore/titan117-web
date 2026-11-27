@@ -17,7 +17,7 @@ import { v } from "convex/values";
 
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
-import { entitlementOf, isUsable } from "./lib/credits";
+import { planOf } from "./lib/teams";
 
 const MINUTE = 60 * 1000;
 const DAY = 24 * 60 * MINUTE;
@@ -66,8 +66,7 @@ async function topSeq(ctx: QueryCtx, userId: Id<"users">) {
 }
 
 async function usable(ctx: QueryCtx, userId: Id<"users">) {
-  const entitlement = await entitlementOf(ctx, userId);
-  return !!entitlement && isUsable(entitlement, Date.now());
+  return (await planOf(ctx, userId)) !== null;
 }
 
 async function dropChange(ctx: MutationCtx, row: Doc<"syncChanges">) {

@@ -3,6 +3,8 @@
  * Stripe webhook's mutation (billing.applyEvent) and by account deletion.
  * billing.test.ts checks nothing else writes it.
  */
+import { PLANS } from "@titan117/shared";
+
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { applyUpgrade, entitlementOf, grantDue } from "./credits";
@@ -29,6 +31,7 @@ export async function applySubscription(ctx: MutationCtx, userId: Id<"users">, s
     status: state.status,
     cancelAtPeriodEnd: state.cancelAtPeriodEnd,
     paidUntil: state.periodEnd,
+    ...(state.plan && PLANS[state.plan].perSeat ? { seats: state.seats ?? 1 } : {}),
     ...(state.interval ? { interval: state.interval } : {}),
     // A new subscription starts its own months; the same one keeps counting.
     ...(sameSubscription

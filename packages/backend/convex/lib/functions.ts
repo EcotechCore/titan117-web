@@ -21,6 +21,7 @@ import {
 
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
+import { planOf } from "./teams";
 import { action, internalQuery, mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 
 type Ctx = QueryCtx | MutationCtx;
@@ -47,12 +48,10 @@ export async function requireUser(ctx: Ctx) {
 
 export async function requirePlan(ctx: Ctx) {
   const user = await requireUser(ctx);
-  const entitlement = await ctx.db
-    .query("entitlements")
-    .withIndex("by_user", (q) => q.eq("userId", user._id))
-    .unique();
-  if (!entitlement || entitlement.activeUntil <= Date.now()) fail("PAYMENT_REQUIRED");
-  return { user, entitlement };
+  // Their own plan, or a team's that covers them (decisions §68.6).
+  const effective = await planOf(ctx, user._id);
+  if (!effective) fail("PAYMENT_REQUIRED");
+  return { user, entitlement: effective.entitlement, payerId: effective.payerId };
 }
 
 export async function requireDevice(ctx: Ctx, deviceId: Id<"devices">) {

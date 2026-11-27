@@ -27,6 +27,8 @@ body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--font); disp
 .bar h1 { font-size: 15px; font-weight: 600; margin: 0; flex: 1 1 200px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bar .by { color: var(--muted-fg); font-size: 13px; }
 .bar .by a { color: inherit; }
+.bar .brand { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.bar .brand img { border-radius: 4px; object-fit: contain; }
 .frame { flex: 1; width: 100%; border: 0; background: #fff; min-height: 70vh; }
 .btn { border: 1px solid var(--border); background: var(--card); color: var(--fg); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
 .btn:hover { border-color: var(--accent); color: var(--accent-deep); }

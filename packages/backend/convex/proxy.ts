@@ -12,6 +12,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { deviceByTokenHash } from "./devices";
 import { balance, spend } from "./lib/credits";
+import { planOf } from "./lib/teams";
 import { fail, proxyMutation, proxyServerMutation } from "./lib/functions";
 
 /** Calls one user may run at once; more wait (RATE_LIMITED). */
@@ -21,7 +22,9 @@ const STALE_MS = 15 * 60 * 1000;
 
 async function openCall(ctx: MutationCtx, userId: Id<"users">, model: string) {
   const now = Date.now();
-  const credits = await balance(ctx, userId, now);
+  // A team member covered by the team's plan spends the team's pool (decisions §68.6).
+  const payerId = (await planOf(ctx, userId, now))?.payerId ?? userId;
+  const credits = await balance(ctx, payerId, now);
   if (!credits.active) fail("PAYMENT_REQUIRED");
   if (credits.total <= 0) fail("INSUFFICIENT_CREDITS");
 
@@ -31,7 +34,12 @@ async function openCall(ctx: MutationCtx, userId: Id<"users">, model: string) {
     .collect();
   if (open.filter((c) => now - c.startedAt < STALE_MS).length >= MAX_OPEN_CALLS) fail("RATE_LIMITED");
 
-  const callId = await ctx.db.insert("proxyCalls", { userId, model: model.slice(0, 120), startedAt: now });
+  const callId = await ctx.db.insert("proxyCalls", {
+    userId,
+    ...(payerId !== userId ? { payerId } : {}),
+    model: model.slice(0, 120),
+    startedAt: now,
+  });
   return { callId, credits: credits.total };
 }
 
@@ -58,7 +66,7 @@ async function charge(ctx: MutationCtx, call: Doc<"proxyCalls">, costUsd: number
   if (call.settledAt !== undefined) return { credits: call.credits ?? 0, duplicate: true };
   const credits = creditsForCost(Math.max(0, costUsd));
   const now = Date.now();
-  const result = await spend(ctx, call.userId, credits, `proxy:${call._id}`, now);
+  const result = await spend(ctx, call.payerId ?? call.userId, credits, `proxy:${call._id}`, now, call.payerId ? call.userId : undefined);
   await ctx.db.patch(call._id, { settledAt: now, credits });
   return { credits, shortfall: result.shortfall, duplicate: false };
 }

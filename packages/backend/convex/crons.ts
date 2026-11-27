@@ -25,4 +25,7 @@ crons.daily("sync packages", { hourUTC: 5, minuteUTC: 0 }, internal.sync.prune, 
 // The marketplace's listing from GitHub's topic (market.ts, decisions §66.3).
 crons.hourly("marketplace index", { minuteUTC: 40 }, internal.market.refresh, {});
 
+// Team packages nobody read in 30 days (teamSync.ts, decisions §68.3).
+crons.daily("team packages", { hourUTC: 5, minuteUTC: 15 }, internal.teamSync.prune, {});
+
 export default crons;

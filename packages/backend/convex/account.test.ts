@@ -85,11 +85,21 @@ async function userWithEverything(t: T, clerkId: string, cancelAtPeriodEnd = fal
     const groupId = await ctx.db.insert("errorGroups", { signature: `s_${clerkId}`, feature: "f", title: "t", count: 1, firstSeen: T0, lastSeen: T0, versions: [], os: [] });
     await ctx.db.insert("errorReports", { userId, groupId, ref: `T117-${clerkId}`, appVersion: "1", os: "w", feature: "f", message: "m", stack: "", logLines: [], note: "", at: T0 });
     await ctx.db.insert("sharedArtifacts", { userId, publicId: `p_${clerkId}`, title: "t", kind: "document", bytes: 13, storageId, createdAt: T0 });
+    // A team of their own (decisions §68): it goes with them, with its laptops and packages.
+    const teamId = await ctx.db.insert("teams", { ownerId: userId, name: "Team", createdAt: T0, keyGen: 1 });
+    await ctx.db.insert("teamMembers", { teamId, userId, name: "Me", role: "owner", joinedAt: T0 });
+    await ctx.db.insert("teamLaptops", { teamId, userId, deviceId, name: "laptop", publicKey: key, status: "in", createdAt: T0, cursor: 0 });
+    const teamPackage = await ctx.storage.store(new Blob(["sealed"]));
+    await ctx.db.insert("teamChanges", { teamId, userId, deviceId, seq: 1, keyGen: 1, kind: "item", role: "owner", size: 6, storageId: teamPackage, createdAt: T0 });
+    await ctx.db.insert("teamAudit", { teamId, actorId: userId, actorName: "Me", action: "team.created", at: T0 });
   });
   return userId;
 }
 
 const USER_TABLES = [
+  "teamMembers",
+  "teamLaptops",
+  "teamChanges",
   "marketInstalls",
   "marketRatings",
   "entitlements",
@@ -205,7 +215,8 @@ describe("the daily deletion", () => {
       .map((m) => m[1]);
     expect(withUser.length).toBeGreaterThan(0);
     expect([...withUser].sort()).toEqual([...USER_TABLES].sort());
-    const deletion = readFileSync(join(__dirname, "users.ts"), "utf8") + readFileSync(join(__dirname, "lib", "billing.ts"), "utf8");
+    const deletion = readFileSync(join(__dirname, "users.ts"), "utf8") + readFileSync(join(__dirname, "lib", "billing.ts"), "utf8") +
+      readFileSync(join(__dirname, "lib", "teams.ts"), "utf8");
     for (const table of withUser) expect(deletion, `${table} isn't deleted with the account`).toContain(`"${table}"`);
   });
 });
