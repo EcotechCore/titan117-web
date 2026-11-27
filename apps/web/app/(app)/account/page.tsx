@@ -5,6 +5,7 @@ import { api } from "@titan117/backend/api";
 import { PLAN_IDS, PLANS, TOPUPS, type BillingInterval, type PlanId, type TopupId } from "@titan117/shared";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -13,6 +14,9 @@ const PRICE: Record<PlanId, Record<BillingInterval, number>> = {
   starter: { month: 15, year: 150 },
   pro: { month: 25, year: 250 },
   max: { month: 50, year: 500 },
+  // Per seat; to be confirmed by the owner (decisions §68.6).
+  team: { month: 20, year: 200 },
+  agency: { month: 30, year: 300 },
 };
 const TOPUP_PRICE: Record<TopupId, number> = { topup_1000: 10, topup_2750: 25, topup_6000: 50 };
 
@@ -31,6 +35,7 @@ function errorText(error: unknown) {
   const code = error instanceof ConvexError ? String(error.data) : "";
   if (code === "ALREADY_SUBSCRIBED") return "You already have a plan. Change it from Manage billing.";
   if (code === "PAYMENT_REQUIRED") return "Top-ups need an active plan.";
+  if (code === "FORBIDDEN") return "Choose a number of seats the plan allows.";
   return "Something went wrong talking to our payment provider. Please try again.";
 }
 
@@ -52,6 +57,7 @@ function Account() {
   const topUp = useAction(api.billing.topUp);
   const portal = useAction(api.billing.portal);
   const [interval, setInterval] = useState<BillingInterval>("month");
+  const [seats, setSeats] = useState<Record<string, number>>({ team: PLANS.team.perSeat!.minSeats, agency: PLANS.agency.perSeat!.minSeats });
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const params = useSearchParams();
@@ -87,7 +93,12 @@ function Account() {
     <main className="mx-auto w-full max-w-[1200px] border-x border-[#e6e6e6] dark:border-[#262626]">
       <header className="flex items-center justify-between border-b border-[#e6e6e6] px-4 py-5 sm:px-10 dark:border-[#262626]">
         <span className="font-semibold tracking-[.04em]">TITAN117</span>
-        <UserButton />
+        <nav className="flex items-center gap-5 text-sm">
+          <Link href="/team" className="underline decoration-[#ff6347] underline-offset-4">
+            Team
+          </Link>
+          <UserButton />
+        </nav>
       </header>
 
       <section className="border-b border-[#e6e6e6] px-4 py-12 sm:px-10 dark:border-[#262626]">
@@ -100,14 +111,16 @@ function Account() {
         )}
 
         <div className="mt-8 grid gap-px overflow-hidden rounded-xl border border-[#e6e6e6] bg-[#e6e6e6] sm:grid-cols-3 dark:border-[#262626] dark:bg-[#262626]">
-          <Stat label="Plan" value={summary.plan ? PLANS[summary.plan as PlanId]?.name ?? "Custom" : "No plan"}>
+          <Stat label="Plan" value={summary.plan ? (PLANS[summary.plan as PlanId]?.name ?? "Custom") + (summary.seats && PLANS[summary.plan as PlanId]?.perSeat ? ` · ${summary.seats} seats` : "") : summary.team ? "Team seat" : "No plan"}>
             {summary.plan
               ? summary.cancelAtPeriodEnd
                 ? `Ends ${date(summary.paidUntil)}`
                 : summary.status === "past_due"
                   ? "Payment failed: we're retrying. Check your card in Manage billing."
                   : `Renews ${date(summary.paidUntil)}`
-              : "Choose a plan below to use Titan117."}
+              : summary.team
+                ? `You're on ${summary.team.name}'s plan; its owner pays for your seat.`
+                : "Choose a plan below to use Titan117."}
           </Stat>
           <Stat label="Credits" value={summary.credits.total.toLocaleString()}>
             {summary.credits.monthly.toLocaleString()} this month · {summary.credits.rollover.toLocaleString()} rolled
@@ -129,7 +142,7 @@ function Account() {
         </div>
       </section>
 
-      {!summary.plan && (
+      {!summary.plan && !summary.team && (
         <section className="border-b border-[#e6e6e6] px-4 py-12 sm:px-10 dark:border-[#262626]">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h2 className="text-2xl font-medium">Choose a plan</h2>
@@ -145,22 +158,43 @@ function Account() {
               ))}
             </div>
           </div>
-          <div className="mt-6 grid gap-px overflow-hidden rounded-xl border border-[#e6e6e6] bg-[#e6e6e6] sm:grid-cols-3 dark:border-[#262626] dark:bg-[#262626]">
+          <div className="mt-6 grid gap-px overflow-hidden rounded-xl border border-[#e6e6e6] bg-[#e6e6e6] sm:grid-cols-2 lg:grid-cols-5 dark:border-[#262626] dark:bg-[#262626]">
             {PLAN_IDS.map((id) => (
               <div key={id} className="flex flex-col gap-3 bg-white p-6 dark:bg-[#0b0b0b]">
                 <h3 className="text-lg font-medium">{PLANS[id].name}</h3>
                 <p className="text-3xl font-medium">
                   €{PRICE[id][interval]}
-                  <span className="text-base text-[#6b6b6b]"> / {interval}</span>
+                  <span className="text-base text-[#6b6b6b]">
+                    {" "}
+                    / {PLANS[id].perSeat ? "seat / " : ""}
+                    {interval}
+                  </span>
                 </p>
                 <p className="text-sm text-[#6b6b6b]">
-                  {PLANS[id].monthlyCredits.toLocaleString()} credits a month · {PLANS[id].devices} devices · local models
-                  unlimited. Prices before VAT.
+                  {PLANS[id].perSeat
+                    ? `${PLANS[id].monthlyCredits.toLocaleString()} credits a month per seat, pooled · ${PLANS[id].devices} devices per person · ${
+                        PLANS[id].perSeat!.whiteLabel ? `up to ${PLANS[id].perSeat!.teams} client teams with your brand` : "one team with roles and an audit log"
+                      }.`
+                    : `${PLANS[id].monthlyCredits.toLocaleString()} credits a month · ${PLANS[id].devices} devices · local models unlimited.`}{" "}
+                  Prices before VAT.
                 </p>
+                {PLANS[id].perSeat && (
+                  <label className="flex items-center gap-2 text-sm">
+                    Seats
+                    <input
+                      type="number"
+                      min={PLANS[id].perSeat!.minSeats}
+                      max={PLANS[id].perSeat!.maxSeats}
+                      value={seats[id]}
+                      onChange={(e) => setSeats({ ...seats, [id]: Math.round(Number(e.target.value)) })}
+                      className="h-9 w-20 rounded-md border border-[#e6e6e6] px-2 dark:border-[#262626] dark:bg-[#0b0b0b]"
+                    />
+                  </label>
+                )}
                 <button
                   className="mt-auto h-11 rounded-[10px] bg-[#ff6347] font-medium text-white hover:bg-[#c2361f] disabled:opacity-60"
                   disabled={busy !== null}
-                  onClick={() => go(id, () => checkout({ plan: id, interval }))}
+                  onClick={() => go(id, () => checkout({ plan: id, interval, ...(PLANS[id].perSeat ? { seats: seats[id] } : {}) }))}
                 >
                   {busy === id ? "Opening checkout…" : `Choose ${PLANS[id].name}`}
                 </button>

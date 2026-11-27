@@ -11,7 +11,7 @@
  * - Upgrading adds the difference at once, prorated for the rest of the month;
  *   downgrading changes nothing until the next month.
  */
-import { PLANS, type AnyPlanId } from "@titan117/shared";
+import { planAllowance, type AnyPlanId } from "@titan117/shared";
 
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
@@ -33,8 +33,9 @@ export function addMonths(ts: number, months: number) {
   return target.getTime();
 }
 
-export function monthlyAllowance(plan: AnyPlanId | undefined) {
-  return plan && plan !== "custom" ? PLANS[plan].monthlyCredits : 0;
+/** Per-seat plans pool their credits: per seat × seats (decisions §68.6). */
+export function monthlyAllowance(plan: AnyPlanId | undefined, seats?: number) {
+  return planAllowance(plan, seats);
 }
 
 async function bucketsOf(ctx: QueryCtx, userId: Id<"users">) {
@@ -82,7 +83,14 @@ export async function balance(ctx: QueryCtx, userId: Id<"users">, now: number) {
  * has already run, so a missing amount isn't refused here; it's recorded as a
  * shortfall. The proxy checks the balance before it starts a call.
  */
-export async function spend(ctx: MutationCtx, userId: Id<"users">, credits: number, ref: string, now: number) {
+export async function spend(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  credits: number,
+  ref: string,
+  now: number,
+  byUserId?: Id<"users">,
+) {
   const done = await ctx.db
     .query("creditLedger")
     .withIndex("by_ref", (q) => q.eq("ref", ref))
@@ -109,6 +117,7 @@ export async function spend(ctx: MutationCtx, userId: Id<"users">, credits: numb
     reason: "usage",
     ref,
     ...(left > 0 ? { shortfall: left } : {}),
+    ...(byUserId ? { byUserId } : {}),
     at: now,
   });
   return { charged, shortfall: left, duplicate: false };
@@ -141,6 +150,7 @@ export async function grantDue(ctx: MutationCtx, entitlement: Doc<"entitlements"
 
   let k = entitlement.grantsMade ?? 0;
   let grantedPlan = entitlement.grantedPlan;
+  let grantedSeats = entitlement.grantedSeats;
   let granted = 0;
   for (let i = 0; i < MAX_GRANTS_PER_RUN; i++) {
     const start = addMonths(grantAnchor, k);
@@ -150,7 +160,7 @@ export async function grantDue(ctx: MutationCtx, entitlement: Doc<"entitlements"
     // Last month's unused allowance rolls over for one month, capped at one month's allowance.
     const previous = k > 0 ? await bucketBySource(ctx, `month:${subscriptionId}:${k - 1}`) : null;
     if (previous && previous.remaining > 0) {
-      const keep = Math.min(previous.remaining, monthlyAllowance(grantedPlan));
+      const keep = Math.min(previous.remaining, monthlyAllowance(grantedPlan, entitlement.grantedSeats));
       await ctx.db.patch(previous._id, { remaining: 0 });
       if (keep > 0 && !(await bucketBySource(ctx, `rollover:${subscriptionId}:${k}`))) {
         await ctx.db.insert("creditBuckets", {
@@ -172,7 +182,7 @@ export async function grantDue(ctx: MutationCtx, entitlement: Doc<"entitlements"
       }
     }
 
-    const allowance = monthlyAllowance(entitlement.plan);
+    const allowance = monthlyAllowance(entitlement.plan, entitlement.seats);
     const source = `month:${subscriptionId}:${k}`;
     if (!(await bucketBySource(ctx, source))) {
       await ctx.db.insert("creditBuckets", {
@@ -187,6 +197,7 @@ export async function grantDue(ctx: MutationCtx, entitlement: Doc<"entitlements"
       granted += allowance;
     }
     grantedPlan = entitlement.plan;
+    grantedSeats = entitlement.seats;
     k++;
   }
 
@@ -194,6 +205,7 @@ export async function grantDue(ctx: MutationCtx, entitlement: Doc<"entitlements"
     grantsMade: k,
     nextGrantAt: addMonths(grantAnchor, k),
     ...(grantedPlan ? { grantedPlan } : {}),
+    ...(grantedSeats ? { grantedSeats } : {}),
   });
   return granted;
 }
@@ -206,8 +218,8 @@ export async function grantDue(ctx: MutationCtx, entitlement: Doc<"entitlements"
 export async function applyUpgrade(ctx: MutationCtx, entitlement: Doc<"entitlements">, now: number) {
   const { subscriptionId, grantAnchor, grantsMade, grantedPlan } = entitlement;
   if (!subscriptionId || grantAnchor === undefined || !grantsMade || !grantedPlan) return 0;
-  const before = monthlyAllowance(grantedPlan);
-  const after = monthlyAllowance(entitlement.plan);
+  const before = monthlyAllowance(grantedPlan, entitlement.grantedSeats);
+  const after = monthlyAllowance(entitlement.plan, entitlement.seats);
   if (after <= before) return 0;
 
   const k = grantsMade - 1;
@@ -220,7 +232,7 @@ export async function applyUpgrade(ctx: MutationCtx, entitlement: Doc<"entitleme
     await ctx.db.patch(bucket._id, { granted: bucket.granted + extra, remaining: bucket.remaining + extra });
     await ctx.db.insert("creditLedger", { userId: entitlement.userId, amount: extra, reason: "upgrade", at: now });
   }
-  await ctx.db.patch(entitlement._id, { grantedPlan: entitlement.plan });
+  await ctx.db.patch(entitlement._id, { grantedPlan: entitlement.plan, ...(entitlement.seats ? { grantedSeats: entitlement.seats } : {}) });
   return extra;
 }
 

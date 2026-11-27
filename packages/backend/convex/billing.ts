@@ -9,6 +9,8 @@
 import {
   BILLING_INTERVALS,
   PLAN_IDS,
+  PLANS,
+  validSeats,
   planLookupKey,
   TOPUPS,
   topupLookupKey,
@@ -23,6 +25,7 @@ import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery, type ActionCtx, type QueryCtx } from "./_generated/server";
 import { applySubscription } from "./lib/billing";
 import { addTopup, balance, entitlementOf, isUsable } from "./lib/credits";
+import { planOf } from "./lib/teams";
 import { fail, userAction, userQuery } from "./lib/functions";
 import { stripe, StripeError, subscriptionState, type StripeEvent } from "./lib/stripe";
 
@@ -89,6 +92,13 @@ async function customerOf(ctx: QueryCtx, userId: Id<"users">) {
 
 // --- For the web app ---
 
+async function teamCover(ctx: QueryCtx, userId: Id<"users">, now: number) {
+  const effective = await planOf(ctx, userId, now);
+  if (!effective || effective.via !== "team" || !effective.teamId) return null;
+  const team = await ctx.db.get(effective.teamId);
+  return team ? { id: team._id, name: team.name, plan: effective.entitlement.plan } : null;
+}
+
 /** The caller's plan, credits and recent credit history, for the account pages. */
 export const summary = userQuery({
   args: {},
@@ -110,6 +120,9 @@ export const summary = userQuery({
       credits: await balance(ctx, ctx.user._id, now),
       history: history.map(({ amount, reason, at, shortfall }) => ({ amount, reason, at, shortfall: shortfall ?? 0 })),
       hasBilling: (await customerOf(ctx, ctx.user._id)) !== null,
+      seats: entitlement?.seats ?? null,
+      // Covered by a team's plan instead of one of their own (decisions §68.6).
+      team: await teamCover(ctx, ctx.user._id, now),
     };
   },
 });
@@ -166,8 +179,11 @@ const topupArg = v.union(...TOPUPS.map((t) => v.literal(t.id)));
 
 /** Starts a Stripe Checkout for a plan and returns the page to send the user to. */
 export const checkout = userAction({
-  args: { plan: planArg, interval: intervalArg },
-  handler: async (ctx, { plan, interval }): Promise<{ url: string }> => {
+  args: { plan: planArg, interval: intervalArg, seats: v.optional(v.number()) },
+  handler: async (ctx, { plan, interval, seats }): Promise<{ url: string }> => {
+    // Team and Agency are bought per seat (decisions §68.6); the others are one seat.
+    const quantity = seats ?? PLANS[plan as PlanId].perSeat?.minSeats ?? 1;
+    if (!validSeats(plan as PlanId, quantity)) fail("FORBIDDEN");
     const state = await ctx.runQuery(internal.billing.billingState, { userId: ctx.userId });
     // Already subscribed: changes go through the billing portal, so nobody pays twice.
     if (state.active) fail("ALREADY_SUBSCRIBED");
@@ -176,7 +192,7 @@ export const checkout = userAction({
       mode: "subscription",
       customer,
       client_reference_id: ctx.userId,
-      line_items: [{ price: await priceFor(planLookupKey(plan as PlanId, interval as BillingInterval)), quantity: 1 }],
+      line_items: [{ price: await priceFor(planLookupKey(plan as PlanId, interval as BillingInterval)), quantity }],
       subscription_data: { metadata: { userId: ctx.userId } },
       success_url: `${siteUrl()}/account?checkout=success`,
       cancel_url: `${siteUrl()}/account?checkout=cancelled`,
@@ -288,6 +304,7 @@ const subscriptionFields = v.object({
   plan: v.union(planArg, v.null()),
   interval: v.union(intervalArg, v.null()),
   periodStart: v.number(),
+  seats: v.optional(v.number()),
   periodEnd: v.number(),
   cancelAtPeriodEnd: v.boolean(),
 });

@@ -18,7 +18,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
-import { entitlementOf, isUsable } from "./lib/credits";
+import { leaveTeamsWithDevice, planOf } from "./lib/teams";
 import { fail, userAction, userMutation, userQuery } from "./lib/functions";
 import { randomToken, sha256Hex } from "./lib/tokens";
 import { leaveSync } from "./sync";
@@ -68,13 +68,14 @@ export const revoke = userMutation({
     if (device.revokedAt === undefined) await ctx.db.patch(deviceId, { revokedAt: Date.now() });
     // A signed-out laptop leaves sync; the laptops still in change the key (decisions §65.5).
     await leaveSync(ctx, deviceId);
+    await leaveTeamsWithDevice(ctx, deviceId);
   },
 });
 
 /** A device another sign-in would add: not counting this same install, which it replaces. */
 async function wouldExceed(ctx: QueryCtx, userId: Id<"users">, installHash: string | undefined, now: number) {
-  const entitlement = await entitlementOf(ctx, userId);
-  if (!entitlement || !isUsable(entitlement, now) || entitlement.plan === "custom") return false;
+  const entitlement = (await planOf(ctx, userId, now))?.entitlement;
+  if (!entitlement || entitlement.plan === "custom") return false;
   const others = (await activeDevices(ctx, userId)).filter((d) => !installHash || d.installHash !== installHash);
   return others.length >= PLANS[entitlement.plan].devices;
 }
@@ -186,9 +187,10 @@ export const leaseFor = internalMutation({
     const now = Date.now();
     await ctx.db.patch(device._id, { lastSeenAt: now, appVersion: appVersion.slice(0, 40) });
 
-    const entitlement = await entitlementOf(ctx, device.userId);
+    // Their own plan, or a team's that covers them (decisions §68.6).
+    const entitlement = (await planOf(ctx, device.userId, now))?.entitlement;
     const base = { v: 1 as const, sub: device.userId, dev: device._id, iat: now };
-    if (!entitlement || !isUsable(entitlement, now)) return { ...base, plan: null, devices: 0, exp: now };
+    if (!entitlement) return { ...base, plan: null, devices: 0, exp: now };
 
     // A plan that renews may be used offline for the full 14 days; one that is
     // ending (cancelled, or a payment failing) never past its last usable moment.

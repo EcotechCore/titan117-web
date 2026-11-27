@@ -20,6 +20,7 @@ import type * as lib_credits from "../lib/credits.js";
 import type * as lib_functions from "../lib/functions.js";
 import type * as lib_secondFactor from "../lib/secondFactor.js";
 import type * as lib_stripe from "../lib/stripe.js";
+import type * as lib_teams from "../lib/teams.js";
 import type * as lib_tokens from "../lib/tokens.js";
 import type * as lib_webPush from "../lib/webPush.js";
 import type * as market from "../market.js";
@@ -28,6 +29,8 @@ import type * as remote from "../remote.js";
 import type * as shares from "../shares.js";
 import type * as staff from "../staff.js";
 import type * as sync from "../sync.js";
+import type * as teamSync from "../teamSync.js";
+import type * as teams from "../teams.js";
 import type * as users from "../users.js";
 
 import type {
@@ -49,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   "lib/functions": typeof lib_functions;
   "lib/secondFactor": typeof lib_secondFactor;
   "lib/stripe": typeof lib_stripe;
+  "lib/teams": typeof lib_teams;
   "lib/tokens": typeof lib_tokens;
   "lib/webPush": typeof lib_webPush;
   market: typeof market;
@@ -57,6 +61,8 @@ declare const fullApi: ApiFromModules<{
   shares: typeof shares;
   staff: typeof staff;
   sync: typeof sync;
+  teamSync: typeof teamSync;
+  teams: typeof teams;
   users: typeof users;
 }>;
 

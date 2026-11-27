@@ -37,6 +37,8 @@ export type SubscriptionState = {
   status: string;
   // From the price's lookup key; null for a price that isn't ours.
   plan: PlanId | null;
+  /** The subscription's quantity: seats for the per-seat plans. */
+  seats?: number;
   interval: BillingInterval | null;
   // Milliseconds. Newer API versions keep these on each item, older ones on the subscription.
   periodStart: number;
@@ -158,6 +160,7 @@ type StripeSubscription = {
     data?: {
       current_period_start?: number;
       current_period_end?: number;
+      quantity?: number;
       price?: { lookup_key?: string | null; recurring?: { interval?: string } | null };
     }[];
   };
@@ -176,6 +179,7 @@ export function subscriptionState(raw: Record<string, unknown>): SubscriptionSta
     status: sub.status,
     plan,
     interval,
+    seats: Math.max(1, Math.floor(items[0]?.quantity ?? 1)),
     periodStart: (starts.length ? Math.min(...starts) : 0) * 1000,
     periodEnd: periodEnd * 1000,
     cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,

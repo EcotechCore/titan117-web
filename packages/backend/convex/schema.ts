@@ -5,7 +5,15 @@ import { v } from "convex/values";
  * Every table here needs a row in the data table in docs/notes/decisions.md §11,
  * naming its item on the §32 list. checks/guardrails.test.ts fails when one is missing.
  */
-const plan = v.union(v.literal("starter"), v.literal("pro"), v.literal("max"), v.literal("custom"));
+const plan = v.union(
+  v.literal("starter"),
+  v.literal("pro"),
+  v.literal("max"),
+  v.literal("team"),
+  v.literal("agency"),
+  v.literal("custom"),
+);
+const teamRole = v.union(v.literal("owner"), v.literal("admin"), v.literal("member"), v.literal("viewer"));
 
 export default defineSchema({
   users: defineTable({
@@ -47,6 +55,9 @@ export default defineSchema({
     nextGrantAt: v.optional(v.number()),
     // The plan whose allowance this month's grant used, for prorated upgrades.
     grantedPlan: v.optional(plan),
+    // Per-seat plans (Team, Agency; decisions §68.6): the subscription's quantity.
+    seats: v.optional(v.number()),
+    grantedSeats: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_nextGrantAt", ["nextGrantAt"]),
@@ -150,6 +161,108 @@ export default defineSchema({
    * sealed packages in file storage with routing fields only. Deleted once
    * every laptop in has read them, at 30 days, and with the account.
    */
+  /**
+   * Teams (§32: account and sync; decisions §68). We see that a team exists,
+   * who is in it and their roles, never what it shares: the team key and the
+   * shared packages are end to end encrypted like sync (§65).
+   */
+  teams: defineTable({
+    ownerId: v.id("users"),
+    name: v.string(),
+    createdAt: v.number(),
+    // The team key's current generation, the last "send everything again", the highest package dropped unread.
+    keyGen: v.number(),
+    resendAt: v.optional(v.number()),
+    expiredTop: v.optional(v.number()),
+    // White-label (Agency plan, 11.7): shown to the team's members and on pages they share.
+    brand: v.optional(
+      v.object({ name: v.string(), accent: v.string(), hideMadeWith: v.boolean(), logoId: v.optional(v.id("_storage")) }),
+    ),
+  }).index("by_owner", ["ownerId"]),
+
+  // A person in a team: the name they chose for it and their role.
+  teamMembers: defineTable({
+    teamId: v.id("teams"),
+    userId: v.id("users"),
+    name: v.string(),
+    role: teamRole,
+    joinedAt: v.number(),
+  })
+    .index("by_team", ["teamId", "joinedAt"])
+    .index("by_user", ["userId"])
+    .index("by_team_user", ["teamId", "userId"]),
+
+  // Invite links: only the code's SHA-256; a week, used once (deleted when used).
+  teamInvites: defineTable({
+    teamId: v.id("teams"),
+    codeHash: v.string(),
+    role: teamRole,
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_codeHash", ["codeHash"])
+    .index("by_team", ["teamId", "createdAt"])
+    .index("by_createdBy", ["createdBy"]),
+
+  /**
+   * The team's audit log (11.6): who did what, when. Append-only: no update
+   * or delete path but the team's own deletion and account deletion (which
+   * removes the user link and keeps the name). What was shared is only in
+   * `sealed`, under the team key.
+   */
+  teamAudit: defineTable({
+    teamId: v.id("teams"),
+    actorId: v.optional(v.id("users")),
+    actorName: v.string(),
+    action: v.string(),
+    targetName: v.optional(v.string()),
+    role: v.optional(teamRole),
+    sealed: v.optional(v.string()),
+    at: v.number(),
+  })
+    .index("by_team_at", ["teamId", "at"])
+    .index("by_actor", ["actorId"]),
+
+  // A member's laptop in the team key (as syncMembers, per team).
+  teamLaptops: defineTable({
+    teamId: v.id("teams"),
+    userId: v.id("users"),
+    deviceId: v.id("devices"),
+    name: v.string(),
+    publicKey: v.string(),
+    status: v.union(v.literal("waiting"), v.literal("in")),
+    createdAt: v.number(),
+    sealedKey: v.optional(v.string()),
+    sealedBy: v.optional(v.string()),
+    keyMsgId: v.optional(v.string()),
+    keyGen: v.optional(v.number()),
+    cursor: v.number(),
+  })
+    .index("by_team", ["teamId"])
+    .index("by_device", ["deviceId"])
+    .index("by_team_device", ["teamId", "deviceId"])
+    .index("by_user", ["userId"]),
+
+  // Sealed team packages in file storage, with routing fields only (kind and the sender's role at upload).
+  teamChanges: defineTable({
+    teamId: v.id("teams"),
+    userId: v.id("users"),
+    deviceId: v.id("devices"),
+    seq: v.number(),
+    keyGen: v.number(),
+    kind: v.union(v.literal("item"), v.literal("data")),
+    role: teamRole,
+    size: v.number(),
+    storageId: v.id("_storage"),
+    createdAt: v.number(),
+  })
+    .index("by_team", ["teamId", "seq"])
+    .index("by_team_time", ["teamId", "createdAt"])
+    .index("by_user", ["userId"])
+    .index("by_createdAt", ["createdAt"]),
+
   syncChanges: defineTable({
     userId: v.id("users"),
     deviceId: v.id("devices"),
@@ -244,6 +357,8 @@ export default defineSchema({
    */
   proxyCalls: defineTable({
     userId: v.id("users"),
+    // A team member's call paid from the team's pool (decisions §68.6): the team's owner.
+    payerId: v.optional(v.id("users")),
     model: v.string(),
     startedAt: v.number(),
     settledAt: v.optional(v.number()),
@@ -251,6 +366,7 @@ export default defineSchema({
     // A video job's id at OpenRouter (decisions §59.10): charged when the job ends, polled only by its owner.
     jobId: v.optional(v.string()),
   })
+    .index("by_payer", ["payerId"])
     .index("by_user_open", ["userId", "settledAt"])
     .index("by_job", ["jobId"])
     .index("by_startedAt", ["startedAt"]),
@@ -270,8 +386,11 @@ export default defineSchema({
     ref: v.optional(v.string()),
     // For usage: credits that were due but not there (the call had already run).
     shortfall: v.optional(v.number()),
+    // For usage from a team's pool (decisions §68.6): the member whose call it was.
+    byUserId: v.optional(v.id("users")),
     at: v.number(),
   })
+    .index("by_byUser", ["byUserId"])
     .index("by_user_at", ["userId", "at"])
     .index("by_ref", ["ref"]),
 

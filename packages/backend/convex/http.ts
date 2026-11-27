@@ -202,6 +202,92 @@ const desktopSyncPackage = httpAction(async (ctx, request) => {
   return json({ seq });
 });
 
+/** The device's teams and its header's brand (decisions §68), for the laptop's Team screen. */
+const desktopTeams = httpAction(async (ctx, request) => {
+  const token = bearerToken(request);
+  if (!token) return json({ error: "UNAUTHENTICATED" }, 401);
+  const device = await ctx.runQuery(internal.devices.deviceForToken, { tokenHash: await sha256Hex(token) });
+  if (!device) return json({ error: "UNAUTHENTICATED" }, 401);
+  const result = await ctx.runQuery(internal.teamSync.listForDevice, { deviceId: device });
+  if ("error" in result) return json({ error: result.error }, 401);
+  return json(result);
+});
+
+/** The team relay (teamSync.ts `laptop`, decisions §68.3): sealed keys, notes and package addresses only. */
+const desktopTeam = httpAction(async (ctx, request) => {
+  const token = bearerToken(request);
+  if (!token) return json({ error: "UNAUTHENTICATED" }, 401);
+  const device = await ctx.runQuery(internal.devices.deviceForToken, { tokenHash: await sha256Hex(token) });
+  if (!device) return json({ error: "UNAUTHENTICATED" }, 401);
+  const body = await readJson(request);
+  if (!body || typeof body.teamId !== "string") return json({ error: "FORBIDDEN" }, 400);
+  try {
+    const result = await ctx.runMutation(internal.teamSync.laptop, {
+      deviceId: device,
+      teamId: body.teamId as never,
+      on: body.on === true,
+      ...(typeof body.publicKey === "string" ? { publicKey: body.publicKey } : {}),
+      ...(typeof body.cursor === "number" ? { cursor: body.cursor } : {}),
+      ...(body.admit && typeof body.admit === "object" ? { admit: body.admit as never } : {}),
+      ...(typeof body.refuse === "string" ? { refuse: body.refuse as never } : {}),
+      ...(typeof body.remove === "string" ? { remove: body.remove as never } : {}),
+      ...(body.rekey && typeof body.rekey === "object" ? { rekey: body.rekey as never } : {}),
+      ...(body.resend === true ? { resend: true } : {}),
+      ...(Array.isArray(body.notes) ? { notes: body.notes as never } : {}),
+    });
+    if ("error" in result)
+      return json({ error: result.error }, result.error === "UNAUTHENTICATED" ? 401 : result.error === "NOT_FOUND" ? 404 : 403);
+    return json(result);
+  } catch {
+    return json({ error: "FORBIDDEN" }, 400);
+  }
+});
+
+/** One sealed team package; the sender's role must allow its kind (decisions §68.2). */
+const desktopTeamPackage = httpAction(async (ctx, request) => {
+  const token = bearerToken(request);
+  if (!token) return json({ error: "UNAUTHENTICATED" }, 401);
+  const device = await ctx.runQuery(internal.devices.deviceForToken, { tokenHash: await sha256Hex(token) });
+  if (!device) return json({ error: "UNAUTHENTICATED" }, 401);
+  const teamId = request.headers.get("x-titan117-team") ?? "";
+  const kind = request.headers.get("x-titan117-kind");
+  const keyGen = Number(request.headers.get("x-titan117-key-gen"));
+  const declared = Number(request.headers.get("content-length"));
+  if (!/^[a-z0-9]{10,64}$/.test(teamId) || (kind !== "item" && kind !== "data") || !Number.isInteger(keyGen) || keyGen < 1)
+    return json({ error: "FORBIDDEN" }, 400);
+  let allowed;
+  try {
+    allowed = await ctx.runQuery(internal.teamSync.canUpload, {
+      deviceId: device,
+      teamId: teamId as never,
+      keyGen,
+      kind,
+      size: Number.isFinite(declared) && declared > 0 ? declared : 1,
+    });
+  } catch {
+    return json({ error: "FORBIDDEN" }, 400);
+  }
+  if (allowed === "ROLE") {
+    await ctx.runMutation(internal.teamSync.refusedUpload, { deviceId: device, teamId: teamId as never });
+    return json({ error: "FORBIDDEN" }, 403);
+  }
+  if (allowed !== "ok")
+    return json({ error: allowed }, allowed === "UNAUTHENTICATED" ? 401 : allowed === "RATE_LIMITED" ? 429 : allowed === "NOT_FOUND" ? 404 : 403);
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength === 0 || bytes.byteLength > SYNC_MAX_PACKAGE_BYTES) return json({ error: "FORBIDDEN" }, 413);
+  const storageId = await ctx.storage.store(new Blob([bytes], { type: "application/octet-stream" }));
+  const seq = await ctx.runMutation(internal.teamSync.addChange, {
+    deviceId: device,
+    teamId: teamId as never,
+    keyGen,
+    kind,
+    size: bytes.byteLength,
+    storageId,
+  });
+  if (seq === null) return json({ error: "FORBIDDEN" }, 403);
+  return json({ seq });
+});
+
 const http = httpRouter();
 http.route({ path: "/clerk", method: "POST", handler: clerkWebhook });
 http.route({ path: "/stripe", method: "POST", handler: stripeWebhook });
@@ -210,5 +296,8 @@ http.route({ path: "/desktop/lease", method: "POST", handler: desktopLease });
 http.route({ path: "/desktop/remote", method: "POST", handler: desktopRemote });
 http.route({ path: "/desktop/sync", method: "POST", handler: desktopSync });
 http.route({ path: "/desktop/sync/package", method: "POST", handler: desktopSyncPackage });
+http.route({ path: "/desktop/teams", method: "POST", handler: desktopTeams });
+http.route({ path: "/desktop/team", method: "POST", handler: desktopTeam });
+http.route({ path: "/desktop/team/package", method: "POST", handler: desktopTeamPackage });
 
 export default http;
