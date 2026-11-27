@@ -275,8 +275,19 @@ export const laptop = internalMutation({
         });
       }
 
+    // The audit log's sealed notes (what was shared), for owners' and admins' laptops to open (decisions §68.9).
+    const notes = [];
+    if (me.status === "in" && teamCan(member.role, "seeAudit"))
+      for (const row of await ctx.db
+        .query("teamAudit")
+        .withIndex("by_team_at", (q) => q.eq("teamId", team._id))
+        .order("desc")
+        .take(200))
+        if (row.sealed && notes.length < 50) notes.push({ at: row.at, actor: row.actorName, action: row.action, sealed: row.sealed });
+
     return {
       on: true as const,
+      notes,
       team: { id: team._id, name: fresh.name, myRole: member.role, myUserId: device.userId },
       me: {
         id: me._id,

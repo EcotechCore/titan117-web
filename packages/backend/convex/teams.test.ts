@@ -344,6 +344,10 @@ describe("the team relay", () => {
     await relay(t, tok("c"), { teamId, on: true, publicKey: keys.kc, notes: [{ action: "item.shared", sealed: note }] });
     const shared = (await ana.as.query(api.teams.auditLog, { teamId: teamId as Id<"teams"> })).filter((r) => r.action === "item.shared");
     expect(shared.map((r) => [r.actor, r.sealed])).toEqual([["Bo", true]]);
+    // Owners' and admins' laptops get the sealed notes to open; members' and viewers' don't.
+    expect((await relay(t, tok("a"), { teamId, on: true })).body.notes).toMatchObject([{ actor: "Bo", action: "item.shared", sealed: note }]);
+    expect((await relay(t, tok("b"), { teamId, on: true })).body.notes).toEqual([]);
+    expect((await relay(t, tok("c"), { teamId, on: true })).body.notes).toEqual([]);
   });
 
   it("takes a removed member's laptops out and deletes the team's packages with the team", async () => {
