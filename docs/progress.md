@@ -38,6 +38,10 @@ Decisions §67 (to be confirmed) and design.md 0.3: the desktop's new look, our 
 
 - **Checks:** docs only; the desktop's checks are in its own log. **Owner:** confirm §67 and the faint grey. The owner kept the gradient as it is, white text included (§67.9, ticked in the owner checklist).
 
+### 26 Nov 2026 · Phase 16's rest merged
+
+The pull requests are merged in all three repos (web #66 first, then desktop #61 and pop #53 after their docs check passed), and the development Convex deployment has the new add-on types. Run the desktop app from `main`. Phase 16 stays in progress until its check is seen with real services: a community agent and an app template from a real repository with the topic (the example repository), a publish to a real GitHub account, and the portal's screen once Convex trusts the staff Clerk application; Codeberg stays to verify, and decisions §66 waits for the owner.
+
 ### 26 Nov 2026 · Phase 16: the rest (shared docs, web)
 
 Decisions §66.21–26: MCP servers and workflows as add-on types (`titan.json` in `@titan117/shared`, with their cases), GitLab.com as a source, publishing within the GitHub App's permissions (topics and forks need "Administration", which we don't ask for), add-ons from a folder, any open-source project, and why the portal's screen waits for phase 5's staff screens. `/marketplace` lists the two new kinds. Vendor pages read: GitHub's permissions, repository creation, contents, topics and forks; GitLab's commits, archives, paths and limits; Codeberg's API (404, still to verify).
